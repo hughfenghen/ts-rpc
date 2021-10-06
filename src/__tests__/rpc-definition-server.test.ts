@@ -11,7 +11,7 @@ test('collectMethodTypeDeps', () => {
   const prj = new Project({ compilerOptions: { declaration: true } })
   const sf = prj.createSourceFile('test.ts', `
     interface A {}
-    type B = {}
+    type B {}
     interface Z {}
 
     class Test {
@@ -49,8 +49,8 @@ test('collectTypeDeps', () => {
     type Y = A | B | null | undefined
   `)
   const iDeps = collectTypeDeps(sf.getInterfaceOrThrow('X'))
-  expect(iDeps.map(i => i.getName())).toEqual(['A', 'B'])
+  expect(iDeps.map(i => i.getName())).toEqual(['X', 'A', 'B'])
 
   const tDeps = collectTypeDeps(sf.getTypeAliasOrThrow('Y'))
-  expect(tDeps.map(t => t.getName())).toEqual(['A', 'B'])
+  expect(tDeps.map(t => t.getName())).toEqual(['Y', 'A', 'B'])
 })

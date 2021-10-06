@@ -1,5 +1,5 @@
 import { MethodDeclaration, Project } from 'ts-morph'
-import { collectMthodTypeDeps } from '../rpc-definition-server'
+import { collectMethodTypeDeps, collectTypeDeps } from '../rpc-definition-server'
 
 // test('start server', async () => {
 //   const server = await startRPCDefinitionServer(path.resolve(__dirname, '*.ts'))
@@ -7,11 +7,11 @@ import { collectMthodTypeDeps } from '../rpc-definition-server'
 //   expect(server()).toBe('')
 // })
 
-test('collectMthodTypeDeps', () => {
+test('collectMethodTypeDeps', () => {
   const prj = new Project({ compilerOptions: { declaration: true } })
   const sf = prj.createSourceFile('test.ts', `
-    interface A { a1: B }
-    interface B {}
+    interface A {}
+    type B = {}
     interface Z {}
 
     class Test {
@@ -21,9 +21,36 @@ test('collectMthodTypeDeps', () => {
   `)
 
   // console.log(111, sf.getClass('Test'))
-  const deps = collectMthodTypeDeps(
+  const deps = collectMethodTypeDeps(
     sf.getClass('Test')?.getMethod('foo') as MethodDeclaration,
     [sf]
   )
   expect(deps.map(d => d.getName())).toEqual(['A', 'B', 'Z'])
+})
+
+test('collectTypeDeps', () => {
+  const prj = new Project({ compilerOptions: { declaration: true } })
+  const sf = prj.createSourceFile('test.ts', `
+    interface A {
+      b: B
+    }
+    interface B {
+      a: A
+    }
+
+    interface X {
+      a: A
+      b: B
+      ab: A | B
+      s: string
+      n: number
+      f: () => any
+    }
+    type Y = A | B | null | undefined
+  `)
+  const iDeps = collectTypeDeps(sf.getInterfaceOrThrow('X'))
+  expect(iDeps.map(i => i.getName())).toEqual(['A', 'B'])
+
+  const tDeps = collectTypeDeps(sf.getTypeAliasOrThrow('Y'))
+  expect(tDeps.map(t => t.getName())).toEqual(['A', 'B'])
 })

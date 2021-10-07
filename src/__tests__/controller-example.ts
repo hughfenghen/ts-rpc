@@ -6,8 +6,12 @@ interface UserInfo {
   avatar: string
 }
 
+interface Other {
+  o: string
+}
+
 /**
- * class doc
+ * service doc
  */
 @RPCService()
 export class User {
@@ -18,4 +22,19 @@ export class User {
   getInfoById (id: string): UserInfo {
     return {} as any
   }
+
+  @RPCMethod()
+  getUnreadMsg (id: string): string[] {
+    return []
+  }
+
+  other (): Other {
+    return {} as any
+  }
+}
+
+@RPCService()
+export class Foo {
+  @RPCMethod()
+  bar (): void {}
 }

@@ -1,11 +1,12 @@
+import path from 'path'
 import { MethodDeclaration, Project } from 'ts-morph'
-import { collectMethodTypeDeps, collectTypeDeps } from '../rpc-definition-server'
+import { collectMethodTypeDeps, collectTypeDeps, startRPCDefinitionServer } from '../rpc-definition-server'
 
-// test('start server', async () => {
-//   const server = await startRPCDefinitionServer(path.resolve(__dirname, '*.ts'))
-//   expect(server).toBeInstanceOf(Function)
-//   expect(server()).toBe('')
-// })
+test('startRPCDefinitionServer', async () => {
+  const server = await startRPCDefinitionServer(path.resolve(__dirname, 'controller-example.ts'))
+
+  expect(server()).toMatchSnapshot()
+})
 
 test('collectMethodTypeDeps', () => {
   const prj = new Project({ compilerOptions: { declaration: true } })
@@ -16,14 +17,11 @@ test('collectMethodTypeDeps', () => {
 
     class Test {
       foo (a: A, b: B, c: string): Z {}
-      // foo () {}
     }
   `)
 
-  // console.log(111, sf.getClass('Test'))
   const deps = collectMethodTypeDeps(
-    sf.getClass('Test')?.getMethod('foo') as MethodDeclaration,
-    [sf]
+    sf.getClass('Test')?.getMethod('foo') as MethodDeclaration
   )
   expect(deps.map(d => d.getName())).toEqual(['A', 'B', 'Z'])
 })

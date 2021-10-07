@@ -1,0 +1,23 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`startRPCDefinitionServer 1`] = `
+"interface UserInfo {
+    name: string;
+    age: number;
+    avatar: string;
+}
+/**
+ * service doc
+ */
+interface User {
+    /**
+     * method doc
+     */
+    getInfoById(id: string): UserInfo;
+    getUnreadMsg(id: string): string[];
+}
+interface Foo {
+    bar(): void;
+}
+"
+`;

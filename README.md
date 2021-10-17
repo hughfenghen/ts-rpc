@@ -33,6 +33,9 @@ const rs = new RS({
   host: '//localhost:3000',
   prefixPath: '/path',
   devMode: true,
+  (sName, mName, args) => {
+    // fetch('/user/getInfoById/')
+  }
 })
 
 const userInfo = await rs.User.getInfoById('<user id>')

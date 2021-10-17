@@ -8,7 +8,7 @@ export async function startRPCDefinitionServer (filePaths: string): Promise<() =
   files.forEach(file => {
     return prj.addSourceFileAtPath(file)
   })
-  const serverSf = prj.addSourceFileAtPath(path.resolve(__dirname, './server.ts'))
+  const serverSf = prj.addSourceFileAtPath(path.resolve(__dirname, './index.ts'))
   const rpcServiceDef = serverSf.getFunction('RPCService')
   const rpcMethodDef = serverSf.getFunction('RPCMethod')
   if (rpcServiceDef == null || rpcMethodDef == null) throw Error('Cannot find RPCService or RPCMethod definition')

@@ -4,27 +4,30 @@
   "description": "基于TS的RPC库",
   "repository": "",
   "author": "hughfenghen@gmail.com",
-  "types": "src/index.ts",
-  "module": "dist/index.js",
   "files": [
     "dist/",
     "src/"
   ],
   "scripts": {
+    "demo:server": "nodemon --watch **/*.ts --exec \"ts-node\" demo/server/index.ts",
     "prebuild": "rimraf dist && yarn test",
     "test": "jest",
-    "build": "tsc -p build.tsconfig.json --outDir dist",
+    "build": "tsc -p build.tsconfig.json --outDir .",
     "prepublishOnly": "yarn build"
   },
   "devDependencies": {
     "@types/glob": "^7.1.4",
     "@types/jest": "^27.0.1",
+    "@types/koa": "^2.13.4",
     "@types/lodash": "^4.14.175",
     "@types/node": "^16.7.10",
     "jest": "^27.1.0",
+    "koa": "^2.13.3",
+    "nodemon": "^2.0.13",
     "parcel-bundler": "^1.12.5",
     "rimraf": "^3.0.2",
     "ts-jest": "^27.0.5",
+    "ts-node": "^10.3.0",
     "ts-standard": "^10.0.0",
     "typescript": "^4.4.2"
   },

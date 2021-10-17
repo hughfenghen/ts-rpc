@@ -1,4 +1,4 @@
-import { RPCMethod, RPCService } from '../server'
+import { RPCMethod, RPCService } from '..'
 
 interface UserInfo {
   name: string

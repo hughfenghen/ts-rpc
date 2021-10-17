@@ -22,3 +22,5 @@ export function RPCMethod () {
     Reflect.defineMetadata(METHOD_METADATA, true, descriptor.value as Function)
   }
 }
+
+export { startRPCDefinitionServer } from './rpc-definition-server'

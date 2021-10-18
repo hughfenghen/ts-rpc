@@ -1,7 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`startRPCDefinitionServer 1`] = `
-"interface UserInfo {
+"export interface ServiceCollection {
+    User: User;
+    Foo: Foo;
+}
+interface UserInfo {
     name: string;
     age: number;
     avatar: string;
@@ -13,11 +17,12 @@ interface User {
     /**
      * method doc
      */
-    getInfoById(id: string): UserInfo;
-    getUnreadMsg(id: string): string[];
+    getInfoById(id: string): Promise<UserInfo>;
+    getUnreadMsg(id: string): Promise<string[]>;
 }
 interface Foo {
-    bar(): void;
+    bar(): Promise<void>;
 }
+export {};
 "
 `;

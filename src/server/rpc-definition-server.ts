@@ -28,6 +28,9 @@ export function startRPCDefinitionServer (filePaths: string): () => string {
   const genSf = prj.createSourceFile(path.resolve(__dirname, '_protocol-file-memory_.ts'), {
   }, { overwrite: true })
 
+  const expInter = genSf.insertInterface(0, { name: 'ServiceCollection' })
+  expInter.setIsExported(true)
+
   refedClasses.forEach((c) => {
     const className = c.getName()
     if (className == null) throw Error('RPCService must be applied to a named class')
@@ -36,23 +39,40 @@ export function startRPCDefinitionServer (filePaths: string): () => string {
     inter.addJsDocs(c.getJsDocs().map(doc => doc.getStructure()))
     const methods = findRPCMethods(c, rpcMethodDef)
     inter.addMethods(
-      methods.map(m => (
-        m.getSignature().getDeclaration() as MethodSignature
-      ).getStructure())
+      methods.map(m => {
+        const ms = m.getSignature().getDeclaration() as MethodSignature
+        let rtText = ms.getReturnType().getText()
+        // 远程调用，返回值都是 Promise
+        if (!/^Promise<.+>$/.test(rtText)) {
+          rtText = `Promise<${rtText}>`
+        }
+        ms.setReturnType(rtText)
+        return ms.getStructure()
+      })
     )
+
 
     methods.map(m => collectMethodTypeDeps(m))
       .flat()
       .forEach(it => {
         // 添加 method 依赖的类型，否则无法编译通过
         if (it instanceof InterfaceDeclaration) {
-          genSf.insertInterface(0, it.getStructure())
+          genSf.insertInterface(1, it.getStructure())
         } else if (it instanceof TypeAliasDeclaration) {
-          genSf.insertTypeAlias(0, it.getStructure())
+          genSf.insertTypeAlias(1, it.getStructure())
         } else {
           // TODO: error
         }
       })
+    
+    expInter.addProperty({ name: className, type: className })
+  })
+
+  // 疑似 ts-morph 的 bug，会出多许多重复的 interface Promise
+  genSf.getInterfaces().forEach(it => {
+    if (it.getName() === 'Promise') {
+      it.remove()
+    }
   })
 
   const protocolFileContent = genSf.getEmitOutput({ emitOnlyDtsFiles: true })

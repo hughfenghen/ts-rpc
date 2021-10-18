@@ -24,8 +24,8 @@ export class User {
   }
 
   @RPCMethod()
-  getUnreadMsg (id: string): string[] {
-    return []
+  getUnreadMsg (id: string): Promise<string[]> {
+    return Promise.resolve([])
   }
 
   other (): Other {

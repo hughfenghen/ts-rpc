@@ -11,8 +11,12 @@
   "scripts": {
     "prebuild": "rimraf server client && yarn test",
     "test": "jest",
+    "dev": "tsc -p build.tsconfig.json --outDir . --watch",
     "build": "tsc -p build.tsconfig.json --outDir .",
     "prepublishOnly": "yarn build"
+  },
+  "bin": {
+    "ts-rpc": "bin/ts-rpc.js"
   },
   "devDependencies": {
     "@types/glob": "^7.1.4",
@@ -29,7 +33,9 @@
     "typescript": "^4.4.2"
   },
   "dependencies": {
+    "commander": "^8.2.0",
     "glob": "^7.2.0",
+    "got": "^11.8.2",
     "lodash": "^4.17.21",
     "reflect-metadata": "^0.1.13",
     "ts-morph": "^12.0.0"

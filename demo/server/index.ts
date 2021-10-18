@@ -8,9 +8,8 @@ const router = new Router();
 
 const defStr = startRPCDefinitionServer(path.resolve(__dirname, './user-controller.ts'))
 
-router.get('/', (ctx, next) => {
+router.get('/_rpc_definiton_', (ctx, next) => {
   ctx.body = defStr()
-  console.log(222, ctx.body)
   next()
 });
 

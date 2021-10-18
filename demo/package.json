@@ -4,6 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
+    "cmd": "ts-rpc",
     "server": "nodemon --watch server --watch client --exec 'ts-node server/index.ts' -e ts"
   },
   "dependencies": {

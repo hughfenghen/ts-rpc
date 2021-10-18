@@ -1,0 +1,19 @@
+{
+  "name": "demo",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "server": "nodemon --watch server --watch client --exec 'ts-node server/index.ts' -e ts"
+  },
+  "dependencies": {
+    "koa": "^2.13.3",
+    "koa-router": "^10.1.1",
+    "ts-rpc": "file:../"
+  },
+  "devDependencies": {
+    "@types/koa-router": "^7.4.4",
+    "nodemon": "^2.0.13",
+    "ts-node": "^10.3.0"
+  }
+}

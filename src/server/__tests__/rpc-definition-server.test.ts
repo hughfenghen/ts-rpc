@@ -2,8 +2,8 @@ import path from 'path'
 import { MethodDeclaration, Project } from 'ts-morph'
 import { collectMethodTypeDeps, collectTypeDeps, startRPCDefinitionServer } from '../rpc-definition-server'
 
-test('startRPCDefinitionServer', async () => {
-  const server = await startRPCDefinitionServer(path.resolve(__dirname, 'controller-example.ts'))
+test('startRPCDefinitionServer', () => {
+  const server = startRPCDefinitionServer(path.resolve(__dirname, 'controller-example.ts'))
 
   expect(server()).toMatchSnapshot()
 })

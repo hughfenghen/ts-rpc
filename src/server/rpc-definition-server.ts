@@ -1,14 +1,21 @@
 import glob from 'glob'
 import { Project, Node, ClassDeclaration, FunctionDeclaration, MethodDeclaration, InterfaceDeclaration, SyntaxKind, TypeReferenceNode, TypeAliasDeclaration, MethodSignature } from 'ts-morph'
 import path from 'path'
+import { existsSync } from 'fs'
 
-export async function startRPCDefinitionServer (filePaths: string): Promise<() => string> {
+export function startRPCDefinitionServer (filePaths: string): () => string {
   const files = glob.sync(filePaths)
   const prj = new Project({ compilerOptions: { declaration: true } })
   files.forEach(file => {
     return prj.addSourceFileAtPath(file)
   })
-  const serverSf = prj.addSourceFileAtPath(path.resolve(__dirname, './index.ts'))
+  // 单测阶段
+  const indexTs = path.resolve(__dirname, './index.ts')
+  // 编译后
+  const indexDTs = path.resolve(__dirname, './index.d.ts')
+  const serverSf = prj.addSourceFileAtPath(
+    existsSync(indexDTs) ? indexDTs : indexTs
+  )
   const rpcServiceDef = serverSf.getFunction('RPCService')
   const rpcMethodDef = serverSf.getFunction('RPCMethod')
   if (rpcServiceDef == null || rpcMethodDef == null) throw Error('Cannot find RPCService or RPCMethod definition')

@@ -5,7 +5,18 @@ import { collectMethodTypeDeps, collectTypeDeps, startRPCDefinitionServer } from
 test('startRPCDefinitionServer', () => {
   const server = startRPCDefinitionServer(path.resolve(__dirname, 'controller-example.ts'))
 
-  expect(server()).toMatchSnapshot()
+  const { dts, meta } = server()
+  expect(dts).toMatchSnapshot()
+  expect(meta).toEqual([{
+    name: 'User',
+    methods: [
+      { name: 'getInfoById' },
+      { name: 'getUnreadMsg' },
+    ]
+  }, {
+    name: 'Foo',
+    methods: [{ name: 'bar' }]
+  }])
 })
 
 test('collectMethodTypeDeps', () => {

@@ -3,7 +3,9 @@ import { Project, Node, ClassDeclaration, FunctionDeclaration, MethodDeclaration
 import path from 'path'
 import { existsSync } from 'fs'
 
-export function startRPCDefinitionServer (filePaths: string): () => string {
+type RPCMetaData = Array<{ name: string, methods: Array<{ name: string }>}>
+
+export function startRPCDefinitionServer(filePaths: string): () => { dts: string, meta: RPCMetaData } {
   const files = glob.sync(filePaths)
   const prj = new Project({ compilerOptions: { declaration: true } })
   files.forEach(file => {
@@ -31,13 +33,21 @@ export function startRPCDefinitionServer (filePaths: string): () => string {
   const expInter = genSf.insertInterface(0, { name: 'ServiceCollection' })
   expInter.setIsExported(true)
 
+  const rpcMetaData: RPCMetaData = []
   refedClasses.forEach((c) => {
     const className = c.getName()
     if (className == null) throw Error('RPCService must be applied to a named class')
+    const methods = findRPCMethods(c, rpcMethodDef)
+    if (methods.length === 0) {
+      throw Error(`RPCService(${className}) must have at least one method`)
+    }
+    rpcMetaData.push({ 
+      name: className, 
+      methods: methods.map(m => ({ name: m.getName()}))
+    })
     // 将 class 转换为 interface，模拟 rpc 的 protocol 声明
     const inter = genSf.addInterface({ name: className })
     inter.addJsDocs(c.getJsDocs().map(doc => doc.getStructure()))
-    const methods = findRPCMethods(c, rpcMethodDef)
     inter.addMethods(
       methods.map(m => {
         const ms = m.getSignature().getDeclaration() as MethodSignature
@@ -78,7 +88,10 @@ export function startRPCDefinitionServer (filePaths: string): () => string {
   const protocolFileContent = genSf.getEmitOutput({ emitOnlyDtsFiles: true })
     .getOutputFiles().map(file => file.getText())
     .join('\n')
-  return () => protocolFileContent
+  return () => ({
+    dts: protocolFileContent,
+    meta: rpcMetaData
+  })
 }
 
 function findRPCMethods (service: ClassDeclaration, rpcMethodDef: FunctionDeclaration): MethodDeclaration[] {

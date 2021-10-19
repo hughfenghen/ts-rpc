@@ -1,9 +1,9 @@
 import path from 'path'
 import { MethodDeclaration, Project } from 'ts-morph'
-import { collectMethodTypeDeps, collectTypeDeps, startRPCDefinitionServer } from '../rpc-definition-server'
+import { collectMethodTypeDeps, collectTypeDeps, scan } from '../rpc-definition-scan'
 
-test('startRPCDefinitionServer', () => {
-  const server = startRPCDefinitionServer(path.resolve(__dirname, 'controller-example.ts'))
+test('scan', () => {
+  const server = scan(path.resolve(__dirname, 'controller-example.ts'))
 
   const { dts, meta } = server()
   expect(dts).toMatchSnapshot()
@@ -11,7 +11,7 @@ test('startRPCDefinitionServer', () => {
     name: 'User',
     methods: [
       { name: 'getInfoById' },
-      { name: 'getUnreadMsg' },
+      { name: 'getUnreadMsg' }
     ]
   }, {
     name: 'Foo',

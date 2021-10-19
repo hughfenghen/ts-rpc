@@ -1,20 +1,19 @@
 import Koa from 'koa'
 import Router from 'koa-router'
-import path from 'path';
-import { RPCService, startRPCDefinitionServer } from 'ts-rpc/server'
+import path from 'path'
+import { scan } from 'ts-rpc/server'
 
 const app = new Koa()
-const router = new Router();
+const router = new Router()
 
-const defStr = startRPCDefinitionServer(path.resolve(__dirname, './user-controller.ts'))
+const defStr = scan(path.resolve(__dirname, './user-controller.ts'))
 
-router.get('/_rpc_definiton_', (ctx, next) => {
+router.get('/_rpc_definiton_', (ctx) => {
   ctx.body = defStr()
-  next()
-});
+})
 
 app
   .use(router.routes())
-  .use(router.allowedMethods());
+  .use(router.allowedMethods())
 
 app.listen(3000)

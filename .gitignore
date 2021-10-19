@@ -6,6 +6,6 @@ coverage
 .VSCodeCounter
 .idea
 package-lock.json
-server
-client
+server/*
+client/*
 bin/*

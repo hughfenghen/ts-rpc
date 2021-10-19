@@ -5545,10 +5545,10 @@ koa-convert@^2.0.0:
     co "^4.6.0"
     koa-compose "^4.1.0"
 
-koa@^2.13.3:
-  version "2.13.3"
-  resolved "https://registry.npmmirror.com/koa/download/koa-2.13.3.tgz?cache=0&sync_timestamp=1632468583613&other_urls=https%3A%2F%2Fregistry.npmmirror.com%2Fkoa%2Fdownload%2Fkoa-2.13.3.tgz#a62641ba753ec54bee2c6da1a4f294c5fac35407"
-  integrity sha1-piZBunU+xUvuLG2hpPKUxfrDVAc=
+koa@^2.13.4:
+  version "2.13.4"
+  resolved "https://registry.npmmirror.com/koa/download/koa-2.13.4.tgz?cache=0&sync_timestamp=1634624120962&other_urls=https%3A%2F%2Fregistry.npmmirror.com%2Fkoa%2Fdownload%2Fkoa-2.13.4.tgz#ee5b0cb39e0b8069c38d115139c774833d32462e"
+  integrity sha1-7lsMs54LgGnDjRFROcd0gz0yRi4=
   dependencies:
     accepts "^1.3.5"
     cache-content-type "^1.0.0"

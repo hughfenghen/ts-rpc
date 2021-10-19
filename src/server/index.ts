@@ -23,4 +23,4 @@ export function RPCMethod () {
   }
 }
 
-export { startRPCDefinitionServer } from './rpc-definition-server'
+export { scan } from './rpc-definition-scan'

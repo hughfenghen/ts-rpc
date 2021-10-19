@@ -5,7 +5,7 @@ import { existsSync } from 'fs'
 
 type RPCMetaData = Array<{ name: string, methods: Array<{ name: string }>}>
 
-export function startRPCDefinitionServer(filePaths: string): () => { dts: string, meta: RPCMetaData } {
+export function scan (filePaths: string): () => { dts: string, meta: RPCMetaData } {
   const files = glob.sync(filePaths)
   const prj = new Project({ compilerOptions: { declaration: true } })
   files.forEach(file => {
@@ -41,9 +41,9 @@ export function startRPCDefinitionServer(filePaths: string): () => { dts: string
     if (methods.length === 0) {
       throw Error(`RPCService(${className}) must have at least one method`)
     }
-    rpcMetaData.push({ 
-      name: className, 
-      methods: methods.map(m => ({ name: m.getName()}))
+    rpcMetaData.push({
+      name: className,
+      methods: methods.map(m => ({ name: m.getName() }))
     })
     // 将 class 转换为 interface，模拟 rpc 的 protocol 声明
     const inter = genSf.addInterface({ name: className })
@@ -61,7 +61,6 @@ export function startRPCDefinitionServer(filePaths: string): () => { dts: string
       })
     )
 
-
     methods.map(m => collectMethodTypeDeps(m))
       .flat()
       .forEach(it => {
@@ -74,7 +73,7 @@ export function startRPCDefinitionServer(filePaths: string): () => { dts: string
           // TODO: error
         }
       })
-    
+
     expInter.addProperty({ name: className, type: className })
   })
 

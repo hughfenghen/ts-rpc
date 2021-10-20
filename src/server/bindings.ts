@@ -1,11 +1,14 @@
-import Koa from 'koa'
-
 interface IKoaArgs {
-  app: Koa
-  scanDir: string[]
+  app: {
+    use: (
+      path: string,
+      handler: (ctx: unknown, next: () => Promise<void>) => Promise<void>
+    ) => void
+  }
+  rpcMetaPath: string
   prefixPath: string
 }
 
-export function bindKoa ({ app, scanDir, prefixPath }: IKoaArgs): void {
-
+export async function bindKoa ({ app, rpcMetaPath, prefixPath }: IKoaArgs): Promise<void> {
+  // const { dts, meta } = await import(rpcMetaPath)
 }

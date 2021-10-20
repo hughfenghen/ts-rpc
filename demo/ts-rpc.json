@@ -1,0 +1,9 @@
+{
+  "client": {
+    "baseUrl": "localhost:3000"
+  },
+  "server": {
+    "scanDir": ["server/*.ts"],
+    "metaOutDir": ""
+  }
+}

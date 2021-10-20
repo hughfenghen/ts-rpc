@@ -1,4 +1,4 @@
-import { RPCMethod, RPCService } from '..'
+import { RPCMethod, RPCService } from '../../server'
 
 interface UserInfo {
   name: string
@@ -24,8 +24,8 @@ export class User {
   }
 
   @RPCMethod()
-  getUnreadMsg (id: string): Promise<string[]> {
-    return Promise.resolve([])
+  async getUnreadMsg (id: string): Promise<string[]> {
+    return []
   }
 
   other (): Other {

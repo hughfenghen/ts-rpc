@@ -3,18 +3,19 @@ import { MethodDeclaration, Project } from 'ts-morph'
 import { collectMethodTypeDeps, collectTypeDeps, scan } from '../rpc-definition-scan'
 
 test('scan', () => {
-  const server = scan(path.resolve(__dirname, 'controller-example.ts'))
+  const { dts, meta } = scan([path.resolve(__dirname, 'controller-example.ts')])
 
-  const { dts, meta } = server()
   expect(dts).toMatchSnapshot()
   expect(meta).toEqual([{
     name: 'User',
+    path: expect.stringContaining('/src/bin/__tests__/controller-example.ts'),
     methods: [
       { name: 'getInfoById' },
       { name: 'getUnreadMsg' }
     ]
   }, {
     name: 'Foo',
+    path: expect.stringContaining('/src/bin/__tests__/controller-example.ts'),
     methods: [{ name: 'bar' }]
   }])
 })

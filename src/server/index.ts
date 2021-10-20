@@ -22,5 +22,3 @@ export function RPCMethod () {
     Reflect.defineMetadata(METHOD_METADATA, true, descriptor.value as Function)
   }
 }
-
-export { scan } from './rpc-definition-scan'

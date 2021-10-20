@@ -3,18 +3,18 @@ import { Project, Node, ClassDeclaration, FunctionDeclaration, MethodDeclaration
 import path from 'path'
 import { existsSync } from 'fs'
 
-type RPCMetaData = Array<{ name: string, methods: Array<{ name: string }>}>
+type RPCMetaData = Array<{ name: string, path: string, methods: Array<{ name: string }>}>
 
-export function scan (filePaths: string): () => { dts: string, meta: RPCMetaData } {
-  const files = glob.sync(filePaths)
+export function scan (filePaths: string[]): { dts: string, meta: RPCMetaData } {
+  const files = filePaths.map(f => glob.sync(f)).flat()
   const prj = new Project({ compilerOptions: { declaration: true } })
   files.forEach(file => {
     return prj.addSourceFileAtPath(file)
   })
   // 单测阶段
-  const indexTs = path.resolve(__dirname, './index.ts')
+  const indexTs = path.resolve(__dirname, '../server/index.ts')
   // 编译后
-  const indexDTs = path.resolve(__dirname, './index.d.ts')
+  const indexDTs = path.resolve(__dirname, '../server/index.d.ts')
   const serverSf = prj.addSourceFileAtPath(
     existsSync(indexDTs) ? indexDTs : indexTs
   )
@@ -43,6 +43,7 @@ export function scan (filePaths: string): () => { dts: string, meta: RPCMetaData
     }
     rpcMetaData.push({
       name: className,
+      path: c.getSourceFile().getFilePath(),
       methods: methods.map(m => ({ name: m.getName() }))
     })
     // 将 class 转换为 interface，模拟 rpc 的 protocol 声明
@@ -87,10 +88,10 @@ export function scan (filePaths: string): () => { dts: string, meta: RPCMetaData
   const protocolFileContent = genSf.getEmitOutput({ emitOnlyDtsFiles: true })
     .getOutputFiles().map(file => file.getText())
     .join('\n')
-  return () => ({
+  return {
     dts: protocolFileContent,
     meta: rpcMetaData
-  })
+  }
 }
 
 function findRPCMethods (service: ClassDeclaration, rpcMethodDef: FunctionDeclaration): MethodDeclaration[] {

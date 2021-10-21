@@ -20,7 +20,7 @@ export class User {
    */
   @RPCMethod()
   getInfoById (id: string): UserInfo {
-    return {} as any
+    return { name: '22', age: 18, avatar: '' }
   }
 
   @RPCMethod()

@@ -1,17 +1,16 @@
 import Koa from 'koa'
-import Router from 'koa-router'
+import path from 'path'
+// import { bindKoa } from 'ts-rpc/server'
+import { bindKoa } from '../../src/server/index'
 
 const app = new Koa()
-const router = new Router()
 
-// const defStr = scan([path.resolve(__dirname, './user-controller.ts')])
-
-// router.get('/_rpc_definiton_', (ctx) => {
-//   ctx.body = defStr()
-// })
-
-app
-  .use(router.routes())
-  .use(router.allowedMethods())
+bindKoa({
+  app,
+  rpcMetaPath: path.resolve(__dirname, '../_rpc_gen_meta_.json'),
+  prefixPath: '/'
+}).catch((err) => {
+  console.error(err)
+})
 
 app.listen(3000)

@@ -30,7 +30,8 @@ export async function bindKoa ({ app, rpcMetaPath, prefixPath }: IKoaArgs): Prom
     let ins = pathInstanceMap.get(ctx.path)
     const [sPath, mPath] = ctx.path
       .replace(prefixPath, '')
-      .replace(/^\//, '').split('/')
+      .replace(/^\/*/, '')
+      .split('/')
     if (sNameExportMap[sPath] == null) {
       await next()
       return
@@ -39,8 +40,12 @@ export async function bindKoa ({ app, rpcMetaPath, prefixPath }: IKoaArgs): Prom
       ins = new sNameExportMap[sPath]()
       pathInstanceMap.set(ctx.path, ins)
     }
-    const args = ctx.request.body._ts_rpc_args_ ?? []
-    await ins[mPath](...args)
+
+    const args = ctx.request?.body?._ts_rpc_args_
+    if (args == null) {
+      throw Error('Cannot find `_ts_rpc_args_` in request body')
+    }
+    ctx.body = JSON.stringify(await ins[mPath](...args))
     await next()
   })
 }

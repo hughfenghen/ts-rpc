@@ -1,11 +1,9 @@
 import 'reflect-metadata'
 
+export { bindKoa } from './bindings'
+
 const SERVICE_METADATA = 'path'
 const METHOD_METADATA = 'method'
-
-export function register (service: unknown): void {
-  console.log(Reflect.getMetadata(service, SERVICE_METADATA))
-}
 
 export function RPCService () {
   return (target: Function) => {

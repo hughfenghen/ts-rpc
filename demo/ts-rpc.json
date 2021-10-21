@@ -4,6 +4,6 @@
   },
   "server": {
     "scanDir": ["server/*.ts"],
-    "metaOutDir": ""
+    "metaOutDir": "./"
   }
 }

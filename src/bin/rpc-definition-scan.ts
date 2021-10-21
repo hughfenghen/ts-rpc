@@ -2,10 +2,9 @@ import glob from 'glob'
 import { Project, Node, ClassDeclaration, FunctionDeclaration, MethodDeclaration, InterfaceDeclaration, SyntaxKind, TypeReferenceNode, TypeAliasDeclaration, MethodSignature } from 'ts-morph'
 import path from 'path'
 import { existsSync } from 'fs'
+import { IScanResult, TRPCMetaData } from '../interface'
 
-type RPCMetaData = Array<{ name: string, path: string, methods: Array<{ name: string }>}>
-
-export function scan (filePaths: string[]): { dts: string, meta: RPCMetaData } {
+export function scan (filePaths: string[]): IScanResult {
   const files = filePaths.map(f => glob.sync(f)).flat()
   const prj = new Project({ compilerOptions: { declaration: true } })
   files.forEach(file => {
@@ -33,7 +32,7 @@ export function scan (filePaths: string[]): { dts: string, meta: RPCMetaData } {
   const expInter = genSf.insertInterface(0, { name: 'ServiceCollection' })
   expInter.setIsExported(true)
 
-  const rpcMetaData: RPCMetaData = []
+  const rpcMetaData: TRPCMetaData = []
   refedClasses.forEach((c) => {
     const className = c.getName()
     if (className == null) throw Error('RPCService must be applied to a named class')

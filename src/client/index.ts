@@ -2,7 +2,34 @@ import { ServiceCollection } from './__service-collection__'
 
 interface ServiceCfg {
   baseUrl: string
+  agent?: (req: Request) => Promise<Response>
 }
+
 export function createRetmoteService (cfg: ServiceCfg): ServiceCollection {
-  return {}
+  async function defAgent (req: Request): Promise<Response> {
+    return await fetch(req)
+  }
+
+  function createReq (sName: string, sMethod: string, args: any[]): Request {
+    return new Request(`${cfg.baseUrl}/${sName}/${sMethod}`, {
+      method: 'POST',
+      body: JSON.stringify({
+        _ts_rpc_args_: args
+      })
+    })
+  }
+
+  return new Proxy({}, {
+    get (t, sName) {
+      return new Proxy({}, {
+        get (t, sMethod) {
+          return async (...args: unknown[]) => {
+            return await (cfg.agent ?? defAgent)(
+              createReq(sName as string, sMethod as string, args)
+            ).then(async (res) => await res.json())
+          }
+        }
+      })
+    }
+  })
 }

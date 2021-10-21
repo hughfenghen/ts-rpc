@@ -1,7 +1,7 @@
 import Koa from 'koa'
 import path from 'path'
 // import { bindKoa } from 'ts-rpc/server'
-import { bindKoa } from '../../src/server/index'
+import { bindKoa } from '../../src/server'
 
 const app = new Koa()
 

@@ -1,8 +1,8 @@
-// import { createRetmoteService } from 'ts-rpc/client'
-// import serverCfg from './ts-rpc.json'
+import { createRetmoteService } from '../../src/client'
+import serverCfg from '../ts-rpc.json'
 
-// const rs = createRetmoteService(serverCfg)
-// ;(async () => {
-//   const userInfo = await rs.User.getInfoById('')
-//   console.log(111, userInfo.age)
-// })()
+const rs = createRetmoteService(serverCfg.client)
+;(async () => {
+  const userInfo = await rs.User.getInfoById('')
+  console.log(111, userInfo.age)
+})().catch((err) => console.error(err))

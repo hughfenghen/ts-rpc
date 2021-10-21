@@ -13,7 +13,6 @@ interface IKoaArgs {
 
 export async function bindKoa ({ app, rpcMetaPath, prefixPath }: IKoaArgs): Promise<void> {
   const { dts, meta } = await import(rpcMetaPath) as IScanResult
-  console.log(1111, JSON.stringify(meta, null, 2), dts)
   const rpcMetaDir = path.dirname(rpcMetaPath)
   const sNameExportMap = Object.fromEntries(
     await Promise.all(
@@ -24,9 +23,15 @@ export async function bindKoa ({ app, rpcMetaPath, prefixPath }: IKoaArgs): Prom
         ])
     )
   )
-  console.log(34444, sNameExportMap)
+
   const pathInstanceMap = new Map<string, any>()
   app.use(async (ctx, next) => {
+    if (path.resolve(prefixPath, '_rpc_definiton_') === ctx.path) {
+      ctx.body = dts
+      await next()
+      return
+    }
+
     let ins = pathInstanceMap.get(ctx.path)
     const [sPath, mPath] = ctx.path
       .replace(prefixPath, '')

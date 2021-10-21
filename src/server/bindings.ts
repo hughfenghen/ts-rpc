@@ -31,11 +31,16 @@ export async function bindKoa ({ app, rpcMetaPath, prefixPath }: IKoaArgs): Prom
     const [sPath, mPath] = ctx.path
       .replace(prefixPath, '')
       .replace(/^\//, '').split('/')
+    if (sNameExportMap[sPath] == null) {
+      await next()
+      return
+    }
     if (ins == null) {
       ins = new sNameExportMap[sPath]()
       pathInstanceMap.set(ctx.path, ins)
     }
-    await ins[mPath]()
+    const args = ctx.request.body._ts_rpc_args_ ?? []
+    await ins[mPath](...args)
     await next()
   })
 }

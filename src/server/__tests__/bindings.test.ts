@@ -13,5 +13,8 @@ test('bindKoa', async () => {
   })
   expect(spyUse).toBeCalled()
   expect(middlewares.length).toBe(1)
-  await middlewares[0]({ path: '/test/User/getInfoById' }, () => {})
+  await middlewares[0]({
+    path: '/test/User/getInfoById',
+    request: { body: { _ts_rpc_args_: ['111'] } }
+  }, () => {})
 })

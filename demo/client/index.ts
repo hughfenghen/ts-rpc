@@ -6,6 +6,6 @@ const rs = createRetmoteService(serverCfg.client)
 document.getElementById('send')?.addEventListener('click', () => {
   ; (async () => {
     const userInfo = await rs.User.getInfoById('111')
-    console.log('userInfo:', userInfo)
+    ;(document.getElementById('result') as HTMLDivElement).textContent = JSON.stringify(userInfo, null, 2)
   })().catch((err) => console.error(err))
 })

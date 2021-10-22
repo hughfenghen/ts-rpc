@@ -64,3 +64,8 @@ const rs = createRetmoteService({
 const userInfo = await rs.User.getInfoById('<user id>')
 console.log(userInfo) // { name: '22', age: 18, avatar: '<imgage url>' }
 ```
+
+## 运行 demo
+1. `git clone git@github.com:hughfenghen/ts-rpc.git`  
+2. `cd demo && yarn`  
+3. `yarn server` 新开 shell 窗口，`yarn client`  

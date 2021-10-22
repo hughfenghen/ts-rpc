@@ -2,15 +2,37 @@
 
 ## 使用方法
 
+### ts-rpc.json
+```json
+{
+  // 客户端配置
+  "client": {
+    // 远程服务地址前缀
+    "baseUrl": "127.0.0.1:3000"
+  },
+  // 服务端配置
+  "server": {
+    // RPCService 所在文件
+    "scanDir": ["server/*.ts"],
+    // 扫描信息输入地址
+    "metaOutDir": "./"
+  }
+}
+```
+
+### 服务端
 ```ts
-import { bindKoa, Service, Method } from 'ts-rpc'
+// 运行 server 服务之前执行`ts-rpc`命令
+// scripts: yarn ts-rpc server -c ts-rpc.json && yarn dev
+
+import { bindKoa, RPCService, RPCMethod } from 'ts-rpc/server'
 
 bindKoa(User) // 或者 bindExpress
 
-@Service()
+@RPCService()
 class User {
 
-  @Method()
+  @RPCMethod()
   getInfoById(id: string): { name: string, age: number, avatar: string } {
     // 从上游获取数据
     return {
@@ -24,16 +46,17 @@ class User {
 // TODO: ctx 信息怎么获取，错误处理 ？
 ```
 
+### 客户端
 ```ts
-// scripts: yarn run tsRPCAgent
+// 运行 client 服务之前执行`ts-rpc`命令
+// scripts: yarn ts-rpc client -c ts-rpc.json && yarn dev
 
-import { RS } from 'ts-rpc'
+import { createRetmoteService } from 'ts-rpc/client'
 
-const rs = new RS({
-  host: '//localhost:3000',
-  prefixPath: '/path',
-  devMode: true,
-  (sName, mName, args) => {
+const rs = createRetmoteService({
+  baseUrl: "127.0.0.1:3000",
+  // 可选，用于拦截处理请求
+  agent: (req: Request): Response => {
     // fetch('/user/getInfoById/')
   }
 })

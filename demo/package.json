@@ -5,7 +5,8 @@
   "license": "MIT",
   "scripts": {
     "cmd": "ts-rpc",
-    "server": "nodemon --watch server --watch client --exec 'ts-node server/index.ts' -e ts"
+    "server": "nodemon --watch server --watch client --exec 'ts-node server/index.ts' -e ts",
+    "client": "parcel client/index.html"
   },
   "dependencies": {
     "koa": "^2.13.3",
@@ -13,8 +14,11 @@
     "ts-rpc": "file:../"
   },
   "devDependencies": {
+    "@types/koa-bodyparser": "^4.3.3",
     "@types/koa-router": "^7.4.4",
+    "koa-bodyparser": "^4.3.0",
     "nodemon": "^2.0.13",
+    "parcel": "^2.0.0",
     "ts-node": "^10.3.0"
   }
 }

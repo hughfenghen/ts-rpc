@@ -11,8 +11,13 @@ export function createRetmoteService (cfg: ServiceCfg): ServiceCollection {
   }
 
   function createReq (sName: string, sMethod: string, args: any[]): Request {
-    return new Request(`${cfg.baseUrl}/${sName}/${sMethod}`, {
+    const url = new URL(`//${cfg.baseUrl.replace('//', '')}/${sName}/${sMethod}`, location.href)
+
+    return new Request(url.href, {
       method: 'POST',
+      headers: {
+        'content-type': 'application/json'
+      },
       body: JSON.stringify({
         _ts_rpc_args_: args
       })

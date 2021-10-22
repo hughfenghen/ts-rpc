@@ -41,6 +41,15 @@ export async function bindKoa ({ app, rpcMetaPath, prefixPath }: IKoaArgs): Prom
       await next()
       return
     }
+
+    ctx.set('Access-Control-Allow-Headers', 'Content-Type')
+    ctx.set('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS')
+
+    if (ctx.method === 'OPTIONS') {
+      ctx.status = 204
+      return
+    }
+
     if (ins == null) {
       ins = new sNameExportMap[sPath]()
       pathInstanceMap.set(ctx.path, ins)

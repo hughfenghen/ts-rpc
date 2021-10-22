@@ -5,8 +5,8 @@
   "license": "MIT",
   "scripts": {
     "cmd": "ts-rpc",
-    "server": "nodemon --watch server --watch client --exec 'ts-node server/index.ts' -e ts",
-    "client": "parcel client/index.html"
+    "server": "yarn ts-rpc server -c ts-rpc.json && nodemon --watch server --watch client --exec 'ts-node server/index.ts' -e ts",
+    "client": "yarn ts-rpc client -c ts-rpc.json && parcel client/index.html"
   },
   "dependencies": {
     "koa": "^2.13.3",

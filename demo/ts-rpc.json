@@ -1,6 +1,6 @@
 {
   "client": {
-    "baseUrl": "localhost:3000"
+    "baseUrl": "127.0.0.1:3000"
   },
   "server": {
     "scanDir": ["server/*.ts"],

@@ -1,12 +1,14 @@
 {
   "name": "@hughfenghen/ts-rpc",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "基于TS的RPC库",
   "repository": "",
   "author": "hughfenghen@gmail.com",
   "files": [
-    "dist/",
-    "src/"
+    "server/",
+    "client/",
+    "bin/",
+    "interface*"
   ],
   "scripts": {
     "prebuild": "rimraf server client && yarn test",

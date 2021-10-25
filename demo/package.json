@@ -9,7 +9,7 @@
     "client": "yarn ts-rpc client -c ts-rpc.json && parcel client/index.html"
   },
   "dependencies": {
-    "@hughfenghen/ts-rpc": "^0.0.1",
+    "@hughfenghen/ts-rpc": "^0.0.2",
     "koa": "^2.13.3"
   },
   "devDependencies": {

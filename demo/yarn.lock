@@ -233,10 +233,10 @@
   dependencies:
     "@cspotcode/source-map-consumer" "0.8.0"
 
-"@hughfenghen/ts-rpc@^0.0.1":
-  version "0.0.1"
-  resolved "https://registry.npmjs.org/@hughfenghen/ts-rpc/-/ts-rpc-0.0.1.tgz#ad4d286dfee943b5518b88b8119ce4ecf7c374c2"
-  integrity sha512-yn7u6yO2nR+U1pP7nn1ep9LCf1oEOg7SK9i+dsY8iEqQ2M1mi3xh7QbGCzev/34LnQx5d+AYZxvqObMPKdvgkA==
+"@hughfenghen/ts-rpc@^0.0.2":
+  version "0.0.2"
+  resolved "https://registry.npmjs.org/@hughfenghen/ts-rpc/-/ts-rpc-0.0.2.tgz#9478ed228d05b47195949625abaa0815cffd0289"
+  integrity sha512-/ux36WLgJZJ1AUSjBHiVzX1IV0w8ULPdf4IDC0386sfm074NZE1hJOY4ipjLTIuhJz5991gFDsUnVDALWMMz6A==
   dependencies:
     commander "^8.2.0"
     glob "^7.2.0"

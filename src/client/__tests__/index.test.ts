@@ -1,3 +1,6 @@
+/**
+ * @jest-environment jsdom
+ */
 import { createRetmoteService } from '..'
 
 global.Request = jest.fn()

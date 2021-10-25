@@ -13,8 +13,12 @@ test('bindKoa', async () => {
   })
   expect(spyUse).toBeCalled()
   expect(middlewares.length).toBe(1)
+
+  const spyNext = jest.fn()
   await middlewares[0]({
     path: '/test/User/getInfoById',
-    request: { body: { _ts_rpc_args_: ['111'] } }
-  }, () => {})
+    request: { body: { _ts_rpc_args_: ['111'] } },
+    set: () => {}
+  }, spyNext)
+  expect(spyNext).toBeCalled()
 })

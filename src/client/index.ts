@@ -11,7 +11,7 @@ export function createRetmoteService (cfg: ServiceCfg): ServiceCollection {
   }
 
   function createReq (sName: string, sMethod: string, args: any[]): Request {
-    const url = new URL(`//${cfg.baseUrl.replace('//', '')}/${sName}/${sMethod}`, location.href)
+    const url = new URL(`//${cfg.baseUrl.replace('//', '')}/${sName}/${sMethod}`, window.location.href)
 
     return new Request(url.href, {
       method: 'POST',

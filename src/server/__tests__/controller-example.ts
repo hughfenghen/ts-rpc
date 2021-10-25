@@ -20,7 +20,6 @@ export class User {
    */
   @RPCMethod()
   getInfoById (id: string): UserInfo {
-    console.log('----- getInfoById, id:', id)
     return {} as any
   }
 

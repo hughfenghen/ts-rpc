@@ -9,13 +9,11 @@
     "client": "yarn ts-rpc client -c ts-rpc.json && parcel client/index.html"
   },
   "dependencies": {
-    "koa": "^2.13.3",
-    "koa-router": "^10.1.1",
-    "ts-rpc": "file:../"
+    "@hughfenghen/ts-rpc": "^0.0.1",
+    "koa": "^2.13.3"
   },
   "devDependencies": {
     "@types/koa-bodyparser": "^4.3.3",
-    "@types/koa-router": "^7.4.4",
     "koa-bodyparser": "^4.3.0",
     "nodemon": "^2.0.13",
     "parcel": "^2.0.0",

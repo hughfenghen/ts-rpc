@@ -233,6 +233,18 @@
   dependencies:
     "@cspotcode/source-map-consumer" "0.8.0"
 
+"@hughfenghen/ts-rpc@^0.0.1":
+  version "0.0.1"
+  resolved "https://registry.npmjs.org/@hughfenghen/ts-rpc/-/ts-rpc-0.0.1.tgz#ad4d286dfee943b5518b88b8119ce4ecf7c374c2"
+  integrity sha512-yn7u6yO2nR+U1pP7nn1ep9LCf1oEOg7SK9i+dsY8iEqQ2M1mi3xh7QbGCzev/34LnQx5d+AYZxvqObMPKdvgkA==
+  dependencies:
+    commander "^8.2.0"
+    glob "^7.2.0"
+    got "^11.8.2"
+    lodash "^4.17.21"
+    reflect-metadata "^0.1.13"
+    ts-morph "^12.0.0"
+
 "@iarna/toml@^2.2.0":
   version "2.2.5"
   resolved "https://registry.npm.taobao.org/@iarna/toml/download/@iarna/toml-2.2.5.tgz#b32366c89b43c6f8cefbdefac778b9c828e3ba8c"
@@ -1090,13 +1102,6 @@
   version "3.2.5"
   resolved "https://registry.nlark.com/@types/koa-compose/download/@types/koa-compose-3.2.5.tgz#85eb2e80ac50be95f37ccf8c407c09bbe3468e9d"
   integrity sha1-hesugKxQvpXzfM+MQHwJu+NGjp0=
-  dependencies:
-    "@types/koa" "*"
-
-"@types/koa-router@^7.4.4":
-  version "7.4.4"
-  resolved "https://registry.nlark.com/@types/koa-router/download/@types/koa-router-7.4.4.tgz?cache=0&sync_timestamp=1629708384829&other_urls=https%3A%2F%2Fregistry.nlark.com%2F%40types%2Fkoa-router%2Fdownload%2F%40types%2Fkoa-router-7.4.4.tgz#db72bde3616365d74f00178d5f243c4fce7da572"
-  integrity sha1-23K942FjZddPABeNXyQ8T859pXI=
   dependencies:
     "@types/koa" "*"
 
@@ -2147,7 +2152,7 @@ debug@^3.2.6:
   dependencies:
     ms "^2.1.1"
 
-debug@^4.1.0, debug@^4.1.1, debug@^4.3.2:
+debug@^4.1.0, debug@^4.3.2:
   version "4.3.2"
   resolved "https://registry.nlark.com/debug/download/debug-4.3.2.tgz#f0a49c18ac8779e31d4a0c6029dfb76873c7428b"
   integrity sha1-8KScGKyHeeMdSgxgKd+3aHPHQos=
@@ -2987,7 +2992,7 @@ http-errors@1.7.3:
     statuses ">= 1.5.0 < 2"
     toidentifier "1.0.0"
 
-http-errors@^1.6.3, http-errors@^1.7.3, http-errors@~1.8.0:
+http-errors@^1.6.3, http-errors@~1.8.0:
   version "1.8.0"
   resolved "https://registry.npm.taobao.org/http-errors/download/http-errors-1.8.0.tgz#75d1bbe497e1044f51e4ee9e704a62f28d336507"
   integrity sha1-ddG75JfhBE9R5O6ecEpi8o0zZQc=
@@ -3547,17 +3552,6 @@ koa-convert@^2.0.0:
     co "^4.6.0"
     koa-compose "^4.1.0"
 
-koa-router@^10.1.1:
-  version "10.1.1"
-  resolved "https://registry.nlark.com/koa-router/download/koa-router-10.1.1.tgz#20809f82648518b84726cd445037813cd99f17ff"
-  integrity sha1-IICfgmSFGLhHJs1EUDeBPNmfF/8=
-  dependencies:
-    debug "^4.1.1"
-    http-errors "^1.7.3"
-    koa-compose "^4.1.0"
-    methods "^1.1.2"
-    path-to-regexp "^6.1.0"
-
 koa@^2.13.3:
   version "2.13.3"
   resolved "https://registry.npmmirror.com/koa/download/koa-2.13.3.tgz?cache=0&sync_timestamp=1632468411112&other_urls=https%3A%2F%2Fregistry.npmmirror.com%2Fkoa%2Fdownload%2Fkoa-2.13.3.tgz#a62641ba753ec54bee2c6da1a4f294c5fac35407"
@@ -3731,11 +3725,6 @@ merge2@^1.3.0:
   version "1.4.1"
   resolved "https://registry.npm.taobao.org/merge2/download/merge2-1.4.1.tgz#4368892f885e907455a6fd7dc55c0c9d404990ae"
   integrity sha1-Q2iJL4hekHRVpv19xVwMnUBJkK4=
-
-methods@^1.1.2:
-  version "1.1.2"
-  resolved "https://registry.npm.taobao.org/methods/download/methods-1.1.2.tgz#5529a4d67654134edcc5266656835b0f851afcee"
-  integrity sha1-VSmk1nZUE07cxSZmVoNbD4Ua/O4=
 
 micromatch@^4.0.2, micromatch@^4.0.4:
   version "4.0.4"
@@ -4172,11 +4161,6 @@ path-to-regexp@2.2.1:
   version "2.2.1"
   resolved "https://registry.npm.taobao.org/path-to-regexp/download/path-to-regexp-2.2.1.tgz?cache=0&sync_timestamp=1601400247487&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fpath-to-regexp%2Fdownload%2Fpath-to-regexp-2.2.1.tgz#90b617025a16381a879bc82a38d4e8bdeb2bcf45"
   integrity sha1-kLYXAloWOBqHm8gqONTovesrz0U=
-
-path-to-regexp@^6.1.0:
-  version "6.2.0"
-  resolved "https://registry.npm.taobao.org/path-to-regexp/download/path-to-regexp-6.2.0.tgz?cache=0&sync_timestamp=1601400247487&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fpath-to-regexp%2Fdownload%2Fpath-to-regexp-6.2.0.tgz#f7b3803336104c346889adece614669230645f38"
-  integrity sha1-97OAMzYQTDRoia3s5hRmkjBkXzg=
 
 path-type@^4.0.0:
   version "4.0.0"
@@ -5345,16 +5329,6 @@ ts-node@^10.3.0:
     diff "^4.0.1"
     make-error "^1.1.1"
     yn "3.1.1"
-
-"ts-rpc@file:..":
-  version "0.0.1"
-  dependencies:
-    commander "^8.2.0"
-    glob "^7.2.0"
-    got "^11.8.2"
-    lodash "^4.17.21"
-    reflect-metadata "^0.1.13"
-    ts-morph "^12.0.0"
 
 tsscmp@1.0.6:
   version "1.0.6"

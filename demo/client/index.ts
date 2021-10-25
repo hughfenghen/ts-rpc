@@ -1,4 +1,4 @@
-import { createRetmoteService } from 'ts-rpc/client'
+import { createRetmoteService } from '@hughfenghen/ts-rpc/client'
 import serverCfg from '../ts-rpc.json'
 
 const rs = createRetmoteService(serverCfg.client)

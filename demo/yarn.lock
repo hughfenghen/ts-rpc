@@ -233,18 +233,6 @@
   dependencies:
     "@cspotcode/source-map-consumer" "0.8.0"
 
-"@hughfenghen/ts-rpc@^0.0.2":
-  version "0.0.2"
-  resolved "https://registry.npmjs.org/@hughfenghen/ts-rpc/-/ts-rpc-0.0.2.tgz#9478ed228d05b47195949625abaa0815cffd0289"
-  integrity sha512-/ux36WLgJZJ1AUSjBHiVzX1IV0w8ULPdf4IDC0386sfm074NZE1hJOY4ipjLTIuhJz5991gFDsUnVDALWMMz6A==
-  dependencies:
-    commander "^8.2.0"
-    glob "^7.2.0"
-    got "^11.8.2"
-    lodash "^4.17.21"
-    reflect-metadata "^0.1.13"
-    ts-morph "^12.0.0"
-
 "@iarna/toml@^2.2.0":
   version "2.2.5"
   resolved "https://registry.npm.taobao.org/@iarna/toml/download/@iarna/toml-2.2.5.tgz#b32366c89b43c6f8cefbdefac778b9c828e3ba8c"
@@ -5303,6 +5291,18 @@ tr46@^1.0.1:
   integrity sha1-qLE/1r/SSJUZZ0zN5VujaTtwbQk=
   dependencies:
     punycode "^2.1.0"
+
+ts-brpc@^0.0.2:
+  version "0.0.2"
+  resolved "https://registry.npmjs.org/ts-brpc/-/ts-brpc-0.0.2.tgz#b6f637f8945488bd910dd324187785a162f102af"
+  integrity sha512-EyQSDs1UGxn/KH125uLLCanuw8BF94obj5QoT9mawbvInR5OszPwwK/CEi281dj0Ge+DlJKoWh3uzPs16VShCw==
+  dependencies:
+    commander "^8.2.0"
+    glob "^7.2.0"
+    got "^11.8.2"
+    lodash "^4.17.21"
+    reflect-metadata "^0.1.13"
+    ts-morph "^12.0.0"
 
 ts-morph@^12.0.0:
   version "12.0.0"

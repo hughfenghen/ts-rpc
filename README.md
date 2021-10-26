@@ -25,7 +25,7 @@
 // 运行 server 服务之前执行`ts-rpc`命令
 // scripts: yarn ts-rpc server -c ts-rpc.json && yarn dev
 
-import { bindKoa, RPCService, RPCMethod } from '@hughfenghen/ts-rpc/server'
+import { bindKoa, RPCService, RPCMethod } from 'ts-brpc/server'
 
 bindKoa(User) // 或者 bindExpress
 
@@ -51,7 +51,7 @@ class User {
 // 运行 client 服务之前执行`ts-rpc`命令
 // scripts: yarn ts-rpc client -c ts-rpc.json && yarn dev
 
-import { createRetmoteService } from '@hughfenghen/ts-rpc/client'
+import { createRetmoteService } from 'ts-brpc/client'
 
 const rs = createRetmoteService({
   baseUrl: "127.0.0.1:3000",

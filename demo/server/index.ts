@@ -1,7 +1,7 @@
 import Koa from 'koa'
 import path from 'path'
 import bodyParser from 'koa-bodyparser'
-import { bindKoa } from '@hughfenghen/ts-rpc/server'
+import { bindKoa } from 'ts-brpc/server'
 
 const app = new Koa()
 app.use(bodyParser())

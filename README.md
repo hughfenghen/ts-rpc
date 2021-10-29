@@ -1,24 +1,9 @@
-# TS-RPC
+# TS-BRPC
+
+`TS-BRPC`尝试将 ts+node 场景下 web 服务的 restful 替换为 RPC 风格，专注逻辑隐藏 http 请求细节。  
+`TS-BRPC`可以扫描 ts 代码中的类型信息，免去 API 文档维护成本，代码即 API 文档；并且可在编码时提供类型校验。  
 
 ## 使用方法
-
-### ts-rpc.json
-```json
-{
-  // 客户端配置
-  "client": {
-    // 远程服务地址前缀
-    "baseUrl": "127.0.0.1:3000"
-  },
-  // 服务端配置
-  "server": {
-    // RPCService 所在文件
-    "scanDir": ["server/*.ts"],
-    // 扫描信息输入地址
-    "metaOutDir": "./"
-  }
-}
-```
 
 ### 服务端
 ```ts
@@ -63,6 +48,24 @@ const rs = createRetmoteService({
 
 const userInfo = await rs.User.getInfoById('<user id>')
 console.log(userInfo) // { name: '22', age: 18, avatar: '<imgage url>' }
+```
+
+### ts-rpc.json
+```json
+{
+  // 客户端配置
+  "client": {
+    // 远程服务地址前缀
+    "baseUrl": "127.0.0.1:3000"
+  },
+  // 服务端配置
+  "server": {
+    // RPCService 所在文件
+    "scanDir": ["server/*.ts"],
+    // 扫描信息输入地址
+    "metaOutDir": "./"
+  }
+}
 ```
 
 ## 运行 demo

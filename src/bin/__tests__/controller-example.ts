@@ -10,6 +10,8 @@ interface Other {
   o: string
 }
 
+function OtherDecorator (): any {}
+
 /**
  * service doc
  */
@@ -23,11 +25,13 @@ export class User {
     return {} as any
   }
 
+  @(OtherDecorator())
   @RPCMethod()
   async getUnreadMsg (id: string): Promise<string[]> {
     return []
   }
 
+  @(OtherDecorator())
   other (): Other {
     return {} as any
   }

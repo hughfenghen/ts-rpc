@@ -50,6 +50,8 @@ export function scan (filePaths: string[]): IScanResult {
     inter.addJsDocs(c.getJsDocs().map(doc => doc.getStructure()))
     inter.addMethods(
       methods.map(m => {
+        // 移除原有decorator, 避免 bug：https://github.com/dsherret/ts-morph/issues/1214
+        m.getDecorators().forEach(d => d.remove())
         const ms = m.getSignature().getDeclaration() as MethodSignature
         let rtText = ms.getReturnType().getText()
         // 远程调用，返回值都是 Promise
@@ -96,9 +98,15 @@ export function scan (filePaths: string[]): IScanResult {
 function findRPCMethods (service: ClassDeclaration, rpcMethodDef: FunctionDeclaration): MethodDeclaration[] {
   return service.getMethods()
     .filter(m => m.getDecorators().some(
-      d => d.getNameNode()
-        .getDefinitionNodes()
-        .some(n => n === rpcMethodDef)
+      d => {
+        try {
+          return d.getNameNode()
+            .getDefinitionNodes()
+            .some(n => n === rpcMethodDef)
+        } catch (e) {
+          return false
+        }
+      }
     ))
 }
 

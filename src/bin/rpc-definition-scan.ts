@@ -1,5 +1,5 @@
 import glob from 'glob'
-import { Project, Node, ClassDeclaration, FunctionDeclaration, MethodDeclaration, InterfaceDeclaration, SyntaxKind, TypeReferenceNode, TypeAliasDeclaration, MethodSignature } from 'ts-morph'
+import { Project, Node, ClassDeclaration, FunctionDeclaration, MethodDeclaration, InterfaceDeclaration, SyntaxKind, TypeReferenceNode, TypeAliasDeclaration, MethodSignature, ImportTypeNode, ImportSpecifier } from 'ts-morph'
 import path from 'path'
 import { existsSync } from 'fs'
 import { IScanResult, TRPCMetaData } from '../interface'
@@ -10,6 +10,7 @@ export function scan (filePaths: string[]): IScanResult {
   files.forEach(file => {
     return prj.addSourceFileAtPath(file)
   })
+
   // 单测阶段
   const indexTs = path.resolve(__dirname, '../server/index.ts')
   // 编译后
@@ -45,34 +46,41 @@ export function scan (filePaths: string[]): IScanResult {
       path: c.getSourceFile().getFilePath(),
       methods: methods.map(m => ({ name: m.getName() }))
     })
+
     // 将 class 转换为 interface，模拟 rpc 的 protocol 声明
     const inter = genSf.addInterface({ name: className })
     inter.addJsDocs(c.getJsDocs().map(doc => doc.getStructure()))
-    inter.addMethods(
-      methods.map(m => {
-        // 移除原有decorator, 避免 bug：https://github.com/dsherret/ts-morph/issues/1214
-        m.getDecorators().forEach(d => d.remove())
-        const ms = m.getSignature().getDeclaration() as MethodSignature
-        let rtText = ms.getReturnType().getText()
-        // 远程调用，返回值都是 Promise
-        if (!/^Promise<.+>$/.test(rtText)) {
-          rtText = `Promise<${rtText}>`
-        }
-        ms.setReturnType(rtText)
-        return ms.getStructure()
-      })
-    )
 
-    methods.map(m => collectMethodTypeDeps(m))
+    methods.forEach((m) => {
+      // 移除原有decorator, 避免 bug：https://github.com/dsherret/ts-morph/issues/1214
+      m.getDecorators().forEach(d => d.remove())
+
+      const ms = m.getSignature().getDeclaration() as MethodSignature
+      const addedM = inter.addMethod(ms.getStructure())
+      let rtText = addedM.getReturnTypeNode()?.getText()
+      if (rtText == null) throw new Error(`Could not find method (${m.getName()}) return type`)
+      // 远程调用，返回值都是 Promise
+      if (!/^Promise<.+>$/.test(rtText)) {
+        rtText = `Promise<${rtText}>`
+      }
+      addedM.setReturnType(rtText)
+    })
+
+    methods.map(m => collectMethodTypeDeps(m, prj))
       .flat()
       .forEach(it => {
+        // it.setIsExported(false)
         // 添加 method 依赖的类型，否则无法编译通过
+        let added = null
         if (it instanceof InterfaceDeclaration) {
-          genSf.insertInterface(1, it.getStructure())
+          added = genSf.insertInterface(1, it.getStructure())
         } else if (it instanceof TypeAliasDeclaration) {
-          genSf.insertTypeAlias(1, it.getStructure())
+          added = genSf.insertTypeAlias(1, it.getStructure())
         } else {
           // TODO: error
+        }
+        if (added?.isExported() === true) {
+          added?.setIsExported(false)
         }
       })
 
@@ -86,11 +94,8 @@ export function scan (filePaths: string[]): IScanResult {
     }
   })
 
-  const protocolFileContent = genSf.getEmitOutput({ emitOnlyDtsFiles: true })
-    .getOutputFiles().map(file => file.getText())
-    .join('\n')
   return {
-    dts: protocolFileContent,
+    dts: genSf.getFullText(),
     meta: rpcMetaData
   }
 }
@@ -111,13 +116,16 @@ function findRPCMethods (service: ClassDeclaration, rpcMethodDef: FunctionDeclar
 }
 
 type ITDeclaration = InterfaceDeclaration | TypeAliasDeclaration
-export function collectMethodTypeDeps (method: MethodDeclaration): ITDeclaration[] {
+export function collectMethodTypeDeps (
+  method: MethodDeclaration,
+  prj: Project
+): ITDeclaration[] {
   return [...method.getParameters(), method.getReturnTypeNodeOrThrow()]
-    .map(n => collectTypeDeps(n))
+    .map(n => collectTypeDeps(n, prj))
     .flat()
 }
 
-export function collectTypeDeps (t: Node): ITDeclaration[] {
+export function collectTypeDeps (t: Node, prj: Project): ITDeclaration[] {
   const typeRefDeclarationSet = new Set<ITDeclaration>()
 
   if (t instanceof TypeReferenceNode) {
@@ -134,6 +142,7 @@ export function collectTypeDeps (t: Node): ITDeclaration[] {
   function queryInTree (n: Node): void {
     n.forEachChild(c => {
       if (c instanceof TypeReferenceNode) findITDeclaration(c)
+      if (c instanceof ImportTypeNode) findIT4Import(c)
 
       queryInTree(c)
     })
@@ -151,7 +160,33 @@ export function collectTypeDeps (t: Node): ITDeclaration[] {
       .map(s => s?.getDeclarations())
       .flat()
       .forEach(d => {
-        if (d != null && isITDeclaration(d)) typeRefDeclarationSet.add(d)
+        if (d == null) return
+        if (isITDeclaration(d)) typeRefDeclarationSet.add(d)
+        if (d instanceof ImportSpecifier) findIT4ImportSpecifier(d)
       })
+  }
+
+  function findIT4Import (n: ImportTypeNode): void {
+    const fPath = n.getArgument().getText().slice(1, -1)
+    const sf = prj.getSourceFile(sf => sf.getFilePath().includes(fPath))
+    if (sf == null) throw new Error(`Could not find file ${fPath}`)
+    const impTypeName = n.getQualifier()?.getText() ?? ''
+    const declaration = sf.getInterface(impTypeName) ?? sf.getTypeAlias(impTypeName)
+    if (declaration == null) throw Error(`Could not find interface or type (${impTypeName}) in ${fPath}`)
+
+    typeRefDeclarationSet.add(declaration)
+    queryInTree(declaration)
+  }
+
+  function findIT4ImportSpecifier (is: ImportSpecifier): void {
+    const impSf = is.getImportDeclaration().getModuleSpecifierSourceFile()
+    if (impSf == null) throw new Error(`Could not find import var ${is.getText()}`)
+
+    const impName = is.getText()
+    const declaration = impSf.getInterface(impName) ?? impSf.getTypeAlias(impName)
+    if (declaration == null) throw Error(`Could not find interface or type (${impName}) in ${impSf.getFilePath()}`)
+
+    typeRefDeclarationSet.add(declaration)
+    queryInTree(declaration)
   }
 }

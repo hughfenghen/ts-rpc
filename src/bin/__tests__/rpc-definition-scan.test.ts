@@ -3,7 +3,7 @@ import { MethodDeclaration, Project } from 'ts-morph'
 import { collectMethodTypeDeps, collectTypeDeps, scan } from '../rpc-definition-scan'
 
 test('scan', () => {
-  const { dts, meta } = scan([path.resolve(__dirname, 'controller-example.ts')])
+  const { dts, meta } = scan([path.resolve(__dirname, '*.ts')])
 
   expect(dts).toMatchSnapshot()
   expect(meta).toEqual([{
@@ -33,7 +33,8 @@ test('collectMethodTypeDeps', () => {
   `)
 
   const deps = collectMethodTypeDeps(
-    sf.getClass('Test')?.getMethod('foo') as MethodDeclaration
+    sf.getClass('Test')?.getMethod('foo') as MethodDeclaration,
+    prj
   )
   expect(deps.map(d => d.getName())).toEqual(['A', 'B', 'Z'])
 })
@@ -58,9 +59,9 @@ test('collectTypeDeps', () => {
     }
     type Y = A | B | null | undefined
   `)
-  const iDeps = collectTypeDeps(sf.getInterfaceOrThrow('X'))
+  const iDeps = collectTypeDeps(sf.getInterfaceOrThrow('X'), prj)
   expect(iDeps.map(i => i.getName())).toEqual(['X', 'A', 'B'])
 
-  const tDeps = collectTypeDeps(sf.getTypeAliasOrThrow('Y'))
+  const tDeps = collectTypeDeps(sf.getTypeAliasOrThrow('Y'), prj)
   expect(tDeps.map(t => t.getName())).toEqual(['Y', 'A', 'B'])
 })

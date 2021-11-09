@@ -1,10 +1,5 @@
 import { RPCMethod, RPCService } from '../../server'
-
-interface UserInfo {
-  name: string
-  age: number
-  avatar: string
-}
+import { UserInfo } from './user-info'
 
 interface Other {
   o: string

@@ -6,7 +6,29 @@ exports[`scan 1`] = `
     Foo: Foo;
 }
 
-interface UserInfo {
+interface IUserInfo {
+    name: string;
+    age: number;
+    avatar: string;
+}
+
+class CUserInfo {
+    @TestDec()
+    name: string;
+    age: number;
+    avatar: string;
+}
+
+type TUserInfo = CUserInfo & IUserInfo;
+
+interface IUserInfo {
+    name: string;
+    age: number;
+    avatar: string;
+}
+
+class CUserInfo {
+    @TestDec()
     name: string;
     age: number;
     avatar: string;
@@ -19,7 +41,9 @@ interface User {
     /**
      * method doc
      */
-    getInfoById(id: string): Promise<UserInfo>;
+    getInfoById1(id: string): Promise<CUserInfo>;
+    getInfoById2(id: string): Promise<IUserInfo>;
+    getInfoById3(id: string): Promise<TUserInfo>;
     getUnreadMsg(id: string): Promise<string[]>;
 }
 

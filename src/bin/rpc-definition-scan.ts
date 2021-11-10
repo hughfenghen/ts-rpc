@@ -69,19 +69,18 @@ export function scan (filePaths: string[]): IScanResult {
     methods.map(m => collectMethodTypeDeps(m, prj))
       .flat()
       .forEach(it => {
-        // it.setIsExported(false)
         // 添加 method 依赖的类型，否则无法编译通过
         let added = null
         if (it instanceof InterfaceDeclaration) {
           added = genSf.insertInterface(1, it.getStructure())
         } else if (it instanceof TypeAliasDeclaration) {
           added = genSf.insertTypeAlias(1, it.getStructure())
+        } else if (it instanceof ClassDeclaration) {
+          added = genSf.insertClass(1, it.getStructure())
         } else {
           // TODO: error
         }
-        if (added?.isExported() === true) {
-          added?.setIsExported(false)
-        }
+        added?.setIsExported(false)
       })
 
     expInter.addProperty({ name: className, type: className })
@@ -115,7 +114,7 @@ function findRPCMethods (service: ClassDeclaration, rpcMethodDef: FunctionDeclar
     ))
 }
 
-type ITDeclaration = InterfaceDeclaration | TypeAliasDeclaration
+type ITDeclaration = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration
 export function collectMethodTypeDeps (
   method: MethodDeclaration,
   prj: Project
@@ -150,7 +149,8 @@ export function collectTypeDeps (t: Node, prj: Project): ITDeclaration[] {
 
   function isITDeclaration (n: Node): n is ITDeclaration {
     return n instanceof InterfaceDeclaration ||
-      n instanceof TypeAliasDeclaration
+      n instanceof TypeAliasDeclaration ||
+      n instanceof ClassDeclaration
   }
 
   function findITDeclaration (n: Node): void {
@@ -170,9 +170,9 @@ export function collectTypeDeps (t: Node, prj: Project): ITDeclaration[] {
     const fPath = n.getArgument().getText().slice(1, -1)
     const sf = prj.getSourceFile(sf => sf.getFilePath().includes(fPath))
     if (sf == null) throw new Error(`Could not find file ${fPath}`)
-    const impTypeName = n.getQualifier()?.getText() ?? ''
-    const declaration = sf.getInterface(impTypeName) ?? sf.getTypeAlias(impTypeName)
-    if (declaration == null) throw Error(`Could not find interface or type (${impTypeName}) in ${fPath}`)
+    const impName = n.getQualifier()?.getText() ?? ''
+    const declaration = sf.getInterface(impName) ?? sf.getTypeAlias(impName) ?? sf.getClass(impName)
+    if (declaration == null) throw Error(`Could not find interface or type (${impName}) in ${fPath}`)
 
     typeRefDeclarationSet.add(declaration)
     queryInTree(declaration)
@@ -183,7 +183,7 @@ export function collectTypeDeps (t: Node, prj: Project): ITDeclaration[] {
     if (impSf == null) throw new Error(`Could not find import var ${is.getText()}`)
 
     const impName = is.getText()
-    const declaration = impSf.getInterface(impName) ?? impSf.getTypeAlias(impName)
+    const declaration = impSf.getInterface(impName) ?? impSf.getTypeAlias(impName) ?? impSf.getClass(impName)
     if (declaration == null) throw Error(`Could not find interface or type (${impName}) in ${impSf.getFilePath()}`)
 
     typeRefDeclarationSet.add(declaration)

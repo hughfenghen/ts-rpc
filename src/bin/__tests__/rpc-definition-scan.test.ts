@@ -10,7 +10,9 @@ test('scan', () => {
     name: 'User',
     path: expect.stringContaining('/src/bin/__tests__/controller-example.ts'),
     methods: [
-      { name: 'getInfoById' },
+      { name: 'getInfoById1' },
+      { name: 'getInfoById2' },
+      { name: 'getInfoById3' },
       { name: 'getUnreadMsg' }
     ]
   }, {

@@ -1,5 +1,5 @@
 import { RPCMethod, RPCService } from '../../server'
-import { UserInfo } from './user-info'
+import { CUserInfo, IUserInfo, TUserInfo } from './user-info'
 
 interface Other {
   o: string
@@ -16,7 +16,17 @@ export class User {
    * method doc
    */
   @RPCMethod()
-  getInfoById (id: string): UserInfo {
+  getInfoById1 (id: string): CUserInfo {
+    return {} as any
+  }
+
+  @RPCMethod()
+  getInfoById2 (id: string): IUserInfo {
+    return {} as any
+  }
+
+  @RPCMethod()
+  getInfoById3 (id: string): TUserInfo {
     return {} as any
   }
 

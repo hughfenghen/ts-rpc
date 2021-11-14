@@ -82,7 +82,7 @@ export function scan (filePaths: string[]): IScanResult {
           added.getProperties()
             .forEach(p => p.getDecorators().forEach(d => d.remove()))
         } else {
-          // TODO: error
+          console.warn('unknown deps type')
         }
         added?.setIsExported(false)
       })

@@ -6,19 +6,6 @@ exports[`scan 1`] = `
     Foo: Foo;
 }
 
-interface IUserInfo {
-    name: string;
-    age: number;
-    avatar: string;
-}
-
-class CUserInfo {
-    
-    name: string;
-    age: number;
-    avatar: string;
-}
-
 type TUserInfo = CUserInfo & IUserInfo;
 
 interface IUserInfo {

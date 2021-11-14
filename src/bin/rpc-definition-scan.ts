@@ -66,10 +66,18 @@ export function scan (filePaths: string[]): IScanResult {
       addedM.setReturnType(rtText)
     })
 
+    const addedIds: string[] = []
     methods.map(m => collectMethodTypeDeps(m, prj))
       .flat()
       .forEach(it => {
-        // 添加 method 依赖的类型，否则无法编译通过
+        // 避免重复
+        const nodeName = it.getNameNode()?.getText()
+        if (nodeName == null) throw new Error('dependency must be named')
+        const sid = it.getSourceFile().getFilePath() + '/' + nodeName
+        if (addedIds.includes(sid)) return
+        addedIds.push(sid)
+
+        // 添加 method 依赖的类型
         let added = null
         if (it instanceof InterfaceDeclaration) {
           added = genSf.insertInterface(1, it.getStructure())
@@ -130,18 +138,24 @@ export function collectMethodTypeDeps (
 }
 
 export function collectTypeDeps (t: Node, prj: Project): ITCDeclaration[] {
-  const typeRefDeclarationSet = new Set<ITCDeclaration>()
+  const depsMap = new Set<ITCDeclaration>()
+
+  function addDep (n: ITCDeclaration): void {
+    const nodeName = n.getNameNode()?.getText()
+    if (nodeName == null) throw new Error('dependency must be named')
+    depsMap.add(n)
+  }
 
   if (t instanceof TypeReferenceNode) {
     findITDeclaration(t)
   } else if (isITCDeclaration(t)) {
-    typeRefDeclarationSet.add(t)
+    addDep(t)
   }
 
   // 深度优先遍历树，找到引用Type类型，然后找到 Declaration
   queryInTree(t)
 
-  return Array.from(typeRefDeclarationSet)
+  return Array.from(depsMap.values())
 
   function queryInTree (n: Node): void {
     n.forEachChild(c => {
@@ -167,7 +181,7 @@ export function collectTypeDeps (t: Node, prj: Project): ITCDeclaration[] {
       .flat()
       .forEach(d => {
         if (d == null) return
-        if (isITCDeclaration(d)) typeRefDeclarationSet.add(d)
+        if (isITCDeclaration(d)) addDep(d)
         else if (d instanceof ImportSpecifier) findIT4ImportSpecifier(d)
       })
   }
@@ -180,7 +194,7 @@ export function collectTypeDeps (t: Node, prj: Project): ITCDeclaration[] {
     const declaration = sf.getInterface(impName) ?? sf.getTypeAlias(impName) ?? sf.getClass(impName)
     if (declaration == null) throw Error(`Could not find interface, class or type (${impName}) in ${fPath}`)
 
-    typeRefDeclarationSet.add(declaration)
+    addDep(declaration)
     queryInTree(declaration)
   }
 
@@ -193,7 +207,7 @@ export function collectTypeDeps (t: Node, prj: Project): ITCDeclaration[] {
     const declaration = impSf.getInterface(impName) ?? impSf.getTypeAlias(impName) ?? impSf.getClass(impName)
     if (declaration == null) throw Error(`Could not find interface, class or type (${impName}) in ${impSf.getFilePath()}`)
 
-    typeRefDeclarationSet.add(declaration)
+    addDep(declaration)
     queryInTree(declaration)
   }
 }

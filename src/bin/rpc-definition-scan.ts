@@ -118,22 +118,23 @@ function findRPCMethods (service: ClassDeclaration, rpcMethodDef: FunctionDeclar
     ))
 }
 
-type ITDeclaration = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration
+// 收集依赖树只考虑这三种场景
+type ITCDeclaration = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration
 export function collectMethodTypeDeps (
   method: MethodDeclaration,
   prj: Project
-): ITDeclaration[] {
+): ITCDeclaration[] {
   return [...method.getParameters(), method.getReturnTypeNodeOrThrow()]
     .map(n => collectTypeDeps(n, prj))
     .flat()
 }
 
-export function collectTypeDeps (t: Node, prj: Project): ITDeclaration[] {
-  const typeRefDeclarationSet = new Set<ITDeclaration>()
+export function collectTypeDeps (t: Node, prj: Project): ITCDeclaration[] {
+  const typeRefDeclarationSet = new Set<ITCDeclaration>()
 
   if (t instanceof TypeReferenceNode) {
     findITDeclaration(t)
-  } else if (isITDeclaration(t)) {
+  } else if (isITCDeclaration(t)) {
     typeRefDeclarationSet.add(t)
   }
 
@@ -151,7 +152,8 @@ export function collectTypeDeps (t: Node, prj: Project): ITDeclaration[] {
     })
   }
 
-  function isITDeclaration (n: Node): n is ITDeclaration {
+  // 检查是否是 interface、type、class，收集依赖树只考虑这三种场景
+  function isITCDeclaration (n: Node): n is ITCDeclaration {
     return n instanceof InterfaceDeclaration ||
       n instanceof TypeAliasDeclaration ||
       n instanceof ClassDeclaration
@@ -165,8 +167,8 @@ export function collectTypeDeps (t: Node, prj: Project): ITDeclaration[] {
       .flat()
       .forEach(d => {
         if (d == null) return
-        if (isITDeclaration(d)) typeRefDeclarationSet.add(d)
-        if (d instanceof ImportSpecifier) findIT4ImportSpecifier(d)
+        if (isITCDeclaration(d)) typeRefDeclarationSet.add(d)
+        else if (d instanceof ImportSpecifier) findIT4ImportSpecifier(d)
       })
   }
 
@@ -176,19 +178,20 @@ export function collectTypeDeps (t: Node, prj: Project): ITDeclaration[] {
     if (sf == null) throw new Error(`Could not find file ${fPath}`)
     const impName = n.getQualifier()?.getText() ?? ''
     const declaration = sf.getInterface(impName) ?? sf.getTypeAlias(impName) ?? sf.getClass(impName)
-    if (declaration == null) throw Error(`Could not find interface or type (${impName}) in ${fPath}`)
+    if (declaration == null) throw Error(`Could not find interface, class or type (${impName}) in ${fPath}`)
 
     typeRefDeclarationSet.add(declaration)
     queryInTree(declaration)
   }
 
+  // 解析import语法，从其他文件中查找依赖项
   function findIT4ImportSpecifier (is: ImportSpecifier): void {
     const impSf = is.getImportDeclaration().getModuleSpecifierSourceFile()
     if (impSf == null) throw new Error(`Could not find import var ${is.getText()}`)
 
     const impName = is.getText()
     const declaration = impSf.getInterface(impName) ?? impSf.getTypeAlias(impName) ?? impSf.getClass(impName)
-    if (declaration == null) throw Error(`Could not find interface or type (${impName}) in ${impSf.getFilePath()}`)
+    if (declaration == null) throw Error(`Could not find interface, class or type (${impName}) in ${impSf.getFilePath()}`)
 
     typeRefDeclarationSet.add(declaration)
     queryInTree(declaration)

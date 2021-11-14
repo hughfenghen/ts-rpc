@@ -8,14 +8,14 @@ export class CUserInfo {
   @TestDec()
   name: string
 
-  age: number
+  age: Date
 
   avatar: string
 }
 
 export interface IUserInfo {
   name: string
-  age: number
+  age: Date
   avatar: string
 }
 

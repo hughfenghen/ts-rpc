@@ -10,14 +10,14 @@ type TUserInfo = CUserInfo & IUserInfo;
 
 interface IUserInfo {
     name: string;
-    age: number;
+    age: Date;
     avatar: string;
 }
 
 class CUserInfo {
     
     name: string;
-    age: number;
+    age: Date;
     avatar: string;
 }
 

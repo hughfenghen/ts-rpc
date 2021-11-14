@@ -70,11 +70,11 @@ export function scan (filePaths: string[]): IScanResult {
     methods.map(m => collectMethodTypeDeps(m, prj))
       .flat()
       .forEach(it => {
-        // 避免重复
         const nodeName = it.getNameNode()?.getText()
         if (nodeName == null) throw new Error('dependency must be named')
         const sid = it.getSourceFile().getFilePath() + '/' + nodeName
-        if (addedIds.includes(sid)) return
+        // 避免重复, ECMA标准依赖无须添加
+        if (addedIds.includes(sid) || sid.includes('typescript/lib/')) return
         addedIds.push(sid)
 
         // 添加 method 依赖的类型

@@ -13,7 +13,7 @@ interface IUserInfo {
 }
 
 class CUserInfo {
-    @TestDec()
+    
     name: string;
     age: number;
     avatar: string;
@@ -28,7 +28,7 @@ interface IUserInfo {
 }
 
 class CUserInfo {
-    @TestDec()
+    
     name: string;
     age: number;
     avatar: string;

@@ -77,6 +77,10 @@ export function scan (filePaths: string[]): IScanResult {
           added = genSf.insertTypeAlias(1, it.getStructure())
         } else if (it instanceof ClassDeclaration) {
           added = genSf.insertClass(1, it.getStructure())
+          // 只保留 class 的属性方法, 移除属性、class 的decorator 信息
+          added.getDecorators().forEach(d => d.remove())
+          added.getProperties()
+            .forEach(p => p.getDecorators().forEach(d => d.remove()))
         } else {
           // TODO: error
         }

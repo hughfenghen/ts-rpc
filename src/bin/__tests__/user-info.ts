@@ -1,7 +1,9 @@
 // @ts-nocheck
 
 function TestDec (): any {}
+function ClassDec (): any {}
 
+@ClassDec
 export class CUserInfo {
   @TestDec()
   name: string

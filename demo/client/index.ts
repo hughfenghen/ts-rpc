@@ -1,7 +1,7 @@
 import { createRetmoteService } from 'ts-brpc/client'
-import serverCfg from '../ts-rpc.json'
+import rpcCfg from '../ts-rpc.json'
 
-const rs = createRetmoteService(serverCfg.client)
+const rs = createRetmoteService(rpcCfg.client)
 
 document.getElementById('send')?.addEventListener('click', () => {
   ; (async () => {

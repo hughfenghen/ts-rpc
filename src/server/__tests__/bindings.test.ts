@@ -1,6 +1,11 @@
 import path from 'path'
 import { bindKoa } from '../bindings'
 
+jest.mock('lodash-es', () => ({
+  __esModule: true,
+  camelCase: () => ''
+}))
+
 test('bindKoa', async () => {
   const middlewares: Function[] = []
   const spyUse = jest.fn((middleware) => {

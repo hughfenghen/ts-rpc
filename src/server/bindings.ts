@@ -1,17 +1,20 @@
 import path from 'path'
+import { camelCase } from 'lodash-es'
 import { IScanResult } from '../interface'
 
-interface IKoaArgs {
-  app: {
-    use: (
-      middleware: (ctx: any, next: (() => Promise<void>)) => Promise<void>
-    ) => void
-  }
+type TMiddleware = (ctx: any, next: (() => Promise<void>)) => Promise<void>
+
+interface IApp {
+  use: (middleware: TMiddleware) => void
+}
+
+interface IBindingArgs {
+  app: IApp
   rpcMetaPath: string
   prefixPath: string
 }
 
-export async function bindKoa ({ app, rpcMetaPath, prefixPath }: IKoaArgs): Promise<void> {
+export async function bindKoa ({ app, rpcMetaPath, prefixPath }: IBindingArgs): Promise<void> {
   const { dts, meta } = await import(rpcMetaPath) as IScanResult
   const rpcMetaDir = path.dirname(rpcMetaPath)
   const sNameExportMap = Object.fromEntries(
@@ -59,6 +62,55 @@ export async function bindKoa ({ app, rpcMetaPath, prefixPath }: IKoaArgs): Prom
     if (args == null) {
       throw Error('Cannot find `_ts_rpc_args_` in request body')
     }
+    ctx.body = JSON.stringify(await ins[mPath](...args))
+    await next()
+  })
+}
+
+interface IMidwayApp extends IApp {
+  getApplicationContext: () => { getAsync: (insName: string) => Promise<any> }
+}
+
+export async function bindMidway (
+  { app, prefixPath, rpcMetaPath }: IBindingArgs & { app: IMidwayApp }
+): Promise<void> {
+  const container = app.getApplicationContext()
+  const { dts, meta } = await import(rpcMetaPath) as IScanResult
+  const serviceNames = meta.map(({ name }) => name)
+
+  const pathInstanceMap = new Map<string, any>()
+
+  app.use(async (ctx, next) => {
+    if (path.resolve(prefixPath, '_rpc_definiton_') === ctx.path) {
+      ctx.body = dts
+      await next()
+      return
+    }
+
+    const [sPath, mPath] = ctx.path
+      .replace(prefixPath, '')
+      .replace(/^\/*/, '')
+      .split('/')
+    if (!serviceNames.includes(sPath)) {
+      await next()
+      return
+    }
+
+    ctx.set('Access-Control-Allow-Headers', 'Content-Type')
+    ctx.set('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS')
+
+    if (ctx.method === 'OPTIONS') {
+      ctx.status = 204
+      return
+    }
+
+    let ins = pathInstanceMap.get(ctx.path)
+    if (ins == null) {
+      ins = await container.getAsync(camelCase(sPath))
+      pathInstanceMap.set(ctx.path, ins)
+    }
+
+    const args = ctx.request?.body?._ts_rpc_args_ ?? []
     ctx.body = JSON.stringify(await ins[mPath](...args))
     await next()
   })

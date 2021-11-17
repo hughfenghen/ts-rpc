@@ -6,7 +6,7 @@ import { IScanResult, TRPCMetaData } from '../interface'
 
 export function scan (filePaths: string[]): IScanResult {
   const files = filePaths.map(f => glob.sync(f)).flat()
-  const prj = new Project({ compilerOptions: { declaration: true } })
+  const prj = new Project({ compilerOptions: { declaration: false, sourceMap: false, isolatedModules: true } })
   files.forEach(file => {
     return prj.addSourceFileAtPath(file)
   })

@@ -1,7 +1,7 @@
 import path from 'path'
 import { bindKoa, bindMidway } from '../bindings'
 
-jest.mock('lodash-es', () => ({
+jest.mock('lodash', () => ({
   __esModule: true,
   camelCase: () => ''
 }))

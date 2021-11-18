@@ -1,5 +1,5 @@
 import path from 'path'
-import { camelCase } from 'lodash-es'
+import { camelCase } from 'lodash'
 import { IScanResult } from '../interface'
 
 type TMiddleware = (ctx: any, next: (() => Promise<void>)) => Promise<void>

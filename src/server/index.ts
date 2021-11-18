@@ -1,6 +1,6 @@
 import 'reflect-metadata'
 
-export { bindKoa } from './bindings'
+export { bindKoa, bindMidway } from './bindings'
 
 const SERVICE_METADATA = 'path'
 const METHOD_METADATA = 'method'

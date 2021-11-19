@@ -1,1 +1,1 @@
-export type ServiceCollection = unknown
+export type ServiceCollection = any

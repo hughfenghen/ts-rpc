@@ -55,6 +55,7 @@ export async function bindKoa ({ app, rpcMetaPath, prefixPath }: IBindingArgs): 
 
     if (ins == null) {
       ins = new sNameExportMap[sPath]()
+      ins.ctx = ctx
       pathInstanceMap.set(ctx.path, ins)
     }
 

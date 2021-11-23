@@ -17,6 +17,13 @@ bindKoa(User) // 或者 bindExpress
 @RPCService()
 class User {
 
+  // bindKoa 自动注入 ctx
+  ctx
+
+  // midway 通过框架注解手动注入
+  // @Inject()
+  // resp: IRespHandle
+
   @RPCMethod()
   getInfoById(id: string): { name: string, age: number, avatar: string } {
     // 从上游获取数据
@@ -27,8 +34,6 @@ class User {
     }
   }
 }
-
-// TODO: ctx 信息怎么获取，错误处理 ？
 ```
 
 ### 客户端

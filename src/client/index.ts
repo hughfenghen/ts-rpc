@@ -12,13 +12,30 @@ interface ServiceCfg {
 }
 
 export function createRetmoteService (cfg: ServiceCfg): ServiceCollection {
-  async function defHttpAgent ({ serviceName, methodName, args }: AgentParams): Promise<unknown> {
+  const defHttpAgent = createDefAgent(cfg.baseUrl)
+  return new Proxy({}, {
+    get (t, serviceName: string) {
+      return new Proxy({}, {
+        get (t, methodName: string) {
+          return async (...args: unknown[]) => {
+            return await (cfg.agent ?? defHttpAgent)(
+              { serviceName, methodName, args }
+            )
+          }
+        }
+      })
+    }
+  })
+}
+
+function createDefAgent (baseUrl: string) {
+  return async function defHttpAgent ({ serviceName, methodName, args }: AgentParams): Promise<unknown> {
     const body = JSON.stringify({
       _ts_rpc_args_: args
     })
     if (typeof window !== 'undefined' && typeof window.fetch === 'function') {
       // browser env
-      const url = new URL(`//${cfg.baseUrl.replace(/^\/*|\/*$/g, '')}/${serviceName}/${methodName}`, window.location.href)
+      const url = new URL(`//${baseUrl.replace(/^\/*|\/*$/g, '')}/${serviceName}/${methodName}`, window.location.href)
       const res = await window.fetch(url.href, {
         method: 'POST',
         headers: {
@@ -31,7 +48,7 @@ export function createRetmoteService (cfg: ServiceCfg): ServiceCollection {
       // node env
       const http = await import('http')
       return await new Promise((resolve, reject) => {
-        const url = new URL(`http://${cfg.baseUrl.replace(/^\/*|\/*$/g, '')}/${serviceName}/${methodName}`)
+        const url = new URL(`http://${baseUrl.replace(/^\/*|\/*$/g, '')}/${serviceName}/${methodName}`)
         const options = {
           method: 'POST',
           headers: {
@@ -61,18 +78,4 @@ export function createRetmoteService (cfg: ServiceCfg): ServiceCollection {
       })
     }
   }
-
-  return new Proxy({}, {
-    get (t, serviceName: string) {
-      return new Proxy({}, {
-        get (t, methodName: string) {
-          return async (...args: unknown[]) => {
-            return await (cfg.agent ?? defHttpAgent)(
-              { serviceName, methodName, args }
-            )
-          }
-        }
-      })
-    }
-  })
 }

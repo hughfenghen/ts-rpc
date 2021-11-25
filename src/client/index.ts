@@ -1,4 +1,3 @@
-import { ServiceCollection } from './__service-collection__'
 
 interface AgentParams {
   serviceName: string
@@ -11,7 +10,7 @@ interface ServiceCfg {
   agent?: (params: AgentParams) => Promise<unknown>
 }
 
-export function createRetmoteService (cfg: ServiceCfg): ServiceCollection {
+export function createRetmoteService<T> (cfg: ServiceCfg): T {
   const defHttpAgent = createDefAgent(cfg.baseUrl)
   return new Proxy({}, {
     get (t, serviceName: string) {
@@ -25,7 +24,7 @@ export function createRetmoteService (cfg: ServiceCfg): ServiceCollection {
         }
       })
     }
-  })
+  }) as T
 }
 
 function createDefAgent (baseUrl: string) {

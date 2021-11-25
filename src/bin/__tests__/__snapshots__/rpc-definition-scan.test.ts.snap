@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`scan 1`] = `
-"export interface ServiceCollection {
+"interface App {
     User: User;
     Foo: Foo;
 }
@@ -20,6 +20,8 @@ class CUserInfo {
     age: Date;
     avatar: string;
 }
+
+export default App;
 
 /**
  * service doc

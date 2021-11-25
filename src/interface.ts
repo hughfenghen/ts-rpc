@@ -5,3 +5,5 @@ export interface IScanResult {
   dts: string
   meta: TRPCMetaData
 }
+
+export type TRPCMetaFile = IScanResult & { appId: string }

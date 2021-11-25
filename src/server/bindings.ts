@@ -1,6 +1,6 @@
 import path from 'path'
 import { camelCase } from 'lodash'
-import { IScanResult } from '../interface'
+import { TRPCMetaFile } from '../interface'
 
 type TMiddleware = (ctx: any, next: (() => Promise<void>)) => Promise<void>
 
@@ -15,7 +15,7 @@ interface IBindingArgs {
 }
 
 export async function bindKoa ({ app, rpcMetaPath, prefixPath }: IBindingArgs): Promise<void> {
-  const { dts, meta } = await import(rpcMetaPath) as IScanResult
+  const { appId, dts, meta } = await import(rpcMetaPath) as TRPCMetaFile
   const rpcMetaDir = path.dirname(rpcMetaPath)
   const sNameExportMap = Object.fromEntries(
     await Promise.all(
@@ -30,7 +30,10 @@ export async function bindKoa ({ app, rpcMetaPath, prefixPath }: IBindingArgs): 
   const pathInstanceMap = new Map<string, any>()
   app.use(async (ctx, next) => {
     if (path.resolve(prefixPath, '_rpc_definiton_') === ctx.path) {
-      ctx.body = dts
+      ctx.body = JSON.stringify({
+        appId,
+        dts
+      })
       await next()
       return
     }
@@ -76,14 +79,17 @@ export async function bindMidway (
   { app, prefixPath, rpcMetaPath }: IBindingArgs & { app: IMidwayApp }
 ): Promise<void> {
   const container = app.getApplicationContext()
-  const { dts, meta } = await import(rpcMetaPath) as IScanResult
+  const { appId, dts, meta } = await import(rpcMetaPath) as TRPCMetaFile
   const serviceNames = meta.map(({ name }) => name)
 
   const pathInstanceMap = new Map<string, any>()
 
   app.use(async (ctx, next) => {
     if (path.resolve(prefixPath, '_rpc_definiton_') === ctx.path) {
-      ctx.body = dts
+      ctx.body = JSON.stringify({
+        appId,
+        dts
+      })
       await next()
       return
     }
@@ -91,7 +97,8 @@ export async function bindMidway (
     const [sPath, mPath] = ctx.path
       .replace(prefixPath, '')
       .replace(/^\/*/, '')
-      .split('/')
+      .split('/') as [string, string]
+
     if (!serviceNames.includes(sPath)) {
       await next()
       return

@@ -6,6 +6,7 @@ import path from 'path'
 import fs from 'fs'
 import got from 'got'
 import { scan } from './rpc-definition-scan'
+import { TRPCMetaFile } from '../interface'
 
 const program = new Command()
 
@@ -25,14 +26,22 @@ function init (): void {
 
         console.log(`ts-brpc > 开始同步声明文件: http://${baseUrl as string}/_rpc_definiton_`)
 
-        const resp = await got.get(`http://${baseUrl as string}/_rpc_definiton_`)
-        const outPath = path.resolve(__dirname, '../client/__service-collection__.d.ts')
-        fs.writeFile(outPath, resp.body, { flag: 'w' }, (err) => {
+        const { body } = await got.get(`http://${baseUrl as string}/_rpc_definiton_`)
+        const { appId, dts } = JSON.parse(body) as { appId: string, dts: string}
+
+        const outPath = path.resolve(__dirname, `../client/app/${appId}.ts`)
+        const appPath = path.resolve(__dirname, '../client/app/')
+        if (!fs.existsSync(appPath)) {
+          fs.mkdirSync(appPath)
+        }
+
+        fs.writeFile(outPath, dts, { flag: 'w' }, (err) => {
           if (err != null) throw err
           console.log('ts-brpc > 声明文件同步成功：', outPath)
         })
       } catch (err) {
         console.error(`ts-brpc error > 声明文件同步失败，请检查RPC服务(${rpcServer ?? '配置解析失败'})是否正常运行`)
+        console.error(err)
       }
     })
 
@@ -43,10 +52,10 @@ function init (): void {
       try {
         console.log('ts-brpc > 开始扫描 RPCService')
         const cfgPath = path.resolve(process.cwd(), config)
-        const { serverCfg, metaFileStr } = await handleServerCmd(cfgPath)
+        const { metaOutDir, metaFile } = await handleServerCmd(cfgPath)
         fs.writeFile(
-          path.resolve(path.dirname(cfgPath), serverCfg.metaOutDir, '_rpc_gen_meta_.json'),
-          metaFileStr,
+          path.resolve(path.dirname(cfgPath), metaOutDir, '_rpc_gen_meta_.json'),
+          JSON.stringify(metaFile, null, 2),
           (err) => {
             if (err != null) throw err
             console.log('ts-brpc > 扫描完成，已创建 RPC meta 文件')
@@ -60,8 +69,8 @@ function init (): void {
   program.parse(process.argv)
 }
 
-export async function handleServerCmd (cfgPath: string): Promise<{ serverCfg: any, metaFileStr: string }> {
-  const { server } = await import(cfgPath)
+export async function handleServerCmd (cfgPath: string): Promise<{ metaOutDir: string, metaFile: TRPCMetaFile }> {
+  const { appId, server } = await import(cfgPath)
   const scanData = scan(
     server.scanDir
       .map((p: string) => path.resolve(path.dirname(cfgPath), p))
@@ -70,8 +79,12 @@ export async function handleServerCmd (cfgPath: string): Promise<{ serverCfg: an
     ...m,
     path: path.relative(path.dirname(cfgPath), m.path)
   }))
+
   return {
-    serverCfg: server,
-    metaFileStr: JSON.stringify(scanData, null, 2)
+    metaOutDir: server.metaOutDir,
+    metaFile: {
+      appId,
+      ...scanData
+    }
   }
 }

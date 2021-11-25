@@ -30,8 +30,8 @@ export function scan (filePaths: string[]): IScanResult {
   const genSf = prj.createSourceFile(path.resolve(__dirname, '_protocol-file-memory_.ts'), {
   }, { overwrite: true })
 
-  const expInter = genSf.insertInterface(0, { name: 'ServiceCollection' })
-  expInter.setIsExported(true)
+  const expInter = genSf.insertInterface(0, { name: 'App' })
+  expInter.setIsDefaultExport(true)
 
   const rpcMetaData: TRPCMetaData = []
   refedClasses.forEach((c) => {

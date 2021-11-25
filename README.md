@@ -8,7 +8,7 @@
 ### 服务端
 ```ts
 // 运行 server 服务之前执行`ts-rpc`命令
-// scripts: yarn ts-rpc server -c ts-rpc.json && yarn dev
+// scripts: yarn ts-brpc server -c ts-rpc.json && yarn dev
 
 import { bindKoa, RPCService, RPCMethod } from 'ts-brpc/server'
 
@@ -39,11 +39,12 @@ class User {
 ### 客户端
 ```ts
 // 运行 client 服务之前执行`ts-rpc`命令
-// scripts: yarn ts-rpc client -c ts-rpc.json && yarn dev
+// scripts: yarn ts-brpc client -c ts-rpc.json && yarn dev
 
 import { createRetmoteService } from 'ts-brpc/client'
+import RPCDemo from 'ts-brpc/client/app/rpc-demo'
 
-const rs = createRetmoteService({
+const rs = createRetmoteService<RPCDemo>({
   baseUrl: "127.0.0.1:3000",
   // 可选，用于拦截处理请求
   agent: (req: Request): Response => {
@@ -58,6 +59,7 @@ console.log(userInfo) // { name: '22', age: 18, avatar: '<imgage url>' }
 ### ts-rpc.json
 ```json
 {
+  "appId": "rpc-demo",
   // 客户端配置
   "client": {
     // 远程服务地址前缀

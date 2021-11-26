@@ -2,7 +2,15 @@ import path from 'path'
 import { camelCase } from 'lodash'
 import { TRPCMetaFile } from '../interface'
 
-type TMiddleware = (ctx: any, next: (() => Promise<void>)) => Promise<void>
+interface Ctx {
+  request: { body?: any }
+  body: string
+  path: string
+  set: (k: string, v: string) => void
+  method: string
+  status: number
+}
+type TMiddleware = (ctx: Ctx, next: (() => Promise<void>)) => Promise<void>
 
 interface IApp {
   use: (middleware: TMiddleware) => void
@@ -62,11 +70,7 @@ export async function bindKoa ({ app, rpcMetaPath, prefixPath }: IBindingArgs): 
       pathInstanceMap.set(ctx.path, ins)
     }
 
-    const args = ctx.request?.body?._ts_rpc_args_
-    if (args == null) {
-      throw Error('Cannot find `_ts_rpc_args_` in request body')
-    }
-    ctx.body = JSON.stringify(await ins[mPath](...args))
+    ctx.body = JSON.stringify(await ins[mPath](...getRPCArgs(ctx)))
     await next()
   })
 }
@@ -118,8 +122,16 @@ export async function bindMidway (
       pathInstanceMap.set(ctx.path, ins)
     }
 
-    const args = ctx.request?.body?._ts_rpc_args_ ?? []
-    ctx.body = JSON.stringify(await ins[mPath](...args))
+    ctx.body = JSON.stringify(await ins[mPath](...getRPCArgs(ctx)))
     await next()
   })
+}
+
+function getRPCArgs (ctx: Ctx): unknown[] {
+  let args = ctx.request?.body?._ts_rpc_args_
+  if (args == null) {
+    args = []
+    console.warn(`Cannot find '_ts_rpc_args_' in request body, path: ${ctx.path}`)
+  }
+  return args
 }

@@ -1,6 +1,6 @@
 {
   "name": "ts-brpc",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "基于TS的RPC库",
   "repository": "",
   "author": "hughfenghen@gmail.com",

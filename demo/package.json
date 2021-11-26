@@ -5,11 +5,11 @@
   "license": "MIT",
   "scripts": {
     "cmd": "ts-rpc",
-    "server": "yarn ts-rpc server -c ts-rpc.json && nodemon --watch server --watch client --exec 'ts-node server/index.ts' -e ts",
-    "client": "yarn ts-rpc client -c ts-rpc.json && parcel client/index.html"
+    "server": "yarn ts-brpc server -c ts-rpc.json && nodemon --watch server --watch client --exec 'ts-node server/index.ts' -e ts",
+    "client": "yarn ts-brpc client -c ts-rpc.json && parcel client/index.html"
   },
   "dependencies": {
-    "ts-brpc": "^0.0.2",
+    "ts-brpc": "file:../",
     "koa": "^2.13.3"
   },
   "devDependencies": {

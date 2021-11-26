@@ -41,7 +41,7 @@ function init (): void {
         })
       } catch (err) {
         console.error(`ts-brpc error > 声明文件同步失败，请检查RPC服务(${rpcServer ?? '配置解析失败'})是否正常运行`)
-        console.error(err)
+        console.error((err as Error).message)
       }
     })
 

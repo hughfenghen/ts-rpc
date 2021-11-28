@@ -45,7 +45,9 @@ function createDefAgent (baseUrl: string) {
       return await res.json()
     } else if (typeof global === 'object') {
       // node env
-      const http = await import('http')
+      // 避免 webpack 打包警告
+      const httpStr = 'http'
+      const http = await import(httpStr) as typeof import('http')
       return await new Promise((resolve, reject) => {
         const url = new URL(`http://${baseUrl.replace(/^\/*|\/*$/g, '')}/${serviceName}/${methodName}`)
         const options = {
@@ -55,7 +57,7 @@ function createDefAgent (baseUrl: string) {
           }
         }
 
-        const req = http.request(url.href, options, res => {
+        const req = http.request(url.href, options, (res) => {
           if (/^2/.test(String(res.statusCode))) {
             res.on('data', (data) => {
               try {

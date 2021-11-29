@@ -37,7 +37,7 @@ export async function bindKoa ({ app, rpcMetaPath, prefixPath }: IBindingArgs): 
 
   const pathInstanceMap = new Map<string, any>()
   app.use(async (ctx, next) => {
-    if (path.resolve(prefixPath, '_rpc_definiton_') === ctx.path) {
+    if (path.resolve(prefixPath, '_rpc_definition_') === ctx.path) {
       ctx.body = JSON.stringify({
         appId,
         dts
@@ -89,7 +89,7 @@ export async function bindMidway (
   const pathInstanceMap = new Map<string, any>()
 
   app.use(async (ctx, next) => {
-    if (path.resolve(prefixPath, '_rpc_definiton_') === ctx.path) {
+    if (path.resolve(prefixPath, '_rpc_definition_') === ctx.path) {
       ctx.body = JSON.stringify({
         appId,
         dts

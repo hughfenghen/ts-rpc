@@ -24,9 +24,9 @@ function init (): void {
         const { client: { baseUrl } } = await import(path.resolve(process.cwd(), config))
         rpcServer = baseUrl
 
-        console.log(`ts-brpc > 开始同步声明文件: http://${baseUrl as string}/_rpc_definiton_`)
+        console.log(`ts-brpc > 开始同步声明文件: http://${baseUrl as string}/_rpc_definition_`)
 
-        const { body } = await got.get(`http://${baseUrl as string}/_rpc_definiton_`)
+        const { body } = await got.get(`http://${baseUrl as string}/_rpc_definition_`)
         const { appId, dts } = JSON.parse(body) as { appId: string, dts: string}
 
         const outPath = path.resolve(__dirname, `../client/app/${appId}.ts`)

@@ -21,21 +21,21 @@ function init (): void {
     .action(async ({ config }) => {
       let rpcServer: null | string = null
       try {
-        const { client: { baseUrl } } = await import(path.resolve(process.cwd(), config))
+        const cfgPath = path.resolve(process.cwd(), config)
+        const { client: { baseUrl, genRPCDefintionTarget } } = await import(cfgPath)
         rpcServer = baseUrl
 
         console.log(`ts-brpc > 开始同步声明文件: http://${baseUrl as string}/_rpc_definition_`)
 
         const { body } = await got.get(`http://${baseUrl as string}/_rpc_definition_`)
-        const { appId, dts } = JSON.parse(body) as { appId: string, dts: string}
+        const { dts } = JSON.parse(body) as { appId: string, dts: string}
 
-        const outPath = path.resolve(__dirname, `../client/app/${appId}.ts`)
-        const appPath = path.resolve(__dirname, '../client/app/')
-        if (!fs.existsSync(appPath)) {
-          fs.mkdirSync(appPath)
+        const outPath = path.resolve(path.dirname(cfgPath), genRPCDefintionTarget, 'rpc-definition.ts')
+        if (!fs.existsSync(path.dirname(outPath))) {
+          fs.mkdirSync(path.dirname(outPath))
         }
 
-        fs.writeFile(outPath, dts, { flag: 'w' }, (err) => {
+        fs.writeFile(outPath, `/* eslint-disable */\n\n${dts}`, { flag: 'w' }, (err) => {
           if (err != null) throw err
           console.log('ts-brpc > 声明文件同步成功：', outPath)
         })
@@ -73,7 +73,8 @@ export async function handleServerCmd (cfgPath: string): Promise<{ metaOutDir: s
   const { appId, server } = await import(cfgPath)
   const scanData = scan(
     server.scanDir
-      .map((p: string) => path.resolve(path.dirname(cfgPath), p))
+      .map((p: string) => path.resolve(path.dirname(cfgPath), p)),
+    appId
   )
   scanData.meta = scanData.meta.map(m => ({
     ...m,

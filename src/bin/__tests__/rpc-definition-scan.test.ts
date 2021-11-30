@@ -3,7 +3,7 @@ import { MethodDeclaration, Project } from 'ts-morph'
 import { collectMethodTypeDeps, collectTypeDeps, scan } from '../rpc-definition-scan'
 
 test('scan', () => {
-  const { dts, meta } = scan([path.resolve(__dirname, '*.ts')])
+  const { dts, meta } = scan([path.resolve(__dirname, '*.ts')], 'ScanTest')
 
   expect(dts).toMatchSnapshot()
   expect(meta).toEqual([{

@@ -1,10 +1,10 @@
 import glob from 'glob'
-import { Project, Node, ClassDeclaration, FunctionDeclaration, MethodDeclaration, InterfaceDeclaration, SyntaxKind, TypeReferenceNode, TypeAliasDeclaration, MethodSignature, ImportTypeNode, ImportSpecifier } from 'ts-morph'
+import { Project, Node, ClassDeclaration, FunctionDeclaration, MethodDeclaration, InterfaceDeclaration, SyntaxKind, TypeReferenceNode, TypeAliasDeclaration, MethodSignature, ImportTypeNode, ImportSpecifier, TypeAliasDeclarationStructure } from 'ts-morph'
 import path from 'path'
 import { existsSync } from 'fs'
 import { IScanResult, TRPCMetaData } from '../interface'
 
-export function scan (filePaths: string[]): IScanResult {
+export function scan (filePaths: string[], appId: string): IScanResult {
   const files = filePaths.map(f => glob.sync(f)).flat()
   const prj = new Project({ compilerOptions: { declaration: false, sourceMap: false, isolatedModules: true } })
   files.forEach(file => {
@@ -30,8 +30,14 @@ export function scan (filePaths: string[]): IScanResult {
   const genSf = prj.createSourceFile(path.resolve(__dirname, '_protocol-file-memory_.ts'), {
   }, { overwrite: true })
 
-  const expInter = genSf.insertInterface(0, { name: 'App' })
-  expInter.setIsDefaultExport(true)
+  // namespace 避免命名冲突
+  const appNS = genSf.addModule({ name: `${appId}NS` })
+  const expInter = appNS.addInterface({ name: 'App' })
+  expInter.setIsExported(true)
+  // 简化 export type = xxx 代码
+  const expTypeSf = prj.createSourceFile('exp-type', `export type ${appId} = ${appId}NS.App`)
+  // 导出 namespace 下对外的 interface
+  genSf.addTypeAlias(expTypeSf.getTypeAlias(appId)?.getStructure() as TypeAliasDeclarationStructure)
 
   const rpcMetaData: TRPCMetaData = []
   refedClasses.forEach((c) => {
@@ -48,7 +54,7 @@ export function scan (filePaths: string[]): IScanResult {
     })
 
     // 将 class 转换为 interface，模拟 rpc 的 protocol 声明
-    const inter = genSf.addInterface({ name: className })
+    const inter = appNS.addInterface({ name: className })
     inter.addJsDocs(c.getJsDocs().map(doc => doc.getStructure()))
 
     methods.forEach((m) => {
@@ -80,11 +86,11 @@ export function scan (filePaths: string[]): IScanResult {
         // 添加 method 依赖的类型
         let added = null
         if (it instanceof InterfaceDeclaration) {
-          added = genSf.insertInterface(1, it.getStructure())
+          added = appNS.insertInterface(1, it.getStructure())
         } else if (it instanceof TypeAliasDeclaration) {
-          added = genSf.insertTypeAlias(1, it.getStructure())
+          added = appNS.insertTypeAlias(1, it.getStructure())
         } else if (it instanceof ClassDeclaration) {
-          added = genSf.insertClass(1, it.getStructure())
+          added = appNS.insertClass(1, it.getStructure())
           // 只保留 class 的属性方法, 移除属性、class 的decorator 信息
           added.getDecorators().forEach(d => d.remove())
           added.getProperties()

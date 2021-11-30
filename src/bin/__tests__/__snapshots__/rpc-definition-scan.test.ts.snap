@@ -1,43 +1,45 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`scan 1`] = `
-"interface App {
-    User: User;
-    Foo: Foo;
-}
+"namespace ScanTestNS {
+    export interface App {
+        User: User;
+        Foo: Foo;
+    }
 
-type TUserInfo = CUserInfo & IUserInfo;
+    type TUserInfo = CUserInfo & IUserInfo;
 
-interface IUserInfo {
-    name: string;
-    age: Date;
-    avatar: string;
-}
+    interface IUserInfo {
+        name: string;
+        age: Date;
+        avatar: string;
+    }
 
-class CUserInfo {
-    
-    name: string;
-    age: Date;
-    avatar: string;
-}
+    class CUserInfo {
+        
+        name: string;
+        age: Date;
+        avatar: string;
+    }
 
-export default App;
-
-/**
- * service doc
- */
-interface User {
     /**
-     * method doc
+     * service doc
      */
-    getInfoById1(id: string): Promise<CUserInfo>;
-    getInfoById2(id: string): Promise<IUserInfo>;
-    getInfoById3(id: string): Promise<TUserInfo>;
-    getUnreadMsg(id: string): Promise<string[]>;
+    interface User {
+        /**
+         * method doc
+         */
+        getInfoById1(id: string): Promise<CUserInfo>;
+        getInfoById2(id: string): Promise<IUserInfo>;
+        getInfoById3(id: string): Promise<TUserInfo>;
+        getUnreadMsg(id: string): Promise<string[]>;
+    }
+
+    interface Foo {
+        bar(): Promise<void>;
+    }
 }
 
-interface Foo {
-    bar(): Promise<void>;
-}
+export type ScanTest = ScanTestNS.App;
 "
 `;

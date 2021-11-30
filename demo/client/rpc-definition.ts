@@ -1,24 +1,26 @@
+
 /* eslint-disable */
+namespace RPCDemoNS {
+    export interface App {
+        User: User;
+    }
 
-interface App {
-    User: User;
-}
+    interface UserInfo {
+        name: string;
+        age: number;
+        avatar: string;
+    }
 
-interface UserInfo {
-    name: string;
-    age: number;
-    avatar: string;
-}
-
-export default App;
-
-/**
- * service doc
- */
-interface User {
     /**
-     * method doc
+     * service doc
      */
-    getInfoById(id: string): Promise<UserInfo>;
-    getUnreadMsg(id: string): Promise<string[]>;
+    interface User {
+        /**
+         * method doc
+         */
+        getInfoById(id: string): Promise<UserInfo>;
+        getUnreadMsg(id: string): Promise<number[]>;
+    }
 }
+
+export type RPCDemo = RPCDemoNS.App;

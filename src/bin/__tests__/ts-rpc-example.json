@@ -1,5 +1,5 @@
 {
-  "appId": "rpc-test",
+  "appId": "RPCTest",
   "client": {
     "baseUrl": "localhost:3000"
   },

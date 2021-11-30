@@ -1,7 +1,12 @@
 {
-  "appId": "rpc-demo",
+  "appId": "RPCDemo",
   "client": {
-    "baseUrl": "127.0.0.1:3000"
+    "apps": {
+      "a": "localhost:3000",
+      "b": "",
+      "aDev": ""
+    },
+    "genRPCDefintionTarget": "./client"
   },
   "server": {
     "scanDir": ["server/*.ts"],

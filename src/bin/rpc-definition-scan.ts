@@ -104,13 +104,6 @@ export function scan (filePaths: string[], appId: string): IScanResult {
     expInter.addProperty({ name: className, type: className })
   })
 
-  // 疑似 ts-morph 的 bug，会出多许多重复的 interface Promise
-  genSf.getInterfaces().forEach(it => {
-    if (it.getName() === 'Promise') {
-      it.remove()
-    }
-  })
-
   return {
     dts: genSf.getFullText(),
     meta: rpcMetaData

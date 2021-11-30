@@ -1,5 +1,6 @@
 {
-  "dts": "export interface ServiceCollection {\n    User: User;\n    Foo: Foo;\n}\ninterface UserInfo {\n    name: string;\n    age: number;\n    avatar: string;\n}\n/**\n * service doc\n */\ninterface User {\n    /**\n     * method doc\n     */\n    getInfoById(id: string): Promise<UserInfo>;\n    getUnreadMsg(id: string): Promise<string[]>;\n}\ninterface Foo {\n    bar(): Promise<void>;\n}\nexport {};\n",
+  "appId": "RPCDemo",
+  "dts": "namespace RPCDemoNS {\n    export interface App {\n        User: User;\n    }\n\n    interface UserInfo {\n        name: string;\n        age: number;\n        avatar: string;\n    }\n\n    /**\n     * service doc\n     */\n    interface User {\n        /**\n         * method doc\n         */\n        getInfoById(id: string): Promise<UserInfo>;\n        getUnreadMsg(id: string): Promise<number[]>;\n    }\n}\n\nexport type RPCDemo = RPCDemoNS.App;\n",
   "meta": [
     {
       "name": "User",

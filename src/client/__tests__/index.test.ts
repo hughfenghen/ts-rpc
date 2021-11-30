@@ -17,10 +17,13 @@ jest.mock('http', () => ({
   request: spyRequest
 }))
 
+interface TestApp {
+  User: { getInfoById: (id: string) => Promise<{data: string}> }
+}
 test('createRetmoteService default node agent', async () => {
-  const rs = createRetmoteService({
+  const rs = createRetmoteService<TestApp>({
     baseUrl: '//localhost:3000/'
-  }) as any
+  })
 
   // 模拟 node 环境
   window.fetch = undefined as any
@@ -40,9 +43,9 @@ test('createRetmoteService default node agent', async () => {
 })
 
 test('createRetmoteService default browser agent', async () => {
-  const rs = createRetmoteService({
+  const rs = createRetmoteService<TestApp>({
     baseUrl: '//localhost:3000/'
-  }) as any
+  })
 
   const info = rs.User.getInfoById('111')
   // setTimeout 为了让微任务都执行完
@@ -51,7 +54,7 @@ test('createRetmoteService default browser agent', async () => {
 
 test('createRetmoteService custom agent', async () => {
   const spyAgent = jest.fn().mockResolvedValue({})
-  const rs = createRetmoteService({
+  const rs = createRetmoteService<TestApp>({
     baseUrl: '//localhost:3000/',
     agent: spyAgent
   }) as any

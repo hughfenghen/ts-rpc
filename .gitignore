@@ -1,12 +1,9 @@
 node_modules
 .cache
+.parcel-cache
 dist
 yarn-error.log
 coverage
 .VSCodeCounter
 .idea
 package-lock.json
-server/*
-client/*
-bin/*
-interface*

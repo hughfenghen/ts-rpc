@@ -1,4 +1,4 @@
-import { RPCMethod, RPCService } from 'ts-brpc/server'
+import { RPCMethod, RPCService } from 'ts-brpc'
 
 interface UserInfo {
   name: string

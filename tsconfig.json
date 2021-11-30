@@ -6,7 +6,8 @@
     "downlevelIteration": true,
     "sourceMap": true,
     "declaration": true,
-    "target": "es5",
+    "target": "es2015",
+    "module": "esnext",
     "moduleResolution": "node",
     "experimentalDecorators": true,
     "strict": true

@@ -10,7 +10,7 @@
 // 运行 server 服务之前执行`ts-rpc`命令
 // scripts: yarn ts-brpc server -c ts-rpc.json && yarn dev
 
-import { bindKoa, RPCService, RPCMethod } from 'ts-brpc/server'
+import { bindKoa, RPCService, RPCMethod } from 'ts-brpc'
 
 bindKoa(User) // 或者 bindExpress
 
@@ -41,8 +41,8 @@ class User {
 // 运行 client 服务之前执行`ts-rpc`命令
 // scripts: yarn ts-brpc client -c ts-rpc.json && yarn dev
 
-import { createRetmoteService } from 'ts-brpc/client'
-import RPCDemo from 'ts-brpc/client/app/rpc-demo'
+import { createRetmoteService } from 'ts-brpc'
+import RPCDemo from './rpc-definition' // rpc-definition 为 ts-brpc.json client 对应的 genRPCDefintionTarget
 
 const rs = createRetmoteService<RPCDemo>({
   baseUrl: "127.0.0.1:3000",
@@ -56,20 +56,20 @@ const userInfo = await rs.User.getInfoById('<user id>')
 console.log(userInfo) // { name: '22', age: 18, avatar: '<imgage url>' }
 ```
 
-### ts-rpc.json
+### ts-rpc.json 示例
 ```json
 {
-  "appId": "rpc-demo",
-  // 客户端配置
+  "appId": "RPCDemo",
   "client": {
-    // 远程服务地址前缀
-    "baseUrl": "127.0.0.1:3000"
+    "apps": {
+      "a": "localhost:3000",
+      "b": "",
+      "aDev": ""
+    },
+    "genRPCDefintionTarget": "./"
   },
-  // 服务端配置
   "server": {
-    // RPCService 所在文件
     "scanDir": ["server/*.ts"],
-    // 扫描信息输入地址
     "metaOutDir": "./"
   }
 }

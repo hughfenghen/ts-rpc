@@ -1,15 +1,10 @@
 {
   "name": "ts-brpc",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "description": "基于TS的RPC库",
   "repository": "",
   "author": "hughfenghen@gmail.com",
-  "files": [
-    "server/",
-    "client/",
-    "bin/",
-    "interface*"
-  ],
+  "files": ["dist"],
   "module": "dist/index.ts",
   "types": "dist/index.d.ts",
   "scripts": {

@@ -19,7 +19,7 @@ namespace RPCDemoNS {
          * method doc
          */
         getInfoById(id: string): Promise<UserInfo>;
-        getUnreadMsg(id: string): Promise<number[]>;
+        getUnreadMsg(id: string): Promise<string[]>;
     }
 }
 

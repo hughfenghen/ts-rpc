@@ -10,3 +10,4 @@ server/*
 client/*
 bin/*
 interface*
+.DS_Store

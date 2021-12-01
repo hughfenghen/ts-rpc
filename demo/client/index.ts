@@ -1,8 +1,8 @@
-import { createRetmoteService } from 'ts-brpc'
+import { createRetmoteService } from 'ts-brpc/client'
 import rpcCfg from '../ts-rpc.json'
-import { RPCDemo } from './rpc-definition'
+import App from '../../client/app/rpc-demo'
 
-const rs = createRetmoteService<RPCDemo>({
+const rs = createRetmoteService<App>({
   baseUrl: rpcCfg.client.apps.a
 })
 

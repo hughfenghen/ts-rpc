@@ -10,17 +10,15 @@
     "bin/",
     "interface*"
   ],
-  "module": "dist/index.ts",
-  "types": "dist/index.d.ts",
   "scripts": {
+    "prebuild": "rimraf server client && yarn test",
     "test": "jest",
-    "dev": "tsc -p build.tsconfig.json --outDir dist --watch",
-    "prebuild": "rimraf dist && yarn test",
-    "build": "tsc -p build.tsconfig.json --outDir dist",
+    "dev": "tsc -p build.tsconfig.json --outDir . --watch",
+    "build": "tsc -p build.tsconfig.json --outDir .",
     "prepublishOnly": "yarn build"
   },
   "bin": {
-    "ts-brpc": "dist/bin/ts-rpc.js"
+    "ts-brpc": "bin/ts-rpc.js"
   },
   "devDependencies": {
     "@types/glob": "^7.1.4",

@@ -8,7 +8,7 @@
     "server/",
     "client/",
     "bin/",
-    "interface*"
+    "common*"
   ],
   "scripts": {
     "prebuild": "rimraf server client && yarn test",

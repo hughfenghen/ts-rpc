@@ -33,7 +33,7 @@ export function createRetmoteService<T> (cfg: ServiceCfg): T {
 function createDefAgent (baseUrl: string) {
   return async function defHttpAgent ({ serviceName, methodName, args }: AgentParams): Promise<unknown> {
     const body = JSON.stringify({
-      _ts_rpc_args_: args
+      [RPCKey.Args]: args
     })
     if (typeof window !== 'undefined' && typeof window.fetch === 'function') {
       // browser env

@@ -62,12 +62,16 @@ function createDefAgent (baseUrl: string) {
 
         const req = http.request(url.href, options, (res) => {
           if (/^2/.test(String(res.statusCode))) {
-            res.on('data', (data) => {
+            let rs = ''
+            res.on('data', (data: string) => {
+              rs += data
+            })
+            res.on('end', () => {
               try {
-                resolve(JSON.parse(String(data))[RPCKey.Return])
+                resolve(JSON.parse(rs)[RPCKey.Return])
               } catch (err) {
-                console.warn('Cannot parse response to json')
-                resolve(data)
+                console.error('[ts-brpc] Cannot parse response to json')
+                reject(err)
               }
             })
           } else {

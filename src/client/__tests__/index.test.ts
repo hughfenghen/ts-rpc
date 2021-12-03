@@ -32,18 +32,28 @@ test('createRetmoteService default node agent', async () => {
   // 模拟 node 环境
   window.fetch = undefined as any
   const info = rs.User.getInfoById('111')
+  const mockrsStr = JSON.stringify({ [RPCKey.Return]: { data: 'hi' } })
   // setTimeout 为了让微任务都执行完
   setTimeout(() => {
     const [, , resCb] = spyRequest.mock.calls[0]
+    let onData: Function = (): void => {}
+    let onEnd: Function = (): void => {}
     resCb({
       statusCode: 200,
-      on (_: string, dataHandler: Function) {
-        dataHandler(JSON.stringify({
-          [RPCKey.Return]: { data: 'hi' }
-        }))
+      on (evtName: string, handler: Function) {
+        if (evtName === 'data') {
+          onData = handler
+        } else if (evtName === 'end') {
+          onEnd = handler
+        }
       }
     })
+    // 模拟内容过大，data分片的情况
+    onData(mockrsStr.slice(0, mockrsStr.length / 2))
+    onData(mockrsStr.slice(mockrsStr.length / 2))
+    onEnd()
   }, 0)
+
   expect(await info).toEqual({ data: 'hi' })
   window.fetch = spyFetch
 })

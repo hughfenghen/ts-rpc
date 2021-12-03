@@ -2,7 +2,7 @@ import glob from 'glob'
 import { Project, Node, ClassDeclaration, FunctionDeclaration, MethodDeclaration, InterfaceDeclaration, SyntaxKind, TypeReferenceNode, TypeAliasDeclaration, MethodSignature, ImportTypeNode, ImportSpecifier, TypeAliasDeclarationStructure } from 'ts-morph'
 import path from 'path'
 import { existsSync } from 'fs'
-import { IScanResult, TRPCMetaData } from '../interface'
+import { IScanResult, TRPCMetaData } from '../common'
 
 export function scan (filePaths: string[], appId: string): IScanResult {
   const files = filePaths.map(f => glob.sync(f)).flat()

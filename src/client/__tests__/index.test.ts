@@ -1,9 +1,13 @@
 /**
  * @jest-environment jsdom
  */
-import { createRetmoteService } from '..'
+import { createRetmoteService, RPCKey } from '..'
 
-const spyFetch = jest.fn().mockResolvedValue({ json: () => ({}) })
+const spyFetch = jest.fn().mockResolvedValue({
+  json: () => ({
+    [RPCKey.Return]: {}
+  })
+})
 global.fetch = spyFetch
 
 const spyRequest = jest.fn().mockReturnValue({
@@ -34,7 +38,9 @@ test('createRetmoteService default node agent', async () => {
     resCb({
       statusCode: 200,
       on (_: string, dataHandler: Function) {
-        dataHandler('{"data": "hi"}')
+        dataHandler(JSON.stringify({
+          [RPCKey.Return]: { data: 'hi' }
+        }))
       }
     })
   }, 0)

@@ -1,5 +1,6 @@
 import 'reflect-metadata'
 
+export { RPCKey } from '../common'
 export { bindKoa, bindMidway } from './bindings'
 
 const SERVICE_METADATA = 'path'

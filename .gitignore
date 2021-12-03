@@ -9,5 +9,5 @@ package-lock.json
 server/*
 client/*
 bin/*
-interface*
+/common*
 .DS_Store

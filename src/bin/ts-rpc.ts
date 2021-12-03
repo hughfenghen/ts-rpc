@@ -6,7 +6,7 @@ import path from 'path'
 import fs from 'fs'
 import got from 'got'
 import { scan } from './rpc-definition-scan'
-import { TRPCMetaFile } from '../interface'
+import { TRPCMetaFile } from '../common'
 import { Project } from 'ts-morph'
 
 const program = new Command()

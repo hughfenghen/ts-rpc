@@ -1,4 +1,5 @@
 import path from 'path'
+import { RPCKey } from '..'
 import { bindKoa, bindMidway } from '../bindings'
 
 jest.mock('lodash', () => ({
@@ -22,7 +23,7 @@ test('bindKoa', async () => {
   const spyNext = jest.fn()
   await middlewares[0]({
     path: '/test/User/getInfoById',
-    request: { body: { _ts_rpc_args_: ['111'] } },
+    request: { body: { [RPCKey.Args]: ['111'] } },
     set: () => {}
   }, spyNext)
   expect(spyNext).toBeCalled()
@@ -54,10 +55,10 @@ test('bindMidway', async () => {
   const spyNext = jest.fn()
   await middlewares[0]({
     path: '/test/User/getInfoById',
-    request: { body: { _ts_rpc_args_: ['111'] } },
+    request: { body: { [RPCKey.Args]: ['111'] } },
     set: () => { }
   }, spyNext)
   expect(spyNext).toBeCalled()
-  // args from _ts_rpc_args_
+  // args from RPCKey.Args
   expect(spyGetInfoById).lastCalledWith('111')
 })

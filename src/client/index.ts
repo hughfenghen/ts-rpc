@@ -1,3 +1,6 @@
+import { RPCKey } from '../common'
+
+export { RPCKey }
 
 interface AgentParams {
   serviceName: string
@@ -42,7 +45,7 @@ function createDefAgent (baseUrl: string) {
         },
         body
       })
-      return await res.json()
+      return (await res.json())[RPCKey.Return]
     } else if (typeof global === 'object') {
       // node env
       // 避免 webpack 打包警告
@@ -61,7 +64,7 @@ function createDefAgent (baseUrl: string) {
           if (/^2/.test(String(res.statusCode))) {
             res.on('data', (data) => {
               try {
-                resolve(JSON.parse(String(data)))
+                resolve(JSON.parse(String(data))[RPCKey.Return])
               } catch (err) {
                 console.warn('Cannot parse response to json')
                 resolve(data)

@@ -1,6 +1,6 @@
 import path from 'path'
 import { camelCase } from 'lodash'
-import { TRPCMetaFile } from '../interface'
+import { RPCKey, TRPCMetaFile } from '../common'
 
 interface Ctx {
   request: { body?: any }
@@ -70,7 +70,9 @@ export async function bindKoa ({ app, rpcMetaPath, prefixPath }: IBindingArgs): 
       pathInstanceMap.set(ctx.path, ins)
     }
 
-    ctx.body = JSON.stringify(await ins[mPath](...getRPCArgs(ctx)))
+    ctx.body = JSON.stringify(wrapRPCReturn(
+      await ins[mPath](...getRPCArgs(ctx))
+    ))
     await next()
   })
 }
@@ -122,16 +124,24 @@ export async function bindMidway (
       pathInstanceMap.set(ctx.path, ins)
     }
 
-    ctx.body = JSON.stringify(await ins[mPath](...getRPCArgs(ctx)))
+    ctx.body = JSON.stringify(wrapRPCReturn(
+      await ins[mPath](...getRPCArgs(ctx))
+    ))
     await next()
   })
 }
 
 function getRPCArgs (ctx: Ctx): unknown[] {
-  let args = ctx.request?.body?._ts_rpc_args_
+  let args = ctx.request?.body?.[RPCKey.Args]
   if (args == null) {
     args = []
-    console.warn(`Cannot find '_ts_rpc_args_' in request body, path: ${ctx.path}`)
+    console.warn(`Cannot find '${RPCKey.Args}' in request body, path: ${ctx.path}`)
   }
   return args
+}
+
+function wrapRPCReturn<T extends unknown> (data: T): { [RPCKey.Return]: T } {
+  return {
+    [RPCKey.Return]: data
+  }
 }

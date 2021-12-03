@@ -32,8 +32,10 @@ export function scan (filePaths: string[], appId: string): IScanResult {
 
   // namespace 避免命名冲突
   const appNS = genSf.addModule({ name: `${appId}NS` })
-  const expInter = appNS.addInterface({ name: 'App' })
-  expInter.setIsExported(true)
+  const appInterColl = appNS.addInterface({ name: 'App' })
+  appNS.setIsExported(true)
+  appInterColl.setIsExported(true)
+
   // 简化 export type = xxx 代码
   const expTypeSf = prj.createSourceFile('exp-type', `export type ${appId} = ${appId}NS.App`)
   // 导出 namespace 下对外的 interface
@@ -98,10 +100,10 @@ export function scan (filePaths: string[], appId: string): IScanResult {
         } else {
           console.warn('unknown deps type')
         }
-        added?.setIsExported(false)
+        added?.setIsExported(true)
       })
 
-    expInter.addProperty({ name: className, type: className })
+    appInterColl.addProperty({ name: className, type: className })
   })
 
   return {

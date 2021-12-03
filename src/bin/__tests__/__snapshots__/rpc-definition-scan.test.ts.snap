@@ -1,21 +1,21 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`scan 1`] = `
-"namespace ScanTestNS {
+"export namespace ScanTestNS {
     export interface App {
         User: User;
         Foo: Foo;
     }
 
-    type TUserInfo = CUserInfo & IUserInfo;
+    export type TUserInfo = CUserInfo & IUserInfo;
 
-    interface IUserInfo {
+    export interface IUserInfo {
         name: string;
         age: Date;
         avatar: string;
     }
 
-    class CUserInfo {
+    export class CUserInfo {
         
         name: string;
         age: Date;

@@ -10,15 +10,15 @@ test('scan', () => {
     name: 'User',
     path: expect.stringContaining('/src/bin/__tests__/controller-example.ts'),
     methods: [
-      { name: 'getInfoById1' },
-      { name: 'getInfoById2' },
-      { name: 'getInfoById3' },
-      { name: 'getUnreadMsg' }
+      { name: 'getInfoById1', decorators: ['@RPCMethod()'] },
+      { name: 'getInfoById2', decorators: ['@RPCMethod()'] },
+      { name: 'getInfoById3', decorators: ['@RPCMethod()'] },
+      { name: 'getUnreadMsg', decorators: ['@(OtherDecorator())', '@RPCMethod()'] }
     ]
   }, {
     name: 'Foo',
     path: expect.stringContaining('/src/bin/__tests__/controller-example.ts'),
-    methods: [{ name: 'bar' }]
+    methods: [{ name: 'bar', decorators: ['@RPCMethod()'] }]
   }])
 })
 

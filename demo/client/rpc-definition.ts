@@ -1,11 +1,11 @@
 
 /* eslint-disable */
-namespace RPCDemoNS {
+export namespace RPCDemoNS {
     export interface App {
         User: User;
     }
 
-    interface UserInfo {
+    export interface UserInfo {
         name: string;
         age: number;
         avatar: string;
@@ -24,3 +24,24 @@ namespace RPCDemoNS {
 }
 
 export type RPCDemo = RPCDemoNS.App;
+
+export const RPCDemoMeta = [
+  {
+    "name": "User",
+    "path": "server/user-controller.ts",
+    "methods": [
+      {
+        "name": "getInfoById",
+        "decorators": [
+          "@RPCMethod()"
+        ]
+      },
+      {
+        "name": "getUnreadMsg",
+        "decorators": [
+          "@RPCMethod()"
+        ]
+      }
+    ]
+  }
+];

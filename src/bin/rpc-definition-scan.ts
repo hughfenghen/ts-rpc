@@ -52,7 +52,10 @@ export function scan (filePaths: string[], appId: string): IScanResult {
     rpcMetaData.push({
       name: className,
       path: c.getSourceFile().getFilePath(),
-      methods: methods.map(m => ({ name: m.getName() }))
+      methods: methods.map(m => ({
+        name: m.getName(),
+        decorators: m.getDecorators().map(d => d.getText())
+      }))
     })
 
     // 将 class 转换为 interface，模拟 rpc 的 protocol 声明

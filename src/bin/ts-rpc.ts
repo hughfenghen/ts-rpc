@@ -21,8 +21,10 @@ function init (): void {
   program.command('client')
     .description('客户端同步声明文件')
     .requiredOption('-c, --config <path>', '指定远端服务配置，用于获取RPC服务声明文件')
-    .action(async ({ config }) => {
+    .option('--outMeta', '是否向输出文件中添加 Meta 信息')
+    .action(async ({ config, outMeta }) => {
       try {
+        console.log(1111, outMeta)
         const cfgPath = path.resolve(process.cwd(), config)
         const { client: { apps, genRPCDefintionTarget } } = await import(cfgPath)
 
@@ -36,7 +38,7 @@ function init (): void {
           localDefStr = await fsP.readFile(outPath, { encoding: 'utf-8' })
         }
 
-        const dts = await handleClientCmd(apps, localDefStr)
+        const dts = await handleClientCmd(apps, localDefStr, { outMeta })
         if (!fs.existsSync(path.dirname(outPath))) {
           fs.mkdirSync(path.dirname(outPath))
         }
@@ -97,7 +99,8 @@ export async function handleServerCmd (cfgPath: string): Promise<{ metaOutDir: s
 
 export async function handleClientCmd (
   apps: {[key: string]: string},
-  localDefStr: string
+  localDefStr: string,
+  { outMeta }: { outMeta?: boolean }
 ): Promise<string> {
   const serverDts = (await Promise.all(
     Object.entries(apps)
@@ -115,9 +118,12 @@ export async function handleClientCmd (
           })
       })
   )).filter(Boolean)
-    .reduce((sum, acc) => ({ ...sum, [acc.appId]: acc.dts }), {})
+    .reduce((sum, acc) => ({
+      ...sum,
+      [acc.appId]: { dts: acc.dts, meta: acc.meta }
+    }), {}) as { [appId: string]: { dts: string, meta: string }}
 
-  if (serverDts.length === 0) return ''
+  if (Object.keys(serverDts).length === 0) return ''
 
   const prj = new Project({
     compilerOptions: {
@@ -136,7 +142,18 @@ export async function handleClientCmd (
   Object.keys(serverDts).forEach((appId) => {
     sf.getTypeAlias(appId)?.remove()
     sf.getModule(`${appId}NS`)?.remove()
+    sf.getVariableDeclaration(`${appId}Meta`)?.remove()
   })
+  const codeStr = Object.entries(serverDts)
+    .map(([appId, { dts, meta }]) => [
+      dts,
+      outMeta === true
+        ? `export const ${appId}Meta = ${JSON.stringify(meta, null, 2)};`
+        : ''
+    ].join('\n'))
+    .join('\n')
+
+  console.log(1111, codeStr)
   // 合并
-  return `${startComment}\n${sf.getFullText()}\n${Object.values(serverDts).join('\n')}`
+  return `${startComment}\n${sf.getFullText()}\n${codeStr}`
 }

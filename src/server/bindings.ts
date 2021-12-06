@@ -40,7 +40,8 @@ export async function bindKoa ({ app, rpcMetaPath, prefixPath }: IBindingArgs): 
     if (path.resolve(prefixPath, '_rpc_definition_') === ctx.path) {
       ctx.body = JSON.stringify({
         appId,
-        dts
+        dts,
+        meta
       })
       await next()
       return
@@ -94,7 +95,8 @@ export async function bindMidway (
     if (path.resolve(prefixPath, '_rpc_definition_') === ctx.path) {
       ctx.body = JSON.stringify({
         appId,
-        dts
+        dts,
+        meta
       })
       await next()
       return

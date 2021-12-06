@@ -48,9 +48,21 @@ test('handleClientCmd', async () => {
   const spyGet = got.get as jest.Mock
   spyGet?.mockImplementation(async (arg: string) => {
     if (arg.includes('3000')) {
-      return { body: `{"appId": "Test1", "dts": ${JSON.stringify(mockDownLoadDefStr1)}}` }
+      return {
+        body: JSON.stringify({
+          appId: 'Test1',
+          dts: JSON.stringify(mockDownLoadDefStr1),
+          meta: []
+        })
+      }
     } else {
-      return { body: `{"appId": "Test2", "dts": ${JSON.stringify(mockDownLoadDefStr2)}}` }
+      return {
+        body: JSON.stringify({
+          appId: 'Test2',
+          dts: JSON.stringify(mockDownLoadDefStr2),
+          meta: []
+        })
+      }
     }
   })
 
@@ -58,19 +70,21 @@ test('handleClientCmd', async () => {
   const fileStr1 = await handleClientCmd({
     a: '127.0.0.1:3000',
     b: '127.0.0.1:4000'
-  }, '')
+  }, '', {})
 
   expect(/^\/\* eslint-disable \*\//.test(fileStr1.trim())).toBeTruthy()
   expect(fileStr1.includes('export type Test1 = Test1NS.App;')).toBeTruthy()
   expect(fileStr1.includes('export type Test2 = Test2NS.App;')).toBeTruthy()
+  expect(fileStr1.includes('export const Test2Meta = [];')).toBeFalsy()
 
   // 合并原dts文件
   const fileStr2 = await handleClientCmd({
     a: '127.0.0.1:3000',
     b: '127.0.0.1:4000'
-  }, mockLocalDefStr)
+  }, mockLocalDefStr, { outMeta: true })
 
   expect(/^\/\* eslint-disable \*\//.test(fileStr2.trim())).toBeTruthy()
   expect(fileStr2.includes('export type Test1 = Test1NS.App;')).toBeTruthy()
   expect(fileStr2.includes('export type Test2 = Test2NS.App;')).toBeTruthy()
+  expect(fileStr2.includes('export const Test2Meta = [];')).toBeTruthy()
 })

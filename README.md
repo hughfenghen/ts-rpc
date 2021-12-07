@@ -63,7 +63,7 @@ class User {
 ### 客户端
 ```ts
 // 运行 client 服务之前执行`ts-brpc`命令
-// scripts: yarn ts-brpc client -c ts-brpc.json && yarn dev
+// scripts: yarn ts-brpc client -c ts-brpc.json --outMeta && yarn dev
 
 import { createRetmoteService, RPCKey } from 'ts-brpc/client'
 import { client as rpcCientCfg } from '../ts-rpc.json'

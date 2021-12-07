@@ -1,10 +1,30 @@
-import { createRetmoteService } from 'ts-brpc/client'
+import { createRetmoteService, RPCKey } from 'ts-brpc/client'
 import rpcCfg from '../ts-rpc.json'
 import { RPCDemo, RPCDemoMeta } from './rpc-definition'
 
 const rs = createRetmoteService<RPCDemo>({
   baseUrl: rpcCfg.client.apps.a,
-  meta: RPCDemoMeta
+  meta: RPCDemoMeta,
+  agent: async ({ serviceName, methodName, args, meta }) => {
+    const url = new URL(`//${rpcCfg.client.apps.a}/${serviceName}/${methodName}`, window.location.href)
+    let body
+    let method = 'Post'
+    if (meta.decorators.includes('@Post()')) {
+      body = JSON.stringify({ [RPCKey.Args]: args })
+    } else {
+      method = 'Get'
+      url.searchParams.set(RPCKey.Args, JSON.stringify(args))
+    }
+
+    const res = await window.fetch(url.href, {
+      method,
+      headers: {
+        'content-type': 'application/json'
+      },
+      body
+    })
+    return (await res.json())[RPCKey.Return]
+  }
 })
 
 document.getElementById('send')?.addEventListener('click', () => {

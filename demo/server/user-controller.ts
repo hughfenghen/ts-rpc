@@ -10,6 +10,10 @@ interface Other {
   o: string
 }
 
+function Post (): any {
+  return () => {}
+}
+
 /**
  * service doc
  */
@@ -18,6 +22,7 @@ export class User {
   /**
    * method doc
    */
+  @Post()
   @RPCMethod()
   getInfoById (id: string): UserInfo {
     return { name: '22', age: 18, avatar: '' }

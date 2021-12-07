@@ -6,7 +6,7 @@
   "scripts": {
     "cmd": "ts-rpc",
     "server": "yarn ts-brpc server -c ts-rpc.json && nodemon --watch server --watch client --exec 'ts-node server/index.ts' -e ts",
-    "client": "yarn ts-brpc client -c ts-rpc.json && parcel client/index.html"
+    "client": "yarn ts-brpc client -c ts-rpc.json --outMeta && parcel client/index.html"
   },
   "dependencies": {
     "ts-brpc": "file:../",

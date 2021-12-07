@@ -3,7 +3,10 @@ import { camelCase } from 'lodash'
 import { RPCKey, TRPCMetaFile } from '../common'
 
 interface Ctx {
-  request: { body?: any }
+  request: {
+    body?: any
+    query: { [key: string]: string }
+  }
   body: string
   path: string
   set: (k: string, v: string) => void
@@ -133,11 +136,19 @@ export async function bindMidway (
   })
 }
 
-function getRPCArgs (ctx: Ctx): unknown[] {
-  let args = ctx.request?.body?.[RPCKey.Args]
-  if (args == null) {
+export function getRPCArgs (ctx: Ctx): unknown[] {
+  const req = ctx.request
+  const method = ctx.method.toLowerCase()
+  let args = method === 'get'
+    ? req?.query?.[RPCKey.Args]
+    : req?.body?.[RPCKey.Args]
+
+  try {
+    if (typeof args === 'string') args = JSON.parse(args)
+    if (!Array.isArray(args)) throw Error('Parse args failed')
+  } catch (err) {
+    console.warn(`Cannot find '${RPCKey.Args}' in request body or query, path: ${ctx.path}`)
     args = []
-    console.warn(`Cannot find '${RPCKey.Args}' in request body, path: ${ctx.path}`)
   }
   return args
 }

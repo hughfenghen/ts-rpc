@@ -1,11 +1,23 @@
 import path from 'path'
 import { RPCKey } from '..'
-import { bindKoa, bindMidway } from '../bindings'
+import { bindKoa, bindMidway, getRPCArgs } from '../bindings'
 
 jest.mock('lodash', () => ({
   __esModule: true,
   camelCase: () => ''
 }))
+
+const CTX_TPL = {
+  status: 200,
+  body: '',
+  path: '/',
+  set: () => { },
+  method: 'post',
+  request: {
+    body: {},
+    query: {}
+  }
+}
 
 test('bindKoa', async () => {
   const middlewares: Function[] = []
@@ -22,9 +34,9 @@ test('bindKoa', async () => {
 
   const spyNext = jest.fn()
   await middlewares[0]({
+    ...CTX_TPL,
     path: '/test/User/getInfoById',
-    request: { body: { [RPCKey.Args]: ['111'] } },
-    set: () => {}
+    request: { body: { [RPCKey.Args]: ['111'] } }
   }, spyNext)
   expect(spyNext).toBeCalled()
 })
@@ -34,7 +46,7 @@ test('bindMidway', async () => {
   const spyUse = jest.fn((middleware) => {
     middlewares.push(middleware)
   })
-  const spyGetInfoById = jest.fn()
+  const spyGetInfoById = jest.fn().mockReturnValue('test')
   const spyGetAppCtx = jest.fn().mockReturnValue({
     getAsync: async () => {
       return {
@@ -53,12 +65,44 @@ test('bindMidway', async () => {
   expect(spyGetAppCtx).toBeCalled()
 
   const spyNext = jest.fn()
-  await middlewares[0]({
+  const ctx = {
+    ...CTX_TPL,
     path: '/test/User/getInfoById',
-    request: { body: { [RPCKey.Args]: ['111'] } },
-    set: () => { }
-  }, spyNext)
+    request: { body: { [RPCKey.Args]: ['111'] } }
+  }
+  await middlewares[0](ctx, spyNext)
   expect(spyNext).toBeCalled()
   // args from RPCKey.Args
   expect(spyGetInfoById).lastCalledWith('111')
+  expect(JSON.parse(ctx.body)).toEqual({ [RPCKey.Return]: 'test' })
+})
+
+test('getRPCArgs for http Get request', () => {
+  const argsData = [1, '2', true]
+  const args = getRPCArgs({
+    ...CTX_TPL,
+    method: 'get',
+    request: {
+      query: {
+        [RPCKey.Args]: JSON.stringify(argsData)
+      }
+    }
+  })
+
+  expect(args).toEqual(argsData)
+})
+
+test('getRPCArgs for http Post request', () => {
+  const argsData = [1, '2', true]
+  const args = getRPCArgs({
+    ...CTX_TPL,
+    method: 'get',
+    request: {
+      query: {
+        [RPCKey.Args]: JSON.stringify(argsData)
+      }
+    }
+  })
+
+  expect(args).toEqual(argsData)
 })

@@ -20,5 +20,5 @@ export type TRPCMetaFile = IScanResult & { appId: string }
  */
 export enum RPCKey {
   Args = '_ts_rpc_args_',
-  Return = '_ts_rpc_return'
+  Return = '_ts_rpc_return_'
 }

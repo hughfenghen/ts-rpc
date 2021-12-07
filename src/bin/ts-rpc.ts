@@ -54,13 +54,19 @@ function init (): void {
   program.command('server')
     .description('服务端生成声明文件')
     .requiredOption('-c, --config <path>', '指定远端服务配置，用于获取RPC服务声明文件')
-    .action(async ({ config }) => {
+    .option('--metaOutDir <path>', 'Meta 文件输出位置')
+    .action(async ({ config, metaOutDir: cliMetaDir }) => {
       try {
         console.log('ts-brpc > 开始扫描 RPCService')
         const cfgPath = path.resolve(process.cwd(), config)
-        const { metaOutDir, metaFile } = await handleServerCmd(cfgPath)
+        const { metaOutDir: cfgMetaDir, metaFile } = await handleServerCmd(cfgPath)
+
+        const metaOutDir = cliMetaDir == null
+          ? path.resolve(path.dirname(cfgPath), cfgMetaDir)
+          : path.resolve(process.cwd(), cliMetaDir)
+
         fs.writeFile(
-          path.resolve(path.dirname(cfgPath), metaOutDir, '_rpc_gen_meta_.json'),
+          path.resolve(metaOutDir, '_rpc_gen_meta_.json'),
           JSON.stringify(metaFile, null, 2),
           (err) => {
             if (err != null) throw err

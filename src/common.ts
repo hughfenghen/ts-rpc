@@ -1,5 +1,12 @@
 
-export type TRPCMetaData = Array<{ name: string, path: string, methods: Array<{ name: string }> }>
+export type TRPCMetaData = Array<{
+  name: string
+  path: string
+  methods: Array<{
+    name: string
+    decorators: string[]
+  }>
+}>
 
 export interface IScanResult {
   dts: string

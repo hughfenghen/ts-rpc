@@ -24,7 +24,6 @@ function init (): void {
     .option('--outMeta', '是否向输出文件中添加 Meta 信息')
     .action(async ({ config, outMeta }) => {
       try {
-        console.log(1111, outMeta)
         const cfgPath = path.resolve(process.cwd(), config)
         const { client: { apps, genRPCDefintionTarget } } = await import(cfgPath)
 
@@ -153,7 +152,6 @@ export async function handleClientCmd (
     ].join('\n'))
     .join('\n')
 
-  console.log(1111, codeStr)
   // 合并
   return `${startComment}\n${sf.getFullText()}\n${codeStr}`
 }

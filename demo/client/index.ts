@@ -1,9 +1,10 @@
 import { createRetmoteService } from 'ts-brpc/client'
 import rpcCfg from '../ts-rpc.json'
-import { RPCDemo } from './rpc-definition'
+import { RPCDemo, RPCDemoMeta } from './rpc-definition'
 
 const rs = createRetmoteService<RPCDemo>({
-  baseUrl: rpcCfg.client.apps.a
+  baseUrl: rpcCfg.client.apps.a,
+  meta: RPCDemoMeta
 })
 
 document.getElementById('send')?.addEventListener('click', () => {

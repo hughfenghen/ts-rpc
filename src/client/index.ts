@@ -1,27 +1,45 @@
-import { RPCKey } from '../common'
+import { RPCKey, TRPCMetaData } from '../common'
 
 export { RPCKey }
+
+type MethodMeta = Omit<TRPCMetaData[0]['methods'][0], 'name'>
 
 interface AgentParams {
   serviceName: string
   methodName: string
   args: any[]
+  meta: MethodMeta
 }
 
 interface ServiceCfg {
   baseUrl: string
   agent?: (params: AgentParams) => Promise<unknown>
+  meta?: TRPCMetaData
 }
 
 export function createRetmoteService<T> (cfg: ServiceCfg): T {
   const defHttpAgent = createDefAgent(cfg.baseUrl)
+  const methodMetaMapping = Object.fromEntries(
+    (cfg.meta ?? [])
+      .map(({ name: sName, methods }) => methods.map(({ name: mName, decorators }) => [
+        `${sName}.${mName}`,
+        { decorators }
+      ]))
+      .flat()
+  ) as { [key: string]: MethodMeta }
+
   return new Proxy({}, {
     get (t, serviceName: string) {
       return new Proxy({}, {
         get (t, methodName: string) {
           return async (...args: unknown[]) => {
             return await (cfg.agent ?? defHttpAgent)(
-              { serviceName, methodName, args }
+              {
+                serviceName,
+                methodName,
+                args,
+                meta: methodMetaMapping[`${serviceName}.${methodName}`] ?? {}
+              }
             )
           }
         }

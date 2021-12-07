@@ -67,13 +67,16 @@ class User {
 
 import { createRetmoteService, RPCKey } from 'ts-brpc/client'
 import { client as rpcCientCfg } from '../ts-rpc.json'
-import { RPCDemo } from './rpc-definition'
+import { RPCDemo, RPCDemoMeta } from './rpc-definition'
 
 const rs = createRetmoteService<RPCDemo>({
   baseUrl: cfg.apps.demoLocal,
+  // meta可选，给 agent 添加 server 端的 meta 信息
+  meta: RPCDemoMeta,
   // 可选，用于拦截处理请求
-  // agent: ({ serviceName, methodName, args }) => {
-  //   return axios.post(`//${cfg.apps.demoLocal}/${serviceName}/${methodName}`, {
+  // agent: ({ serviceName, methodName, args, meta }) => {
+  //   // meta.decorators 可以获取信息，判断是否使用 post 请求
+  //   return axios.get(`//${cfg.apps.demoLocal}/${serviceName}/${methodName}`, {
   //     data: {
   //       [RPCKey.Args]: args
   //     }

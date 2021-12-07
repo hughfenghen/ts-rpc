@@ -78,6 +78,27 @@ test('createRetmoteService custom agent', async () => {
   expect(spyAgent.mock.calls[0][0]).toEqual({
     serviceName: 'User',
     methodName: 'getInfoById',
-    args: ['111']
+    args: ['111'],
+    meta: {}
   })
+})
+
+test('add meta data to custom agent args', async () => {
+  const spyAgent = jest.fn()
+  const mockMeta = { decorators: ['@Post()'] }
+  const rs = createRetmoteService<TestApp>({
+    baseUrl: '//localhost:3000/',
+    meta: [{
+      name: 'User',
+      path: '/',
+      methods: [{
+        name: 'getInfoById',
+        ...mockMeta
+      }]
+    }],
+    agent: spyAgent
+  })
+
+  await rs.User.getInfoById('111')
+  expect(spyAgent.mock.calls[0][0].meta).toEqual(mockMeta)
 })

@@ -10,8 +10,13 @@ interface Other {
   o: string
 }
 
-function Post (): any {
-  return () => {}
+// 仅用于标记 Method，传递给 client
+function Post () {
+  return (
+    target: Object,
+    key: string | symbol,
+    descriptor: TypedPropertyDescriptor<(...args: any[]) => any>
+  ) => {}
 }
 
 /**

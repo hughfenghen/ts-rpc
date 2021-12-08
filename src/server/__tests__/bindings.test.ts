@@ -41,6 +41,27 @@ test('bindKoa', async () => {
   expect(spyNext).toBeCalled()
 })
 
+test('bindKoa can not find file', async () => {
+  const middlewares: Function[] = []
+  const spyUse = jest.fn((middleware) => {
+    middlewares.push(middleware)
+  })
+
+  try {
+    await bindKoa({
+      app: { use: spyUse },
+      rpcMetaPath: path.resolve(__dirname, './error_meta.json'),
+      prefixPath: '/test'
+    })
+  } catch (err) {
+    expect(
+      (err as Error).message.startsWith('Could not find RPC Service file:')
+    ).toBe(true)
+    return
+  }
+  throw new Error('not catch error')
+})
+
 test('bindMidway', async () => {
   const middlewares: Function[] = []
   const spyUse = jest.fn((middleware) => {

@@ -1,3 +1,4 @@
+import fs from 'fs'
 import path from 'path'
 import { camelCase } from 'lodash'
 import { RPCKey, TRPCMetaFile } from '../common'
@@ -31,10 +32,23 @@ export async function bindKoa ({ app, rpcMetaPath, prefixPath }: IBindingArgs): 
   const sNameExportMap = Object.fromEntries(
     await Promise.all(
       Array.from(new Set(meta.map(meta => [meta.path, meta.name])))
-        .map(async ([serviceFilePath, serviceName]) => [
-          serviceName,
-          (await import(path.resolve(rpcMetaDir, serviceFilePath)))[serviceName]
-        ])
+        .map(async ([serviceFilePath, serviceName]) => {
+          let tsOrJsPath = path.resolve(rpcMetaDir, serviceFilePath)
+          // 服务器上运行尝试加载对应的 js 文件
+          if (
+            tsOrJsPath.endsWith('.ts') &&
+            !fs.existsSync(tsOrJsPath)
+          ) {
+            tsOrJsPath = tsOrJsPath.slice(0, -2) + 'js'
+          }
+          if (!fs.existsSync(tsOrJsPath)) {
+            throw new Error(`Could not find RPC Service file: ${serviceFilePath} or ${tsOrJsPath}`)
+          }
+          return [
+            serviceName,
+            (await import(tsOrJsPath))[serviceName]
+          ]
+        })
     )
   )
 

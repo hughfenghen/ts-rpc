@@ -1,0 +1,27 @@
+{
+  "appId": "RPCDemo",
+  "dts": "namespace RPCDemoNS {\n    export interface App {\n        User: User;\n    }\n\n    interface UserInfo {\n        name: string;\n        age: number;\n        avatar: string;\n    }\n\n    /**\n     * service doc\n     */\n    interface User {\n        /**\n         * method doc\n         */\n        getInfoById(id: string): Promise<UserInfo>;\n        getUnreadMsg(id: string): Promise<number[]>;\n    }\n}\n\nexport type RPCDemo = RPCDemoNS.App;\n",
+  "meta": [
+    {
+      "name": "User",
+      "path": "not-exists.ts",
+      "methods": [
+        {
+          "name": "getInfoById"
+        },
+        {
+          "name": "getUnreadMsg"
+        }
+      ]
+    },
+    {
+      "name": "Foo",
+      "path": "controller-example.ts",
+      "methods": [
+        {
+          "name": "bar"
+        }
+      ]
+    }
+  ]
+}

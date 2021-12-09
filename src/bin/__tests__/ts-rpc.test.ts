@@ -76,6 +76,7 @@ test('handleClientCmd', async () => {
   expect(fileStr1.includes('export type Test1 = Test1NS.App;')).toBeTruthy()
   expect(fileStr1.includes('export type Test2 = Test2NS.App;')).toBeTruthy()
   expect(fileStr1.includes('export const Test2Meta = [];')).toBeFalsy()
+  expect(fileStr1).toMatchSnapshot()
 
   // 合并原dts文件
   const fileStr2 = await handleClientCmd({
@@ -87,4 +88,5 @@ test('handleClientCmd', async () => {
   expect(fileStr2.includes('export type Test1 = Test1NS.App;')).toBeTruthy()
   expect(fileStr2.includes('export type Test2 = Test2NS.App;')).toBeTruthy()
   expect(fileStr2.includes('export const Test2Meta = [];')).toBeTruthy()
+  expect(fileStr2).toMatchSnapshot()
 })

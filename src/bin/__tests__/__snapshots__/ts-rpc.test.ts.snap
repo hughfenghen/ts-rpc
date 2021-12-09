@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`handleClientCmd 1`] = `
+"/* eslint-disable */
+
+\\"\\\\nnamespace Test1NS {\\\\n  export interface App {\\\\n    tag: 'new'\\\\n  }\\\\n}\\\\nexport type Test1 = Test1NS.App;\\\\n\\"
+
+\\"\\\\nnamespace Test2NS {\\\\n  export interface App {\\\\n    tag: 'new'\\\\n  }\\\\n}\\\\nexport type Test2 = Test2NS.App;\\\\n\\"
+"
+`;
+
+exports[`handleClientCmd 2`] = `
+"
+/* eslint-disable */
+\\"\\\\nnamespace Test1NS {\\\\n  export interface App {\\\\n    tag: 'new'\\\\n  }\\\\n}\\\\nexport type Test1 = Test1NS.App;\\\\n\\"
+export const Test1Meta = [];
+\\"\\\\nnamespace Test2NS {\\\\n  export interface App {\\\\n    tag: 'new'\\\\n  }\\\\n}\\\\nexport type Test2 = Test2NS.App;\\\\n\\"
+export const Test2Meta = [];"
+`;

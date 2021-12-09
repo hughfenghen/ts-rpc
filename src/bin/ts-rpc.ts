@@ -159,5 +159,5 @@ export async function handleClientCmd (
     .join('\n')
 
   // 合并
-  return `${startComment}\n${sf.getFullText()}\n${codeStr}`
+  return `${startComment}\n${sf.getFullText().trim()}\n${codeStr}`
 }

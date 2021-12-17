@@ -7,6 +7,8 @@ interface Other {
 
 function OtherDecorator (): any {}
 
+function ParamsDecorator (): any {}
+
 /**
  * service doc
  */
@@ -26,7 +28,7 @@ export class User {
   }
 
   @RPCMethod()
-  getInfoById3 (id: string): TUserInfo {
+  getInfoById3 (@ParamsDecorator() id: string): TUserInfo {
     return {} as any
   }
 

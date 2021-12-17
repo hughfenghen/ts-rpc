@@ -65,6 +65,8 @@ export function scan (filePaths: string[], appId: string): IScanResult {
     methods.forEach((m) => {
       // 移除原有decorator, 避免 bug：https://github.com/dsherret/ts-morph/issues/1214
       m.getDecorators().forEach(d => d.remove())
+      // 移除 paramster 的 decorator，简化接口信息
+      m.getParameters().forEach(p => p.getDecorators().forEach(d => d.remove()))
 
       const ms = m.getSignature().getDeclaration() as MethodSignature
       const addedM = inter.addMethod(ms.getStructure())

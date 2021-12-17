@@ -84,10 +84,10 @@ export async function bindKoa ({ app, rpcMetaPath, prefixPath }: IBindingArgs): 
 
     if (ins == null) {
       ins = new sNameExportMap[sPath]()
-      ins.ctx = ctx
       pathInstanceMap.set(ctx.path, ins)
     }
 
+    ins.ctx = ctx
     ctx.body = JSON.stringify(wrapRPCReturn(
       await ins[mPath](...getRPCArgs(ctx))
     ))

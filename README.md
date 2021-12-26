@@ -104,8 +104,8 @@ console.log(userInfo) // { name: '22', age: 18, avatar: '<imgage url>' }
 1. ts-brpc命令根据 json 配置，扫描对应目录的源文件  
 2. 找到（RPCService、RPCMethod）标识的 class、method，写入_rpc_gen_meta_.json  
 3. http 服务启动时，注入中间件（bindKoa、bindMidway）  
-4. 中间件加载**_rpc_gen_meta_.json，**同时处理符合条件的 client 请求  
-5. 根据请求 的url path 匹配，若匹配成功则执行 server 中对应calss 的 method  
+4. 中间件加载 **_rpc_gen_meta_.json**, 同时处理符合条件的 client 请求  
+5. 根据请求 的url path 匹配，若匹配成功则执行 server 中对应class 的 method  
 6. 获取返回值后，写入 http body
 
 ### client

@@ -150,6 +150,8 @@ export function collectTypeDeps (t: Node, prj: Project): ITCDeclaration[] {
     const nodeName = n.getNameNode()?.getText()
     if (nodeName == null) throw new Error('dependency must be named')
     depsMap.add(n)
+    // 被添加的依赖项，递归检查其依赖项
+    queryInTree(n)
   }
 
   if (t instanceof TypeReferenceNode) {
@@ -201,7 +203,6 @@ export function collectTypeDeps (t: Node, prj: Project): ITCDeclaration[] {
     if (declaration == null) throw Error(`Could not find interface, class or type (${impName}) in ${fPath}`)
 
     addDep(declaration)
-    queryInTree(declaration)
   }
 
   // 解析import语法，从其他文件中查找依赖项
@@ -214,6 +215,5 @@ export function collectTypeDeps (t: Node, prj: Project): ITCDeclaration[] {
     if (declaration == null) throw Error(`Could not find interface, class or type (${impName}) in ${impSf.getFilePath()}`)
 
     addDep(declaration)
-    queryInTree(declaration)
   }
 }

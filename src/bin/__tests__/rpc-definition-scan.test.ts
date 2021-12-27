@@ -25,9 +25,15 @@ test('scan', () => {
 test('collectMethodTypeDeps', () => {
   const prj = new Project({ compilerOptions: { declaration: true } })
   const sf = prj.createSourceFile('test.ts', `
-    interface A {}
-    type B {}
-    interface Z {}
+    interface A {
+    }
+    type B = {}
+    interface Y {
+      a: number
+    }
+    interface Z {
+      y: Y[]
+    }
 
     class Test {
       foo (a: A, b: B, c: string): Z {}
@@ -38,7 +44,7 @@ test('collectMethodTypeDeps', () => {
     sf.getClass('Test')?.getMethod('foo') as MethodDeclaration,
     prj
   )
-  expect(deps.map(d => d.getName())).toEqual(['A', 'B', 'Z'])
+  expect(deps.map(d => d.getName())).toEqual(['A', 'B', 'Z', 'Y'])
 })
 
 test('collectTypeDeps', () => {

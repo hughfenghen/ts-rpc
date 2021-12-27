@@ -147,6 +147,7 @@ export function collectTypeDeps (t: Node, prj: Project): ITCDeclaration[] {
   const depsMap = new Set<ITCDeclaration>()
 
   function addDep (n: ITCDeclaration): void {
+    if (depsMap.has(n)) return
     const nodeName = n.getNameNode()?.getText()
     if (nodeName == null) throw new Error('dependency must be named')
     depsMap.add(n)

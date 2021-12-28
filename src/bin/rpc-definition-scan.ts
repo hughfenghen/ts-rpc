@@ -4,9 +4,22 @@ import path from 'path'
 import { existsSync } from 'fs'
 import { IScanResult, TRPCMetaData } from '../common'
 
-export function scan (filePaths: string[], appId: string): IScanResult {
+export function scan (
+  filePaths: string[],
+  appId: string,
+  opts?: {
+    tsConfigFilePath?: string
+  }
+): IScanResult {
   const files = filePaths.map(f => glob.sync(f)).flat()
-  const prj = new Project({ compilerOptions: { declaration: false, sourceMap: false, isolatedModules: true } })
+  const prj = new Project({
+    compilerOptions: {
+      declaration: false,
+      sourceMap: false,
+      isolatedModules: true
+    },
+    tsConfigFilePath: opts?.tsConfigFilePath
+  })
   files.forEach(file => {
     return prj.addSourceFileAtPath(file)
   })
@@ -195,6 +208,7 @@ export function collectTypeDeps (t: Node, prj: Project): ITCDeclaration[] {
       })
   }
 
+  // 解析动态 import 函数
   function findIT4Import (n: ImportTypeNode): void {
     const fPath = n.getArgument().getText().slice(1, -1)
     const sf = prj.getSourceFile(sf => sf.getFilePath().includes(fPath))

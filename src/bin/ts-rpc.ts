@@ -83,10 +83,14 @@ function init (): void {
 
 export async function handleServerCmd (cfgPath: string): Promise<{ metaOutDir: string, metaFile: TRPCMetaFile }> {
   const { appId, server } = await import(cfgPath)
+  const tsCfgPath = findTSCfgPath(path.dirname(cfgPath))
   const scanData = scan(
     server.scanDir
       .map((p: string) => path.resolve(path.dirname(cfgPath), p)),
-    appId
+    appId,
+    {
+      tsConfigFilePath: tsCfgPath ?? undefined
+    }
   )
   scanData.meta = scanData.meta.map(m => ({
     ...m,
@@ -160,4 +164,19 @@ export async function handleClientCmd (
 
   // 合并
   return `${startComment}\n${sf.getFullText().trim()}\n${codeStr}`
+}
+
+/**
+ * 递归向上查找 tsconfig.json 的位置
+ */
+export function findTSCfgPath (p: string): string | null {
+  if (p === '/' || !fs.existsSync(p)) return null
+
+  const tsCfgPath = path.resolve(p, 'tsconfig.json')
+  if (fs.existsSync(tsCfgPath)) return tsCfgPath
+
+  const pkgPath = path.resolve(p, 'package.json')
+  if (fs.existsSync(pkgPath)) return null
+
+  return findTSCfgPath(path.resolve(p, '..'))
 }

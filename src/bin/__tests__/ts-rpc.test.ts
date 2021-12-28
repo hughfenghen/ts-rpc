@@ -1,6 +1,6 @@
 import path from 'path'
 import got from 'got'
-import { handleClientCmd, handleServerCmd } from '../ts-rpc'
+import { findTSCfgPath, handleClientCmd, handleServerCmd } from '../ts-rpc'
 
 jest.mock('got')
 
@@ -89,4 +89,10 @@ test('handleClientCmd', async () => {
   expect(fileStr2.includes('export type Test2 = Test2NS.App;')).toBeTruthy()
   expect(fileStr2.includes('export const Test2Meta = [];')).toBeTruthy()
   expect(fileStr2).toMatchSnapshot()
+})
+
+test('findTSCfgPath', () => {
+  expect(findTSCfgPath(__dirname)).toContain('__tests__/tsconfig.json')
+  expect(findTSCfgPath(path.resolve('/not-exists-path'))).toBe(null)
+  expect(findTSCfgPath(path.resolve('/'))).toBe(null)
 })

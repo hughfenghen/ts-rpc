@@ -1,5 +1,6 @@
 import { RPCMethod, RPCService } from '../../server'
-import { CUserInfo, IUserInfo, TUserInfo } from './user-info'
+// @ts-expect-error
+import { CUserInfo, IUserInfo, TUserInfo } from '@/user-info'
 
 interface Other {
   o: string

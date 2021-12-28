@@ -3,7 +3,9 @@ import { MethodDeclaration, Project } from 'ts-morph'
 import { collectMethodTypeDeps, collectTypeDeps, scan } from '../rpc-definition-scan'
 
 test('scan', () => {
-  const { dts, meta } = scan([path.resolve(__dirname, '*.ts')], 'ScanTest')
+  const { dts, meta } = scan([path.resolve(__dirname, '*.ts')], 'ScanTest', {
+    tsConfigFilePath: path.resolve(__dirname, 'tsconfig.json')
+  })
 
   expect(dts).toMatchSnapshot()
   expect(meta).toEqual([{

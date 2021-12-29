@@ -34,7 +34,7 @@
 // 运行 server 服务之前执行`ts-brpc`命令
 // scripts: yarn ts-brpc server -c ts-brpc.json && yarn dev
 
-import { bindKoa, RPCService, RPCMethod } from 'ts-brpc/server'
+import { bindKoa, RPCService, RPCMethod, logger } from 'ts-brpc/server'
 
 bindKoa(User) // 或者 bindMidway
 
@@ -58,6 +58,11 @@ class User {
     }
   }
 }
+
+// logger.watch 可以监听日志消息
+logger.watch((logItem: {log: string, lv: LogLevel}) => {
+  // 处理日志
+})
 ```
 
 ### 客户端

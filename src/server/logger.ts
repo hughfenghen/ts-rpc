@@ -1,27 +1,35 @@
-export enum LogLevel {
+enum LogLevel {
   Debug = 0,
   Info = 1,
   Warn = 2,
   Error = 3,
 }
 
-let printLv = LogLevel.Warn
+type TWatcher = (logItem: {log: string, lv: LogLevel}) => void
+/**
+ * 存储日志变化监听器
+ */
+const _watchers = new Set<TWatcher>()
+
 export const logger = {
+  LogLevel,
   debug,
   info,
   warn,
   error,
-  setPrintLv (lv: LogLevel) {
-    printLv = lv
+  watch (fn: TWatcher): () => void {
+    _watchers.add(fn)
+    return () => {
+      _watchers.delete(fn)
+    }
   }
 }
 
 function _log (content: any, level: LogLevel): void {
-  if (level >= printLv) {
-    const method = LogLevel[level].toLowerCase() as 'debug' | 'info' | 'warn' | 'error'
-
-    console[method](`[ts-brpc] ${String(content)}`)
-  }
+  _watchers.forEach(watcher => watcher({
+    lv: level,
+    log: `[ts-brpc] ${String(content)}`
+  }))
 }
 
 function debug (content: any): void {

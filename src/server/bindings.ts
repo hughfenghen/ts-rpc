@@ -2,6 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import { camelCase } from 'lodash'
 import { RPCKey, TRPCMetaFile } from '../common'
+import { logger } from './logger'
 
 interface Ctx {
   request: {
@@ -161,7 +162,7 @@ export function getRPCArgs (ctx: Ctx): unknown[] {
     if (typeof args === 'string') args = JSON.parse(args)
     if (!Array.isArray(args)) throw Error('Parse args failed')
   } catch (err) {
-    console.warn(`Cannot find '${RPCKey.Args}' in request body or query, path: ${ctx.path}`)
+    logger.info(`Cannot find '${RPCKey.Args}' in request body or query, path: ${ctx.path}`)
     args = []
   }
   return args

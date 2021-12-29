@@ -1,7 +1,12 @@
 import 'reflect-metadata'
+import { logger, LogLevel } from './logger'
 
 export { RPCKey } from '../common'
 export { bindKoa, bindMidway } from './bindings'
+
+logger.setPrintLv(
+  process.env.NODE_ENV === 'development' ? LogLevel.Debug : LogLevel.Warn
+)
 
 const SERVICE_METADATA = 'path'
 const METHOD_METADATA = 'method'

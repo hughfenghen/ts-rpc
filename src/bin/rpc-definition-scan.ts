@@ -55,9 +55,15 @@ export function scan (
   genSf.addTypeAlias(expTypeSf.getTypeAlias(appId)?.getStructure() as TypeAliasDeclarationStructure)
 
   const rpcMetaData: TRPCMetaData = []
+  // 已添加到 appNS 中的依赖，避免依赖项重复
+  const addedDepIds: string[] = []
+  // 遍历 class，将 class 转换为 interface，并将其依赖添加到 appNS
   refedClasses.forEach((c) => {
     const className = c.getName()
+
     if (className == null) throw Error('RPCService must be applied to a named class')
+    if (appNS.getInterface(className) != null) throw Error(`RPCService marks duplicate class names: ${className}`)
+
     const methods = findRPCMethods(c, rpcMethodDef)
     if (methods.length === 0) {
       throw Error(`RPCService(${className}) must have at least one method`)
@@ -92,7 +98,6 @@ export function scan (
       addedM.setReturnType(rtText)
     })
 
-    const addedIds: string[] = []
     methods.map(m => collectMethodTypeDeps(m, prj))
       .flat()
       .forEach(it => {
@@ -100,8 +105,8 @@ export function scan (
         if (nodeName == null) throw new Error('dependency must be named')
         const sid = it.getSourceFile().getFilePath() + '/' + nodeName
         // 避免重复, ECMA标准依赖无须添加
-        if (addedIds.includes(sid) || sid.includes('typescript/lib/')) return
-        addedIds.push(sid)
+        if (addedDepIds.includes(sid) || sid.includes('typescript/lib/')) return
+        addedDepIds.push(sid)
 
         // 添加 method 依赖的类型
         let added = null

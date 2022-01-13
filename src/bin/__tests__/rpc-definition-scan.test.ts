@@ -21,6 +21,12 @@ test('scan', () => {
     name: 'Foo',
     path: expect.stringContaining('/src/bin/__tests__/controller-example.ts'),
     methods: [{ name: 'bar', decorators: ['@RPCMethod()'] }]
+  }, {
+    name: 'User1',
+    path: expect.stringContaining('/src/bin/__tests__/controller-example1.ts'),
+    methods: [
+      { name: 'getInfoById1', decorators: ['@RPCMethod()'] }
+    ]
   }])
 })
 

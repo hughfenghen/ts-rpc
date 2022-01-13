@@ -1,10 +1,5 @@
 import { RPCMethod, RPCService } from '../../server'
-// @ts-expect-error
 import { CUserInfo } from '@/user-info'
-
-interface Other {
-  o: string
-}
 
 /**
  * service doc

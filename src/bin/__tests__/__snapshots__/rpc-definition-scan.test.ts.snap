@@ -5,6 +5,7 @@ exports[`scan 1`] = `
     export interface App {
         User: User;
         Foo: Foo;
+        User1: User1;
     }
 
     export type TUserInfo = CUserInfo & IUserInfo;
@@ -37,6 +38,17 @@ exports[`scan 1`] = `
 
     interface Foo {
         bar(): Promise<void>;
+    }
+
+    /**
+     * service doc
+     * 验证公共依赖 CUserInfo
+     */
+    interface User1 {
+        /**
+         * method doc
+         */
+        getInfoById1(id: string): Promise<CUserInfo>;
     }
 }
 

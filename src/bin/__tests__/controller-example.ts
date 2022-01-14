@@ -18,7 +18,7 @@ export class User {
    * method doc
    */
   @RPCMethod()
-  getInfoById1 (id: string): CUserInfo {
+  getInfoById1 (id: string = '111'): CUserInfo {
     return {} as any
   }
 

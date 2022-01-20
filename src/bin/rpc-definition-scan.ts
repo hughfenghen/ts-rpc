@@ -109,7 +109,7 @@ export function scan (
         if (nodeName == null) throw new Error('dependency must be named')
         const sid = it.getSourceFile().getFilePath() + '/' + nodeName
         // 避免重复, ECMA标准依赖无须添加
-        if (addedDepIds.includes(sid) || sid.includes('typescript/lib/')) return
+        if (addedDepIds.includes(sid) || /typescript\/lib|@types\/node/.test(sid)) return
         addedDepIds.push(sid)
 
         // 添加 method 依赖的类型

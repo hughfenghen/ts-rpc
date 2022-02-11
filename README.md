@@ -97,8 +97,9 @@ console.log(userInfo) // { name: '22', age: 18, avatar: '<imgage url>' }
 
 ## 运行 demo
 1. `git clone git@github.com:hughfenghen/ts-rpc.git`  
-2. `cd demo && yarn`  
-3. `yarn server` 新开 shell 窗口，`yarn client`  
+2. `yarn build`
+3. `cd demo && yarn`  
+4. `yarn server` 然后新开 shell 窗口 `yarn client`  
 
 ## 工作原理说明
 

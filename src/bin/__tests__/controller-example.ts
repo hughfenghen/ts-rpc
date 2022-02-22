@@ -10,6 +10,13 @@ function OtherDecorator (): any {}
 function ParamsDecorator (): any {}
 
 /**
+ * 与其他文件中的变量命名冲突，只保留一份，扫描时提供警告
+ */
+interface IDuplicate {
+  nothing: string
+}
+
+/**
  * service doc
  */
 @RPCService()
@@ -18,7 +25,7 @@ export class User {
    * method doc
    */
   @RPCMethod()
-  getInfoById1 (id: string = '111'): CUserInfo {
+  getInfoById1 (id: string = '111'): CUserInfo & IDuplicate {
     return {} as any
   }
 

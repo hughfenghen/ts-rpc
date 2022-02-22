@@ -17,7 +17,7 @@ interface ServiceCfg {
   meta?: TRPCMetaData
 }
 
-export function createRetmoteService<T> (cfg: ServiceCfg): T {
+export function createRemoteService<T> (cfg: ServiceCfg): T {
   const defHttpAgent = createDefAgent(cfg.baseUrl)
   const methodMetaMapping = Object.fromEntries(
     (cfg.meta ?? [])

@@ -1,8 +1,8 @@
-import { createRetmoteService, RPCKey } from 'ts-brpc/client'
+import { createRemoteService, RPCKey } from 'ts-brpc/client'
 import rpcCfg from '../ts-rpc.json'
 import { RPCDemo, RPCDemoMeta } from './rpc-definition'
 
-const rs = createRetmoteService<RPCDemo>({
+const rs = createRemoteService<RPCDemo>({
   baseUrl: rpcCfg.client.apps.a,
   meta: RPCDemoMeta,
   agent: async ({ serviceName, methodName, args, meta }) => {

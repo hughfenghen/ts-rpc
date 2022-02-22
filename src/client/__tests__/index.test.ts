@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { createRetmoteService, RPCKey } from '..'
+import { createRemoteService, RPCKey } from '..'
 
 const spyFetch = jest.fn().mockResolvedValue({
   json: () => ({
@@ -24,8 +24,8 @@ jest.mock('http', () => ({
 interface TestApp {
   User: { getInfoById: (id: string) => Promise<{data: string}> }
 }
-test('createRetmoteService default node agent', async () => {
-  const rs = createRetmoteService<TestApp>({
+test('createRemoteService default node agent', async () => {
+  const rs = createRemoteService<TestApp>({
     baseUrl: '//localhost:3000/'
   })
 
@@ -58,8 +58,8 @@ test('createRetmoteService default node agent', async () => {
   window.fetch = spyFetch
 })
 
-test('createRetmoteService default browser agent', async () => {
-  const rs = createRetmoteService<TestApp>({
+test('createRemoteService default browser agent', async () => {
+  const rs = createRemoteService<TestApp>({
     baseUrl: '//localhost:3000/'
   })
 
@@ -68,9 +68,9 @@ test('createRetmoteService default browser agent', async () => {
   expect(await info).toEqual({})
 })
 
-test('createRetmoteService custom agent', async () => {
+test('createRemoteService custom agent', async () => {
   const spyAgent = jest.fn().mockResolvedValue({})
-  const rs = createRetmoteService<TestApp>({
+  const rs = createRemoteService<TestApp>({
     baseUrl: '//localhost:3000/',
     agent: spyAgent
   }) as any
@@ -86,7 +86,7 @@ test('createRetmoteService custom agent', async () => {
 test('add meta data to custom agent args', async () => {
   const spyAgent = jest.fn()
   const mockMeta = { decorators: ['@Post()'] }
-  const rs = createRetmoteService<TestApp>({
+  const rs = createRemoteService<TestApp>({
     baseUrl: '//localhost:3000/',
     meta: [{
       name: 'User',

@@ -70,11 +70,11 @@ logger.watch((logItem: {log: string, lv: LogLevel}) => {
 // 运行 client 服务之前执行`ts-brpc`命令
 // scripts: yarn ts-brpc client -c ts-brpc.json --outMeta && yarn dev
 
-import { createRetmoteService, RPCKey } from 'ts-brpc/client'
+import { createRemoteService, RPCKey } from 'ts-brpc/client'
 import { client as rpcCientCfg } from '../ts-rpc.json'
 import { RPCDemo, RPCDemoMeta } from './rpc-definition'
 
-const rs = createRetmoteService<RPCDemo>({
+const rs = createRemoteService<RPCDemo>({
   baseUrl: cfg.apps.demoLocal,
   // meta可选，给 agent 添加 server 端的 meta 信息
   meta: RPCDemoMeta,

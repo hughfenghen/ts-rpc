@@ -1,5 +1,5 @@
 import glob from 'glob'
-import { Project, Node, ClassDeclaration, FunctionDeclaration, MethodDeclaration, InterfaceDeclaration, SyntaxKind, TypeReferenceNode, TypeAliasDeclaration, MethodSignature, ImportTypeNode, ImportSpecifier, TypeAliasDeclarationStructure } from 'ts-morph'
+import { Project, Node, ClassDeclaration, FunctionDeclaration, MethodDeclaration, InterfaceDeclaration, SyntaxKind, TypeReferenceNode, TypeAliasDeclaration, MethodSignature, ImportTypeNode, ImportSpecifier, TypeAliasDeclarationStructure, EnumDeclaration } from 'ts-morph'
 import path from 'path'
 import { existsSync } from 'fs'
 import { IScanResult, TRPCMetaData } from '../common'
@@ -118,6 +118,8 @@ export function scan (
           added = appNS.insertInterface(1, it.getStructure())
         } else if (it instanceof TypeAliasDeclaration) {
           added = appNS.insertTypeAlias(1, it.getStructure())
+        } else if (it instanceof EnumDeclaration) {
+          added = appNS.insertEnum(1, it.getStructure())
         } else if (it instanceof ClassDeclaration) {
           added = appNS.insertClass(1, it.getStructure())
           // 只保留 class 的属性方法, 移除属性、class 的decorator 信息
@@ -154,8 +156,13 @@ function findRPCMethods (service: ClassDeclaration, rpcMethodDef: FunctionDeclar
     ))
 }
 
-// 收集依赖树只考虑这三种场景
-type ITCDeclaration = InterfaceDeclaration | TypeAliasDeclaration | ClassDeclaration
+// 收集依赖树只考虑这四种场景
+type ITCDeclaration =
+  | InterfaceDeclaration
+  | TypeAliasDeclaration
+  | ClassDeclaration
+  | EnumDeclaration
+
 export function collectMethodTypeDeps (
   method: MethodDeclaration,
   prj: Project
@@ -197,11 +204,12 @@ export function collectTypeDeps (t: Node, prj: Project): ITCDeclaration[] {
     })
   }
 
-  // 检查是否是 interface、type、class，收集依赖树只考虑这三种场景
+  // 收集依赖树只考虑这4种场景
   function isITCDeclaration (n: Node): n is ITCDeclaration {
     return n instanceof InterfaceDeclaration ||
       n instanceof TypeAliasDeclaration ||
-      n instanceof ClassDeclaration
+      n instanceof ClassDeclaration ||
+      n instanceof EnumDeclaration
   }
 
   function findITDeclaration (n: Node): void {

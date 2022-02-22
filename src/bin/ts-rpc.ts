@@ -81,6 +81,9 @@ function init (): void {
   program.parse(process.argv)
 }
 
+/**
+ * 扫描指定目录中的 ts 文件，_rpc_gen_meta_.json 文件内容
+ */
 export async function handleServerCmd (cfgPath: string): Promise<{ metaOutDir: string, metaFile: TRPCMetaFile }> {
   const { appId, server } = await import(cfgPath)
   const tsCfgPath = findTSCfgPath(path.dirname(cfgPath))
@@ -106,6 +109,9 @@ export async function handleServerCmd (cfgPath: string): Promise<{ metaOutDir: s
   }
 }
 
+/**
+ * 从多个远程获取声明文件，然后与本地声明文件合并（覆盖）
+ */
 export async function handleClientCmd (
   apps: {[key: string]: string},
   localDefStr: string,

@@ -10,10 +10,22 @@ exports[`scan 1`] = `
 
     export type TUserInfo = CUserInfo & IUserInfo;
 
+    /**
+     * 注释：性别
+     */
+    export enum Gender {
+        /**
+         * 枚举注释
+         */
+        Male = 'male',
+        Female = 'female'
+    }
+
     export interface IUserInfo {
         name: string;
         age: Date;
         avatar: string;
+        gender: Gender;
     }
 
     export class CUserInfo {

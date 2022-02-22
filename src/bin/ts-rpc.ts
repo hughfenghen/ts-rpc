@@ -6,7 +6,7 @@ import path from 'path'
 import fs from 'fs'
 import got from 'got'
 import { scan } from './rpc-definition-scan'
-import { TRPCMetaFile } from '../common'
+import { TRPCMetaData, TRPCMetaFile } from '../common'
 import { Project } from 'ts-morph'
 
 const program = new Command()
@@ -136,7 +136,7 @@ export async function handleClientCmd (
     .reduce((sum, acc) => ({
       ...sum,
       [acc.appId]: { dts: acc.dts, meta: acc.meta }
-    }), {}) as { [appId: string]: { dts: string, meta: string }}
+    }), {}) as { [appId: string]: { dts: string, meta: TRPCMetaData }}
 
   if (Object.keys(serverDts).length === 0) return ''
 
@@ -159,6 +159,7 @@ export async function handleClientCmd (
     sf.getModule(`${appId}NS`)?.remove()
     sf.getVariableDeclaration(`${appId}Meta`)?.remove()
   })
+
   const codeStr = Object.entries(serverDts)
     .map(([appId, { dts, meta }]) => [
       dts,
@@ -168,8 +169,26 @@ export async function handleClientCmd (
     ].join('\n'))
     .join('\n')
 
-  // 合并
+  // 合并 (注释 + 本地代码 + 同步的新代码)
   return `${startComment}\n${sf.getFullText().trim()}\n${codeStr}`
+}
+
+export function filterService (
+  code: string,
+  appMeta: Record<string, TRPCMetaData>,
+  includeServices: string[]
+): { code: string, meta: Record<string, TRPCMetaData> } {
+  return {
+    code: '',
+    meta: Object.fromEntries(
+      Object.entries(appMeta)
+        .map(([appId, meta]) => [
+          appId,
+          meta.filter(({ name }) => includeServices.includes(name))
+        ])
+        .filter(([appId, meta]) => meta.length > 0)
+    )
+  }
 }
 
 /**

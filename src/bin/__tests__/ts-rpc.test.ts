@@ -1,6 +1,7 @@
 import path from 'path'
 import got from 'got'
-import { findTSCfgPath, handleClientCmd, handleServerCmd } from '../ts-rpc'
+import { filterService, findTSCfgPath, handleClientCmd, handleServerCmd } from '../ts-rpc'
+import { filterServiceMockCode, filterServiceMockMeta } from './data/filter-service.data'
 
 jest.mock('got')
 
@@ -95,4 +96,16 @@ test('findTSCfgPath', () => {
   expect(findTSCfgPath(__dirname)).toContain('__tests__/tsconfig.json')
   expect(findTSCfgPath(path.resolve('/not-exists-path'))).toBe(null)
   expect(findTSCfgPath(path.resolve('/'))).toBe(null)
+})
+
+test('filterService', () => {
+  const { code, meta } = filterService(
+    filterServiceMockCode,
+    filterServiceMockMeta,
+    ['User1']
+  )
+  expect(code.includes('User1')).toBe(true)
+  expect(code.includes('User2')).toBe(false)
+  expect(meta.RPCDemoMeta1.length).toBe(1)
+  expect(meta.RPCDemoMeta2).toBeUndefined()
 })

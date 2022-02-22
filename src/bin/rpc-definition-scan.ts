@@ -102,14 +102,21 @@ export function scan (
       addedM.setReturnType(rtText)
     })
 
+    // TODO: 性能优化，前面 method 已添加的 node 不必再查找
     methods.map(m => collectMethodTypeDeps(m, prj))
       .flat()
       .forEach(it => {
         const nodeName = it.getNameNode()?.getText()
         if (nodeName == null) throw new Error('dependency must be named')
+
         const sid = it.getSourceFile().getFilePath() + '/' + nodeName
         // 避免重复, ECMA标准依赖无须添加
         if (addedDepIds.includes(sid) || /typescript\/lib|@types\/node/.test(sid)) return
+
+        if (addedDepIds.some(sid => sid.endsWith(`/${nodeName}`))) {
+          console.warn(`Named duplicate: ${nodeName}`)
+          return
+        }
         addedDepIds.push(sid)
 
         // 添加 method 依赖的类型

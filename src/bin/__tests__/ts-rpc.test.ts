@@ -41,7 +41,7 @@ namespace Test1NS {
 export type Test1 = Test1NS.App;
 `
 
-test('handleClientCmd', async () => {
+describe('handleClientCmd', () => {
   // 避免输出
   console.log = jest.fn()
   console.warn = jest.fn()
@@ -67,29 +67,33 @@ test('handleClientCmd', async () => {
     }
   })
 
-  // 新建dts文件
-  const fileStr1 = await handleClientCmd({
-    a: '127.0.0.1:3000',
-    b: '127.0.0.1:4000'
-  }, '', {})
+  test('new definition file', async () => {
+    // 新建dts文件
+    const fileStr1 = await handleClientCmd({
+      a: '127.0.0.1:3000',
+      b: '127.0.0.1:4000'
+    }, '', {})
 
-  expect(/^\/\* eslint-disable \*\//.test(fileStr1.trim())).toBeTruthy()
-  expect(fileStr1.includes('export type Test1 = Test1NS.App;')).toBeTruthy()
-  expect(fileStr1.includes('export type Test2 = Test2NS.App;')).toBeTruthy()
-  expect(fileStr1.includes('export const Test2Meta = [];')).toBeFalsy()
-  expect(fileStr1).toMatchSnapshot()
+    expect(/^\/\* eslint-disable \*\//.test(fileStr1.trim())).toBeTruthy()
+    expect(fileStr1.includes('export type Test1 = Test1NS.App;')).toBeTruthy()
+    expect(fileStr1.includes('export type Test2 = Test2NS.App;')).toBeTruthy()
+    expect(fileStr1.includes('export const Test2Meta = [];')).toBeFalsy()
+    expect(fileStr1).toMatchSnapshot()
+  })
 
-  // 合并原dts文件
-  const fileStr2 = await handleClientCmd({
-    a: '127.0.0.1:3000',
-    b: '127.0.0.1:4000'
-  }, mockLocalDefStr, { outMeta: true })
+  test('concat definition file', async () => {
+    // 合并原dts文件
+    const fileStr2 = await handleClientCmd({
+      a: '127.0.0.1:3000',
+      b: '127.0.0.1:4000'
+    }, mockLocalDefStr, { outMeta: true })
 
-  expect(/^\/\* eslint-disable \*\//.test(fileStr2.trim())).toBeTruthy()
-  expect(fileStr2.includes('export type Test1 = Test1NS.App;')).toBeTruthy()
-  expect(fileStr2.includes('export type Test2 = Test2NS.App;')).toBeTruthy()
-  expect(fileStr2.includes('export const Test2Meta = [];')).toBeTruthy()
-  expect(fileStr2).toMatchSnapshot()
+    expect(/^\/\* eslint-disable \*\//.test(fileStr2.trim())).toBeTruthy()
+    expect(fileStr2.includes('export type Test1 = Test1NS.App;')).toBeTruthy()
+    expect(fileStr2.includes('export type Test2 = Test2NS.App;')).toBeTruthy()
+    expect(fileStr2.includes('export const Test2Meta = [];')).toBeTruthy()
+    expect(fileStr2).toMatchSnapshot()
+  })
 })
 
 test('findTSCfgPath', () => {

@@ -1,6 +1,7 @@
 import path from 'path'
-import { MethodDeclaration, Project } from 'ts-morph'
-import { collectMethodTypeDeps, collectTypeDeps, scan } from '../rpc-definition-scan'
+import { Project } from 'ts-morph'
+import { scan } from '../rpc-definition-scan'
+import { collectTypeDeps } from '../utils'
 
 test('scan', () => {
   const { dts, meta } = scan([path.resolve(__dirname, '*.ts')], 'ScanTest', {
@@ -28,31 +29,6 @@ test('scan', () => {
       { name: 'getInfoById1', decorators: ['@RPCMethod()'] }
     ]
   }])
-})
-
-test('collectMethodTypeDeps', () => {
-  const prj = new Project({ compilerOptions: { declaration: true } })
-  const sf = prj.createSourceFile('test.ts', `
-    interface A {
-    }
-    type B = {}
-    interface Y {
-      a: number
-    }
-    interface Z {
-      y: Y[]
-    }
-
-    class Test {
-      foo (a: A, b: B, c: string): Z {}
-    }
-  `)
-
-  const deps = collectMethodTypeDeps(
-    sf.getClass('Test')?.getMethod('foo') as MethodDeclaration,
-    prj
-  )
-  expect(deps.map(d => d.getName())).toEqual(['A', 'B', 'Z', 'Y'])
 })
 
 test('collectTypeDeps', () => {

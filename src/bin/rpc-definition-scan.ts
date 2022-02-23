@@ -1,8 +1,9 @@
 import glob from 'glob'
-import { Project, Node, ClassDeclaration, FunctionDeclaration, MethodDeclaration, InterfaceDeclaration, SyntaxKind, TypeReferenceNode, TypeAliasDeclaration, MethodSignature, ImportTypeNode, ImportSpecifier, TypeAliasDeclarationStructure, EnumDeclaration } from 'ts-morph'
+import { Project, Node, ClassDeclaration, FunctionDeclaration, MethodDeclaration, InterfaceDeclaration, TypeAliasDeclaration, MethodSignature, TypeAliasDeclarationStructure, EnumDeclaration } from 'ts-morph'
 import path from 'path'
 import { existsSync } from 'fs'
 import { IScanResult, TRPCMetaData } from '../common'
+import { collectTypeDeps } from './utils'
 
 export function scan (
   filePaths: string[],
@@ -103,7 +104,9 @@ export function scan (
     })
 
     // TODO: 性能优化，前面 method 已添加的 node 不必再查找
-    methods.map(m => collectMethodTypeDeps(m, prj))
+    methods.map(m => [...m.getParameters(), m.getReturnTypeNodeOrThrow()])
+      .flat()
+      .map(n => collectTypeDeps(n, prj))
       .flat()
       .forEach(it => {
         const nodeName = it.getNameNode()?.getText()
@@ -111,6 +114,7 @@ export function scan (
 
         const sid = it.getSourceFile().getFilePath() + '/' + nodeName
         // 避免重复, ECMA标准依赖无须添加
+        // TODO: utils 替换
         if (addedDepIds.includes(sid) || /typescript\/lib|@types\/node/.test(sid)) return
 
         if (addedDepIds.some(sid => sid.endsWith(`/${nodeName}`))) {
@@ -120,6 +124,7 @@ export function scan (
         addedDepIds.push(sid)
 
         // 添加 method 依赖的类型
+        // TODO: utils 替换
         let added = null
         if (it instanceof InterfaceDeclaration) {
           added = appNS.insertInterface(1, it.getStructure())
@@ -161,98 +166,4 @@ function findRPCMethods (service: ClassDeclaration, rpcMethodDef: FunctionDeclar
         }
       }
     ))
-}
-
-// 收集依赖树只考虑这四种场景
-type ITCDeclaration =
-  | InterfaceDeclaration
-  | TypeAliasDeclaration
-  | ClassDeclaration
-  | EnumDeclaration
-
-export function collectMethodTypeDeps (
-  method: MethodDeclaration,
-  prj: Project
-): ITCDeclaration[] {
-  return [...method.getParameters(), method.getReturnTypeNodeOrThrow()]
-    .map(n => collectTypeDeps(n, prj))
-    .flat()
-}
-
-export function collectTypeDeps (t: Node, prj: Project): ITCDeclaration[] {
-  const depsMap = new Set<ITCDeclaration>()
-
-  function addDep (n: ITCDeclaration): void {
-    if (depsMap.has(n)) return
-    const nodeName = n.getNameNode()?.getText()
-    if (nodeName == null) throw new Error('dependency must be named')
-    depsMap.add(n)
-    // 被添加的依赖项，递归检查其依赖项
-    queryInTree(n)
-  }
-
-  if (t instanceof TypeReferenceNode) {
-    findITDeclaration(t)
-  } else if (isITCDeclaration(t)) {
-    addDep(t)
-  }
-
-  // 深度优先遍历树，找到引用Type类型，然后找到 Declaration
-  queryInTree(t)
-
-  return Array.from(depsMap.values())
-
-  function queryInTree (n: Node): void {
-    n.forEachChild(c => {
-      if (c instanceof TypeReferenceNode) findITDeclaration(c)
-      if (c instanceof ImportTypeNode) findIT4Import(c)
-
-      queryInTree(c)
-    })
-  }
-
-  // 收集依赖树只考虑这4种场景
-  function isITCDeclaration (n: Node): n is ITCDeclaration {
-    return n instanceof InterfaceDeclaration ||
-      n instanceof TypeAliasDeclaration ||
-      n instanceof ClassDeclaration ||
-      n instanceof EnumDeclaration
-  }
-
-  function findITDeclaration (n: Node): void {
-    n.getChildrenOfKind(SyntaxKind.Identifier)
-      .map(i => i.getSymbol())
-      .flat()
-      .map(s => s?.getDeclarations())
-      .flat()
-      .forEach(d => {
-        if (d == null) return
-        if (isITCDeclaration(d)) addDep(d)
-        else if (d instanceof ImportSpecifier) findIT4ImportSpecifier(d)
-      })
-  }
-
-  // 解析动态 import 函数
-  function findIT4Import (n: ImportTypeNode): void {
-    const fPath = n.getArgument().getText().slice(1, -1)
-    const sf = prj.getSourceFile(sf => sf.getFilePath().includes(fPath))
-    if (sf == null) throw new Error(`Could not find file ${fPath}`)
-    const impName = n.getQualifier()?.getText() ?? ''
-    const declaration = sf.getInterface(impName) ?? sf.getTypeAlias(impName) ?? sf.getClass(impName)
-    if (declaration == null) throw Error(`Could not find interface, class or type (${impName}) in ${fPath}`)
-
-    addDep(declaration)
-  }
-
-  // 解析import语法，从其他文件中查找依赖项
-  function findIT4ImportSpecifier (is: ImportSpecifier): void {
-    const impSf = is.getImportDeclaration().getModuleSpecifierSourceFile()
-    if (impSf == null) throw new Error(`Could not find import var ${is.getText()}`)
-
-    const impName = is.getText()
-    const declaration = impSf.getInterface(impName) ?? impSf.getTypeAlias(impName) ?? impSf.getClass(impName)
-    if (declaration == null) throw Error(`Could not find interface, class or type (${impName}) in ${impSf.getFilePath()}`)
-
-    addDep(declaration)
-  }
 }

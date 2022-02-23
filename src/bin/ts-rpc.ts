@@ -7,7 +7,8 @@ import fs from 'fs'
 import got from 'got'
 import { scan } from './rpc-definition-scan'
 import { TRPCMetaData, TRPCMetaFile } from '../common'
-import { Project } from 'ts-morph'
+import { InterfaceDeclaration, MethodSignature, Project, SyntaxKind } from 'ts-morph'
+import { addNode, collectTypeDeps, isStandardType, ITCDeclaration } from './utils'
 
 const program = new Command()
 
@@ -178,8 +179,52 @@ export function filterService (
   appMeta: Record<string, TRPCMetaData>,
   includeServices: string[]
 ): { code: string, meta: Record<string, TRPCMetaData> } {
+  const prj = new Project()
+  const inSf = prj.createSourceFile('input.ts', code)
+  const outSf = prj.createSourceFile('output.ts', '')
+  inSf.getModules()
+    .map((m) => [
+      m.getName(),
+      // App中存在 service 名字，说明该命名空间包含需要保留的 service
+      m.getInterface('App')
+        ?.getProperties()
+        .filter(p => includeServices.includes(p.getName()))
+        .map(p => m.getInterface(p.getName()))
+    ])
+    // 排除没有 serverice 的 namespace
+    .filter(([nsName, services]) => services != null && services.length > 0)
+    // 收集 serverice 依赖 [ns, service, serviceDeps]
+    .map(([nsName, services]) => [
+      nsName,
+      services,
+      (services as InterfaceDeclaration[]).map(
+        s => s.getMethods()
+          .map(m => [...m.getParameters(), m.getReturnTypeNodeOrThrow()])
+          .flat()
+          .map(n => collectTypeDeps(n, prj))
+          .flat()
+          // TODO: 去重
+          .filter(n => !isStandardType(n))
+      ).flat()
+    ])
+    .forEach(([nsName, services, deps]) => {
+      // 将保留的 [ns, service, serviceDeps]写入 output，生成代码
+      const ns = outSf.addModule({ name: nsName as string })
+      const app = ns.addInterface({ name: 'App' })
+      ns.setIsExported(true)
+      app.setIsExported(true)
+      ; (services as InterfaceDeclaration[])
+        .forEach(s => {
+          app.addProperty({ name: s.getName(), type: s.getName() })
+          ns.addInterface(s.getStructure())
+        })
+      ;(deps as ITCDeclaration[]).forEach((dep: ITCDeclaration) => {
+        addNode(ns, dep)?.setIsExported(true)
+      })
+    })
+
   return {
-    code: '',
+    code: outSf.getFullText(),
     meta: Object.fromEntries(
       Object.entries(appMeta)
         .map(([appId, meta]) => [

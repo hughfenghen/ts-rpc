@@ -1,14 +1,7 @@
-
 /* eslint-disable */
 export namespace RPCDemoNS {
     export interface App {
         User: User;
-    }
-
-    export interface UserInfo {
-        name: string;
-        age: number;
-        avatar: string;
     }
 
     /**
@@ -20,6 +13,12 @@ export namespace RPCDemoNS {
          */
         getInfoById(id: string): Promise<UserInfo>;
         getUnreadMsg(id: string): Promise<string[]>;
+    }
+
+    export interface UserInfo {
+        name: string;
+        age: number;
+        avatar: string;
     }
 }
 
@@ -33,6 +32,7 @@ export const RPCDemoMeta = [
       {
         "name": "getInfoById",
         "decorators": [
+          "@Post()",
           "@RPCMethod()"
         ]
       },

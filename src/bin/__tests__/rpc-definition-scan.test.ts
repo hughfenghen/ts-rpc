@@ -53,9 +53,9 @@ test('collectTypeDeps', () => {
     }
     type Y = A | B | null | undefined
   `)
-  const iDeps = collectTypeDeps(sf.getInterfaceOrThrow('X'), prj)
+  const iDeps = collectTypeDeps([sf.getInterfaceOrThrow('X')], prj)
   expect(iDeps.map(i => i.getName())).toEqual(['X', 'A', 'B'])
 
-  const tDeps = collectTypeDeps(sf.getTypeAliasOrThrow('Y'), prj)
+  const tDeps = collectTypeDeps([sf.getTypeAliasOrThrow('Y')], prj)
   expect(tDeps.map(t => t.getName())).toEqual(['Y', 'A', 'B'])
 })

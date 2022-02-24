@@ -25,28 +25,33 @@ export type ITCDeclaration =
   | ClassDeclaration
   | EnumDeclaration
 
-export function collectTypeDeps (t: Node, prj: Project): ITCDeclaration[] {
+export function collectTypeDeps (nodes: Node[], prj: Project): ITCDeclaration[] {
   const depsMap = new Set<ITCDeclaration>()
 
+  nodes.forEach((node) => {
+    // if (depsMap.has(node as ITCDeclaration)) return
+
+    if (node instanceof TypeReferenceNode) {
+      findITDeclaration(node)
+    } else if (isITCDeclaration(node)) {
+      addDep(node)
+    } else {
+      // 深度优先遍历树，找到引用Type类型，然后找到 Declaration
+      queryInTree(node)
+    }
+  })
+
+  return Array.from(depsMap.values())
+
   function addDep (n: ITCDeclaration): void {
-    if (depsMap.has(n)) return
+    // 避免重复，标准依赖无须添加
+    if (depsMap.has(n) || isStandardType(n)) return
     const nodeName = n.getNameNode()?.getText()
     if (nodeName == null) throw new Error('dependency must be named')
     depsMap.add(n)
     // 被添加的依赖项，递归检查其依赖项
     queryInTree(n)
   }
-
-  if (t instanceof TypeReferenceNode) {
-    findITDeclaration(t)
-  } else if (isITCDeclaration(t)) {
-    addDep(t)
-  }
-
-  // 深度优先遍历树，找到引用Type类型，然后找到 Declaration
-  queryInTree(t)
-
-  return Array.from(depsMap.values())
 
   function queryInTree (n: Node): void {
     n.forEachChild(c => {
@@ -66,9 +71,15 @@ export function collectTypeDeps (t: Node, prj: Project): ITCDeclaration[] {
   }
 
   function findITDeclaration (n: Node): void {
-    n.getChildrenOfKind(SyntaxKind.Identifier)
-      .map(i => i.getSymbol())
-      .flat()
+    const childrenIdf = n.getChildrenOfKind(SyntaxKind.Identifier)
+    // 获取泛型的 Identifier
+    const typeArgs = n instanceof TypeReferenceNode
+      ? n.getTypeArguments()
+        .map(t => t.getChildrenOfKind(SyntaxKind.Identifier))
+        .flat()
+      : []
+
+    ; [...childrenIdf, ...typeArgs].map(i => i.getSymbol())
       .map(s => s?.getDeclarations())
       .flat()
       .forEach(d => {

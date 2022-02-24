@@ -112,10 +112,12 @@ test('filterService', () => {
   const { code, meta } = filterService(
     filterServiceMockCode,
     filterServiceMockMeta,
-    ['User1']
+    ['User1', 'User2']
   )
+
   expect(code.includes('User1')).toBe(true)
-  expect(code.includes('User2')).toBe(false)
-  expect(meta.RPCDemoMeta1.length).toBe(1)
+  expect(code.match(/export interface UserInfo/g)?.length).toBe(1)
+  expect(code.includes('User3')).toBe(false)
+  expect(meta.RPCDemoMeta1.length).toBe(2)
   expect(meta.RPCDemoMeta2).toBeUndefined()
 })

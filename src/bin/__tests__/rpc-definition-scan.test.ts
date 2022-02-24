@@ -3,6 +3,8 @@ import { Project } from 'ts-morph'
 import { scan } from '../rpc-definition-scan'
 import { collectTypeDeps } from '../utils'
 
+console.warn = jest.fn()
+
 test('scan', () => {
   const { dts, meta } = scan([path.resolve(__dirname, '*.ts')], 'ScanTest', {
     tsConfigFilePath: path.resolve(__dirname, 'tsconfig.json')

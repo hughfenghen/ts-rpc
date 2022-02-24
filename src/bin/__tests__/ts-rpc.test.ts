@@ -2,6 +2,8 @@ import path from 'path'
 import { filterService, findTSCfgPath, handleClientCmd, handleServerCmd } from '../ts-rpc'
 import { filterServiceMockCode, filterServiceMockMeta } from './data/filter-service.data'
 
+console.warn = jest.fn()
+
 test('handleServerCmd', async () => {
   const { metaOutDir, metaFile } = await handleServerCmd(path.resolve(__dirname, './ts-rpc-example.json'))
 

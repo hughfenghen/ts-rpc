@@ -1,5 +1,5 @@
 import glob from 'glob'
-import { Project, Node, ClassDeclaration, FunctionDeclaration, MethodDeclaration, InterfaceDeclaration, TypeAliasDeclaration, MethodSignature, TypeAliasDeclarationStructure, EnumDeclaration } from 'ts-morph'
+import { Project, Node, ClassDeclaration, FunctionDeclaration, MethodDeclaration, InterfaceDeclaration, TypeAliasDeclaration, MethodSignature, EnumDeclaration } from 'ts-morph'
 import path from 'path'
 import { existsSync } from 'fs'
 import { IScanResult, TRPCMetaData } from '../common'
@@ -49,11 +49,12 @@ export function scan (
   const appInterColl = appNS.addInterface({ name: 'App' })
   appNS.setIsExported(true)
   appInterColl.setIsExported(true)
-
-  // 简化 export type = xxx 代码
-  const expTypeSf = prj.createSourceFile('exp-type', `export type ${appId} = ${appId}NS.App`)
-  // 导出 namespace 下对外的 interface
-  genSf.addTypeAlias(expTypeSf.getTypeAlias(appId)?.getStructure() as TypeAliasDeclarationStructure)
+  // 导出应用下聚合的 Service： export type AppID = AppIdNs.App;
+  genSf.addTypeAlias({
+    name: appId,
+    type: `${appId}NS.App`,
+    isExported: true
+  })
 
   const rpcMetaData: TRPCMetaData = []
   // 已添加到 appNS 中的依赖，避免依赖项重复

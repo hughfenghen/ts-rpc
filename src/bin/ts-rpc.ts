@@ -7,7 +7,7 @@ import fs from 'fs'
 import got from 'got'
 import { scan } from './rpc-definition-scan'
 import { TRPCMetaData, TRPCMetaFile } from '../common'
-import { InterfaceDeclaration, MethodSignature, Project, SyntaxKind } from 'ts-morph'
+import { InterfaceDeclaration, Project } from 'ts-morph'
 import { addNode, collectTypeDeps, isStandardType, ITCDeclaration } from './utils'
 
 const program = new Command()
@@ -27,7 +27,7 @@ function init (): void {
       try {
         const cfgPath = path.resolve(process.cwd(), config)
         const { client: { apps, genRPCDefintionTarget } } = await import(cfgPath)
-
+        const { client } = await import(cfgPath)
         const outPath = path.resolve(
           path.dirname(cfgPath),
           genRPCDefintionTarget,
@@ -38,7 +38,12 @@ function init (): void {
           localDefStr = await fsP.readFile(outPath, { encoding: 'utf-8' })
         }
 
-        const dts = await handleClientCmd(apps, localDefStr, { outMeta })
+        const serverDts = await getServerDefinitionData(apps)
+        const dts = await handleClientCmd(
+          serverDts,
+          localDefStr,
+          { outMeta, includeServices: client.includeServices }
+        )
         if (!fs.existsSync(path.dirname(outPath))) {
           fs.mkdirSync(path.dirname(outPath))
         }
@@ -110,16 +115,9 @@ export async function handleServerCmd (cfgPath: string): Promise<{ metaOutDir: s
   }
 }
 
-/**
- * 从多个远程获取声明文件，然后与本地声明文件合并（覆盖）
- */
-export async function handleClientCmd (
-  apps: {[key: string]: string},
-  localDefStr: string,
-  { outMeta }: { outMeta?: boolean }
-): Promise<string> {
-  const serverDts = (await Promise.all(
-    Object.entries(apps)
+async function getServerDefinitionData (appsCfg: Record<string, string>): Promise<Record<string, { dts: string, meta: TRPCMetaData }>> {
+  return (await Promise.all(
+    Object.entries(appsCfg)
       .map(async ([k, v]) => {
         const url = `http://${v}/_rpc_definition_`
         return await got.get(url)
@@ -137,41 +135,62 @@ export async function handleClientCmd (
     .reduce((sum, acc) => ({
       ...sum,
       [acc.appId]: { dts: acc.dts, meta: acc.meta }
-    }), {}) as { [appId: string]: { dts: string, meta: TRPCMetaData }}
+    }), {})
+}
 
+/**
+ * 从多个远程获取声明文件，然后与本地声明文件合并（覆盖）
+ */
+export async function handleClientCmd (
+  serverDts: Record<string, { dts: string, meta: TRPCMetaData }>,
+  localDefStr: string,
+  { outMeta, includeServices = [] }: { outMeta?: boolean, includeServices?: string[] }
+): Promise<string> {
   if (Object.keys(serverDts).length === 0) return ''
 
-  const prj = new Project({
-    compilerOptions: {
-      declaration: false,
-      sourceMap: false,
-      isolatedModules: true
-    }
-  })
-
+  const prj = new Project()
   const startComment = localDefStr.includes('/* eslint-disable */')
     ? ''
     : '/* eslint-disable */'
 
-  const sf = prj.createSourceFile('localDefstr', localDefStr.trim())
+  const localSf = prj.createSourceFile('localDefstr', localDefStr.trim())
   // 将本地文件内容 替换为 远端获取的内容（根据 appId 替换）
   Object.keys(serverDts).forEach((appId) => {
-    sf.getTypeAlias(appId)?.remove()
-    sf.getModule(`${appId}NS`)?.remove()
-    sf.getVariableDeclaration(`${appId}Meta`)?.remove()
+    localSf.getTypeAlias(appId)?.remove()
+    localSf.getModule(`${appId}NS`)?.remove()
+    localSf.getVariableDeclaration(`${appId}Meta`)?.remove()
   })
 
-  const codeStr = Object.entries(serverDts)
-    .map(([appId, { dts, meta }]) => [
-      dts,
-      outMeta === true
-        ? `export const ${appId}Meta = ${JSON.stringify(meta, null, 2)};`
-        : ''
-    ].join('\n'))
+  const newCodeStr = Object.values(serverDts)
+    .map(({ dts }) => dts)
     .join('\n')
 
+  let rsCodeStr = `${startComment}\n${localSf.getFullText().trim()}\n${newCodeStr}`
+  let appMeta = Object.fromEntries(
+    Object.entries(serverDts).map(([appId, { meta }]) => [appId, meta])
+  )
+
+  let metaStr = ''
+
+  if (includeServices.length > 0) {
+    const { code, meta } = filterService(
+      rsCodeStr,
+      appMeta,
+      includeServices
+    )
+    rsCodeStr = code
+    appMeta = meta
+  }
+
+  if (outMeta === true) {
+    metaStr = Object.entries(appMeta)
+      .map(
+        ([appId, meta]) => `export const ${appId}Meta = ${JSON.stringify(meta, null, 2)};`
+      )
+      .join('\n')
+  }
   // 合并 (注释 + 本地代码 + 同步的新代码)
-  return `${startComment}\n${sf.getFullText().trim()}\n${codeStr}`
+  return `${rsCodeStr}\n${metaStr}`
 }
 
 export function filterService (
@@ -209,11 +228,20 @@ export function filterService (
     ])
     .forEach(([nsName, services, deps]) => {
       // 将保留的 [ns, service, serviceDeps]写入 output，生成代码
-      const ns = outSf.addModule({ name: nsName as string })
-      const app = ns.addInterface({ name: 'App' })
+      const nsNameStr = nsName as string
+      const ns = outSf.addModule({ name: nsNameStr })
       ns.setIsExported(true)
+      outSf.addTypeAlias({
+        // 移除’NS‘后缀
+        name: nsNameStr.slice(0, -2),
+        type: `${nsNameStr}.App`,
+        isExported: true
+      })
+
+      const app = ns.addInterface({ name: 'App' })
       app.setIsExported(true)
-      ; (services as InterfaceDeclaration[])
+
+      ;(services as InterfaceDeclaration[])
         .forEach(s => {
           app.addProperty({ name: s.getName(), type: s.getName() })
           ns.addInterface(s.getStructure())

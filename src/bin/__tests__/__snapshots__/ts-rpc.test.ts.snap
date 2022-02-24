@@ -1,27 +1,26 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`handleClientCmd 1`] = `
-"/* eslint-disable */
-
-\\"\\\\nnamespace Test1NS {\\\\n  export interface App {\\\\n    tag: 'new'\\\\n  }\\\\n}\\\\nexport type Test1 = Test1NS.App;\\\\n\\"
-\\"\\\\nnamespace Test2NS {\\\\n  export interface App {\\\\n    tag: 'new'\\\\n  }\\\\n}\\\\nexport type Test2 = Test2NS.App;\\\\n\\"
-"
-`;
-
-exports[`handleClientCmd 2`] = `
-"
-/* eslint-disable */
-\\"\\\\nnamespace Test1NS {\\\\n  export interface App {\\\\n    tag: 'new'\\\\n  }\\\\n}\\\\nexport type Test1 = Test1NS.App;\\\\n\\"
-\\"\\\\nnamespace Test2NS {\\\\n  export interface App {\\\\n    tag: 'new'\\\\n  }\\\\n}\\\\nexport type Test2 = Test2NS.App;\\\\n\\"
-export const Test1Meta = [];
-export const Test2Meta = [];"
-`;
-
 exports[`handleClientCmd concat definition file 1`] = `
 "
 /* eslint-disable */
-\\"\\\\nnamespace Test1NS {\\\\n  export interface App {\\\\n    tag: 'new'\\\\n  }\\\\n}\\\\nexport type Test1 = Test1NS.App;\\\\n\\"
-\\"\\\\nnamespace Test2NS {\\\\n  export interface App {\\\\n    tag: 'new'\\\\n  }\\\\n}\\\\nexport type Test2 = Test2NS.App;\\\\n\\"
+
+namespace Test1NS {
+  export interface App {
+    S1: S1
+  }
+  interface S1 {}
+}
+export type Test1 = Test1NS.App;
+
+
+namespace Test2NS {
+  export interface App {
+    S2: S2
+  }
+  interface S2 {}
+}
+export type Test2 = Test2NS.App;
+
 export const Test1Meta = [];
 export const Test2Meta = [];"
 `;
@@ -29,7 +28,23 @@ export const Test2Meta = [];"
 exports[`handleClientCmd new definition file 1`] = `
 "/* eslint-disable */
 
-\\"\\\\nnamespace Test1NS {\\\\n  export interface App {\\\\n    tag: 'new'\\\\n  }\\\\n}\\\\nexport type Test1 = Test1NS.App;\\\\n\\"
-\\"\\\\nnamespace Test2NS {\\\\n  export interface App {\\\\n    tag: 'new'\\\\n  }\\\\n}\\\\nexport type Test2 = Test2NS.App;\\\\n\\"
+
+namespace Test1NS {
+  export interface App {
+    S1: S1
+  }
+  interface S1 {}
+}
+export type Test1 = Test1NS.App;
+
+
+namespace Test2NS {
+  export interface App {
+    S2: S2
+  }
+  interface S2 {}
+}
+export type Test2 = Test2NS.App;
+
 "
 `;

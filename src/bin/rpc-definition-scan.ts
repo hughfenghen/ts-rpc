@@ -1,9 +1,9 @@
 import glob from 'glob'
-import { Project, Node, ClassDeclaration, FunctionDeclaration, MethodDeclaration, InterfaceDeclaration, TypeAliasDeclaration, MethodSignature, EnumDeclaration } from 'ts-morph'
+import { Project, Node, ClassDeclaration, FunctionDeclaration, MethodDeclaration, MethodSignature } from 'ts-morph'
 import path from 'path'
 import { existsSync } from 'fs'
 import { IScanResult, TRPCMetaData } from '../common'
-import { collectTypeDeps } from './utils'
+import { addNode, collectTypeDeps, isStandardType } from './utils'
 
 export function scan (
   filePaths: string[],
@@ -14,11 +14,6 @@ export function scan (
 ): IScanResult {
   const files = filePaths.map(f => glob.sync(f)).flat()
   const prj = new Project({
-    compilerOptions: {
-      declaration: false,
-      sourceMap: false,
-      isolatedModules: true
-    },
     tsConfigFilePath: opts?.tsConfigFilePath
   })
   files.forEach(file => {
@@ -114,9 +109,8 @@ export function scan (
         if (nodeName == null) throw new Error('dependency must be named')
 
         const sid = it.getSourceFile().getFilePath() + '/' + nodeName
-        // 避免重复, ECMA标准依赖无须添加
-        // TODO: utils 替换
-        if (addedDepIds.includes(sid) || /typescript\/lib|@types\/node/.test(sid)) return
+        // 避免重复, 标准依赖无须添加
+        if (addedDepIds.includes(sid) || isStandardType(it)) return
 
         if (addedDepIds.some(sid => sid.endsWith(`/${nodeName}`))) {
           console.warn(`Named duplicate: ${nodeName}`)
@@ -125,22 +119,15 @@ export function scan (
         addedDepIds.push(sid)
 
         // 添加 method 依赖的类型
-        // TODO: utils 替换
-        let added = null
-        if (it instanceof InterfaceDeclaration) {
-          added = appNS.insertInterface(1, it.getStructure())
-        } else if (it instanceof TypeAliasDeclaration) {
-          added = appNS.insertTypeAlias(1, it.getStructure())
-        } else if (it instanceof EnumDeclaration) {
-          added = appNS.insertEnum(1, it.getStructure())
-        } else if (it instanceof ClassDeclaration) {
-          added = appNS.insertClass(1, it.getStructure())
-          // 只保留 class 的属性方法, 移除属性、class 的decorator 信息
+        const added = addNode(appNS, it)
+        if (added instanceof ClassDeclaration) {
+          // 只保留 class 的方法, 移除属性、class 的decorator 信息
           added.getDecorators().forEach(d => d.remove())
           added.getProperties()
             .forEach(p => p.getDecorators().forEach(d => d.remove()))
-        } else {
-          console.warn('unknown deps type')
+        }
+        if (added == null) {
+          console.warn(`unknown deps type: ${it.getText()}`)
         }
         added?.setIsExported(true)
       })

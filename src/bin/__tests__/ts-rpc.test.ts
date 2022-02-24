@@ -1,3 +1,4 @@
+import fs from 'fs'
 import path from 'path'
 import { filterService, findTSCfgPath, handleClientCmd, handleServerCmd } from '../ts-rpc'
 import { filterServiceMockCode, filterServiceMockMeta } from './data/filter-service.data'
@@ -108,16 +109,32 @@ test('findTSCfgPath', () => {
   expect(findTSCfgPath(path.resolve('/'))).toBe(null)
 })
 
-test('filterService', () => {
-  const { code, meta } = filterService(
-    filterServiceMockCode,
-    filterServiceMockMeta,
-    ['User1', 'User2']
-  )
+describe('filterService', () => {
+  test('simple', () => {
+    const { code, meta } = filterService(
+      filterServiceMockCode,
+      filterServiceMockMeta,
+      ['User1', 'User2']
+    )
 
-  expect(code.includes('User1')).toBe(true)
-  expect(code.match(/export interface UserInfo/g)?.length).toBe(1)
-  expect(code.includes('User3')).toBe(false)
-  expect(meta.RPCDemoMeta1.length).toBe(2)
-  expect(meta.RPCDemoMeta2).toBeUndefined()
+    expect(code.includes('User1')).toBe(true)
+    expect(code.match(/export interface UserInfo/g)?.length).toBe(1)
+    expect(code.includes('User3')).toBe(false)
+    expect(meta.RPCDemoMeta1.length).toBe(2)
+    expect(meta.RPCDemoMeta2).toBeUndefined()
+  })
+
+  test('complex', () => {
+    const { code, meta } = filterService(
+      String(fs.readFileSync(path.resolve(__dirname, './data/complex-definition-code.data.ts'))),
+      filterServiceMockMeta,
+      ['AwardService']
+    )
+
+    expect(code.includes('interface AwardService')).toBe(true)
+    expect(code.includes('interface IServiceData')).toBe(true)
+    expect(code.includes('type IGetRewardConfigDataFormated')).toBe(true)
+    expect(code.includes('interface BlsSpring2022Controller')).toBe(false)
+    expect(meta).toEqual({})
+  })
 })

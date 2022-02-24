@@ -1,6 +1,6 @@
 export const filterServiceMockCode = `
 /* eslint-disable */
-export namespace RPCDemoNS1 {
+export namespace RPCDemo1NS {
     export interface App {
         User1: User1;
         User2: User2;
@@ -29,11 +29,11 @@ export namespace RPCDemoNS1 {
     }
 }
 
-export type RPCDemo1 = RPCDemoNS1.App;
+export type RPCDemo1 = RPCDemo1NS.App;
 
-export namespace RPCDemoNS2 {
+export namespace RPCDemo2NS {
     export interface App {
-        User2: User2;
+        User3: User3;
     }
 
     export interface UserInfo {
@@ -42,7 +42,7 @@ export namespace RPCDemoNS2 {
         avatar: string;
     }
 
-    interface User2 {
+    interface User3 {
         /**
          * method doc
          */
@@ -51,7 +51,7 @@ export namespace RPCDemoNS2 {
     }
 }
 
-export type RPCDemo2 = RPCDemoNS2.App;
+export type RPCDemo2 = RPCDemo2NS.App;
 `
 
 export const filterServiceMockMeta = {
@@ -85,7 +85,7 @@ export const filterServiceMockMeta = {
     }]
   }],
   RPCDemoMeta2: [{
-    name: 'User2',
+    name: 'User3',
     path: 'server/user-controller.ts',
     methods: [{
       name: 'getInfoById',

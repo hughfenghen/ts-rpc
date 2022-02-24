@@ -8,7 +8,7 @@ import got from 'got'
 import { scan } from './rpc-definition-scan'
 import { TRPCMetaData, TRPCMetaFile } from '../common'
 import { InterfaceDeclaration, Project } from 'ts-morph'
-import { addNode, collectTypeDeps, isStandardType, ITCDeclaration } from './utils'
+import { addNode, collectTypeDeps, ITCDeclaration } from './utils'
 
 const program = new Command()
 
@@ -216,15 +216,13 @@ export function filterService (
     .map(([nsName, services]) => [
       nsName,
       services,
-      (services as InterfaceDeclaration[]).map(
-        s => s.getMethods()
-          .map(m => [...m.getParameters(), m.getReturnTypeNodeOrThrow()])
-          .flat()
-          .map(n => collectTypeDeps(n, prj))
-          .flat()
-          // TODO: 去重
-          .filter(n => !isStandardType(n))
-      ).flat()
+      collectTypeDeps(
+        (services as InterfaceDeclaration[]).map(
+          s => s.getMethods()
+            .map(m => [...m.getParameters(), m.getReturnTypeNodeOrThrow()])
+        ).flat(2),
+        prj
+      )
     ])
     .forEach(([nsName, services, deps]) => {
       // 将保留的 [ns, service, serviceDeps]写入 output，生成代码

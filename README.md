@@ -17,7 +17,9 @@
       "demoLocal": "127.0.0.1:7002"
     },
     // 声明文件对应path，生成的声明文件需要提交到 git
-    "genRPCDefintionTarget": "./"
+    "genRPCDefintionTarget": "./",
+    // 只保留指定 Service，避免声明文件过多冗余内容
+    "includeServices": ["<保留的 Service 名称>"]
   },
   // 服务端需要的配置
   "server": {

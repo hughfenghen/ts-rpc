@@ -42,3 +42,11 @@ export class User {
     return {} as any
   }
 }
+
+@RPCService()
+export class Foo {
+  @RPCMethod()
+  foo (id: string): UserInfo {
+    return { name: '22', age: 18, avatar: '' }
+  }
+}

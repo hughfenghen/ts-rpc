@@ -149,10 +149,6 @@ export async function handleClientCmd (
   if (Object.keys(serverDts).length === 0) return ''
 
   const prj = new Project()
-  const startComment = localDefStr.includes('/* eslint-disable */')
-    ? ''
-    : '/* eslint-disable */'
-
   const localSf = prj.createSourceFile('localDefstr', localDefStr.trim())
   // 将本地文件内容 替换为 远端获取的内容（根据 appId 替换）
   Object.keys(serverDts).forEach((appId) => {
@@ -165,7 +161,7 @@ export async function handleClientCmd (
     .map(({ dts }) => dts)
     .join('\n')
 
-  let rsCodeStr = `${startComment}\n${localSf.getFullText().trim()}\n${newCodeStr}`
+  let rsCodeStr = `${localSf.getFullText().trim()}\n${newCodeStr}`
   let appMeta = Object.fromEntries(
     Object.entries(serverDts).map(([appId, { meta }]) => [appId, meta])
   )
@@ -189,8 +185,14 @@ export async function handleClientCmd (
       )
       .join('\n')
   }
+
+  const startComment = localDefStr.includes('/* eslint-disable */')
+    ? ''
+    : '/* eslint-disable */'
+
+  console.log(111, startComment)
   // 合并 (注释 + 本地代码 + 同步的新代码)
-  return `${rsCodeStr}\n${metaStr}`
+  return `${startComment}\n${rsCodeStr}\n${metaStr}`
 }
 
 export function filterService (

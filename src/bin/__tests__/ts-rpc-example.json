@@ -4,7 +4,9 @@
     "baseUrl": "localhost:3000"
   },
   "server": {
-    "scanDir": ["./*.ts"],
+    "scanDir": [
+      "./*.ts"
+    ],
     "metaOutDir": "./"
   }
 }

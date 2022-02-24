@@ -1,4 +1,4 @@
-import { ClassDeclaration, EnumDeclaration, ImportTypeNode, InterfaceDeclaration, ModuleDeclaration, Project, SourceFile, TypeAliasDeclaration, TypeReferenceNode, Node, ImportSpecifier, SyntaxKind } from 'ts-morph'
+import { ClassDeclaration, EnumDeclaration, ImportTypeNode, InterfaceDeclaration, ModuleDeclaration, Project, SourceFile, TypeAliasDeclaration, TypeReferenceNode, Node, ImportSpecifier, SyntaxKind, TypeNode } from 'ts-morph'
 
 /**
  * 向SourceFile中插入Namespace，隔离命名空间，避免命名冲突
@@ -29,8 +29,6 @@ export function collectTypeDeps (nodes: Node[], prj: Project): ITCDeclaration[] 
   const depsMap = new Set<ITCDeclaration>()
 
   nodes.forEach((node) => {
-    // if (depsMap.has(node as ITCDeclaration)) return
-
     if (node instanceof TypeReferenceNode) {
       findITDeclaration(node)
     } else if (isITCDeclaration(node)) {
@@ -73,13 +71,11 @@ export function collectTypeDeps (nodes: Node[], prj: Project): ITCDeclaration[] 
   function findITDeclaration (n: Node): void {
     const childrenIdf = n.getChildrenOfKind(SyntaxKind.Identifier)
     // 获取泛型的 Identifier
-    const typeArgs = n instanceof TypeReferenceNode
-      ? n.getTypeArguments()
-        .map(t => t.getChildrenOfKind(SyntaxKind.Identifier))
-        .flat()
-      : []
+    const typeArgsIdf = deepFindTypeArgs(n)
+      .map(t => t.getChildrenOfKind(SyntaxKind.Identifier))
+      .flat()
 
-    ; [...childrenIdf, ...typeArgs].map(i => i.getSymbol())
+    ; [...childrenIdf, ...typeArgsIdf].map(i => i.getSymbol())
       .map(s => s?.getDeclarations())
       .flat()
       .forEach(d => {
@@ -112,6 +108,14 @@ export function collectTypeDeps (nodes: Node[], prj: Project): ITCDeclaration[] 
 
     addDep(declaration)
   }
+}
+
+function deepFindTypeArgs (n: Node): TypeNode[] {
+  if (n instanceof TypeReferenceNode) {
+    const args = n.getTypeArguments()
+    return args.concat(args.map(a => deepFindTypeArgs(a)).flat())
+  }
+  return []
 }
 
 export function isStandardType (n: Node): boolean {

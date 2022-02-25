@@ -36,9 +36,21 @@
 // 运行 server 服务之前执行`ts-brpc`命令
 // scripts: yarn ts-brpc server -c ts-brpc.json && yarn dev
 
+import Koa from 'koa'
+import path from 'path'
+import bodyParser from 'koa-bodyparser'
 import { bindKoa, RPCService, RPCMethod, logger } from 'ts-brpc/server'
 
-bindKoa(User) // 或者 bindMidway
+const app = new Koa()
+app.use(bodyParser())
+
+bindKoa({  // 或者 bindMidway
+  app,  // koa app
+  rpcMetaPath: path.resolve(__dirname, '../_rpc_gen_meta_.json'),
+  prefixPath: '/'
+}).catch((err) => {
+  console.error(err)
+})
 
 @RPCService()
 class User {

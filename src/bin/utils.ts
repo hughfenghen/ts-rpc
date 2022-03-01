@@ -1,4 +1,4 @@
-import { ClassDeclaration, EnumDeclaration, ImportTypeNode, InterfaceDeclaration, ModuleDeclaration, Project, SourceFile, TypeAliasDeclaration, TypeReferenceNode, Node, ImportSpecifier, SyntaxKind, TypeNode } from 'ts-morph'
+import { ClassDeclaration, EnumDeclaration, ImportTypeNode, InterfaceDeclaration, ModuleDeclaration, Project, SourceFile, TypeAliasDeclaration, TypeReferenceNode, Node, ImportSpecifier, SyntaxKind, TypeNode, QualifiedName } from 'ts-morph'
 
 /**
  * 向SourceFile中插入Namespace，隔离命名空间，避免命名冲突
@@ -53,7 +53,10 @@ export function collectTypeDeps (nodes: Node[], prj: Project): ITCDeclaration[] 
 
   function queryInTree (n: Node): void {
     n.forEachChild(c => {
-      if (c instanceof TypeReferenceNode) findITDeclaration(c)
+      if (
+        c instanceof TypeReferenceNode ||
+        c instanceof QualifiedName
+      ) findITDeclaration(c)
       if (c instanceof ImportTypeNode) findIT4Import(c)
 
       queryInTree(c)

@@ -6,7 +6,7 @@ function ClassDec (): any {}
 /**
  * 注释：性别
  */
-enum Gender1 {
+export enum Gender1 {
   /**
    * 枚举注释
    */

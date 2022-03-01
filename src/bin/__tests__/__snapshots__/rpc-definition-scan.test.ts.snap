@@ -43,10 +43,12 @@ exports[`scan 1`] = `
         gender: Gender;
     }
 
+    export type Gender = Gender1.Male | Gender1.Female;
+
     /**
      * 注释：性别
      */
-    export enum Gender {
+    export enum Gender1 {
         /**
          * 枚举注释
          */

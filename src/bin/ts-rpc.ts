@@ -186,11 +186,10 @@ export async function handleClientCmd (
       .join('\n')
   }
 
-  const startComment = localDefStr.includes('/* eslint-disable */')
+  const startComment = rsCodeStr.includes('/* eslint-disable */')
     ? ''
     : '/* eslint-disable */'
 
-  console.log(111, startComment)
   // 合并 (注释 + 本地代码 + 同步的新代码)
   return `${startComment}\n${rsCodeStr}\n${metaStr}`
 }

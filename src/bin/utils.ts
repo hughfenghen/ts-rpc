@@ -93,9 +93,11 @@ export function collectTypeDeps (nodes: Node[], prj: Project): ITCDeclaration[] 
     const fPath = n.getArgument().getText().slice(1, -1)
     const sf = prj.getSourceFile(sf => sf.getFilePath().includes(fPath))
     if (sf == null) throw new Error(`Could not find file ${fPath}`)
+
     const impName = n.getQualifier()?.getText() ?? ''
-    const declaration = sf.getInterface(impName) ?? sf.getTypeAlias(impName) ?? sf.getClass(impName)
-    if (declaration == null) throw Error(`Could not find interface, class or type (${impName}) in ${fPath}`)
+    const declaration = sf.getInterface(impName) ?? sf.getTypeAlias(impName) ?? sf.getClass(impName) ?? sf.getEnum(impName)
+
+    if (declaration == null) throw Error(`Could not find interface, class, enum or type (${impName}) in ${fPath}`)
 
     addDep(declaration)
   }
@@ -106,8 +108,9 @@ export function collectTypeDeps (nodes: Node[], prj: Project): ITCDeclaration[] 
     if (impSf == null) throw new Error(`Could not find import var ${is.getText()}`)
 
     const impName = is.getText()
-    const declaration = impSf.getInterface(impName) ?? impSf.getTypeAlias(impName) ?? impSf.getClass(impName)
-    if (declaration == null) throw Error(`Could not find interface, class or type (${impName}) in ${impSf.getFilePath()}`)
+    const declaration = impSf.getInterface(impName) ?? impSf.getTypeAlias(impName) ?? impSf.getClass(impName) ?? impSf.getEnum(impName)
+
+    if (declaration == null) throw Error(`Could not find interface, class, enum or type (${impName}) in ${impSf.getFilePath()}`)
 
     addDep(declaration)
   }

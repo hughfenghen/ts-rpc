@@ -1,4 +1,4 @@
-import { ClassDeclaration, EnumDeclaration, ImportTypeNode, InterfaceDeclaration, ModuleDeclaration, Project, SourceFile, TypeAliasDeclaration, TypeReferenceNode, Node, ImportSpecifier, SyntaxKind, TypeNode, QualifiedName } from 'ts-morph'
+import { ClassDeclaration, EnumDeclaration, ImportTypeNode, InterfaceDeclaration, ModuleDeclaration, Project, SourceFile, TypeAliasDeclaration, TypeReferenceNode, Node, ImportSpecifier, SyntaxKind, QualifiedName, Identifier } from 'ts-morph'
 
 /**
  * 向SourceFile中插入Namespace，隔离命名空间，避免命名冲突
@@ -30,13 +30,14 @@ export function collectTypeDeps (nodes: Node[], prj: Project): ITCDeclaration[] 
 
   nodes.forEach((node) => {
     if (node instanceof TypeReferenceNode) {
-      findITDeclaration(node)
+      findIdentifier(node.getChildrenOfKind(SyntaxKind.Identifier))
     } else if (isITCDeclaration(node)) {
       addDep(node)
-    } else {
-      // 深度优先遍历树，找到引用Type类型，然后找到 Declaration
-      queryInTree(node)
+      // addDep中会调用 queryInTree
+      return
     }
+    // 深度优先遍历树，找到引用Type类型，然后找到 Declaration
+    queryInTree(node)
   })
 
   return Array.from(depsMap.values())
@@ -56,8 +57,13 @@ export function collectTypeDeps (nodes: Node[], prj: Project): ITCDeclaration[] 
       if (
         c instanceof TypeReferenceNode ||
         c instanceof QualifiedName
-      ) findITDeclaration(c)
-      if (c instanceof ImportTypeNode) findIT4Import(c)
+      ) {
+        findIdentifier(c.getChildrenOfKind(SyntaxKind.Identifier))
+      } else if (c instanceof ImportTypeNode) {
+        findIT4Import(c)
+      } else if (c instanceof Identifier) {
+        findIdentifier([c])
+      }
 
       queryInTree(c)
     })
@@ -71,14 +77,8 @@ export function collectTypeDeps (nodes: Node[], prj: Project): ITCDeclaration[] 
       n instanceof EnumDeclaration
   }
 
-  function findITDeclaration (n: Node): void {
-    const childrenIdf = n.getChildrenOfKind(SyntaxKind.Identifier)
-    // 获取泛型的 Identifier
-    const typeArgsIdf = deepFindTypeArgs(n)
-      .map(t => t.getChildrenOfKind(SyntaxKind.Identifier))
-      .flat()
-
-    ; [...childrenIdf, ...typeArgsIdf].map(i => i.getSymbol())
+  function findIdentifier (idfs: Identifier[]): void {
+    idfs.map(i => i.getSymbol())
       .map(s => s?.getDeclarations())
       .flat()
       .forEach(d => {
@@ -114,14 +114,6 @@ export function collectTypeDeps (nodes: Node[], prj: Project): ITCDeclaration[] 
 
     addDep(declaration)
   }
-}
-
-function deepFindTypeArgs (n: Node): TypeNode[] {
-  if (n instanceof TypeReferenceNode) {
-    const args = n.getTypeArguments()
-    return args.concat(args.map(a => deepFindTypeArgs(a)).flat())
-  }
-  return []
 }
 
 export function isStandardType (n: Node): boolean {

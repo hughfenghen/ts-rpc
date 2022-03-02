@@ -1,6 +1,7 @@
 import { RPCMethod, RPCService } from 'ts-brpc/server'
 
 interface UserInfo {
+  id: string
   name: string
   age: number
   avatar: string
@@ -30,7 +31,7 @@ export class User {
   @Post()
   @RPCMethod()
   getInfoById (id: string): UserInfo {
-    return { name: '22', age: 18, avatar: '' }
+    return { id, name: '22', age: 18, avatar: '' }
   }
 
   @RPCMethod()
@@ -47,6 +48,6 @@ export class User {
 export class Foo {
   @RPCMethod()
   foo (id: string): UserInfo {
-    return { name: '22', age: 18, avatar: '' }
+    return { id, name: '22', age: 18, avatar: '' }
   }
 }

@@ -98,9 +98,9 @@ test('bindMidway', async () => {
   expect(JSON.parse(ctx.body)).toEqual({ [RPCKey.Return]: 'test' })
 })
 
-test('getRPCArgs for http Get request', () => {
+test('getRPCArgs for http Get request', async () => {
   const argsData = [1, '2', true]
-  const args = getRPCArgs({
+  const args = await getRPCArgs({
     ...CTX_TPL,
     method: 'get',
     request: {
@@ -113,13 +113,13 @@ test('getRPCArgs for http Get request', () => {
   expect(args).toEqual(argsData)
 })
 
-test('getRPCArgs for http Post request', () => {
+test('getRPCArgs for http Post request', async () => {
   const argsData = [1, '2', true]
-  const args = getRPCArgs({
+  const args = await getRPCArgs({
     ...CTX_TPL,
-    method: 'get',
+    method: 'post',
     request: {
-      query: {
+      body: {
         [RPCKey.Args]: JSON.stringify(argsData)
       }
     }

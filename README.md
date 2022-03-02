@@ -88,7 +88,7 @@ import { createRemoteService, RPCKey } from 'ts-brpc/client'
 import { client as rpcCientCfg } from '../ts-rpc.json'
 import { RPCDemo, RPCDemoMeta } from './rpc-definition'
 
-const rs = createRemoteService<RPCDemo>({
+const rpc = createRemoteService<RPCDemo>({
   baseUrl: cfg.apps.demoLocal,
   // meta可选，给 agent 添加 server 端的 meta 信息
   meta: RPCDemoMeta,
@@ -105,7 +105,7 @@ const rs = createRemoteService<RPCDemo>({
   // }
 })
 
-const userInfo = await rs.User.getInfoById('<user id>')
+const userInfo = await rpc.User.getInfoById('<user id>')
 console.log(userInfo) // { name: '22', age: 18, avatar: '<imgage url>' }
 ```
 
@@ -134,3 +134,15 @@ console.log(userInfo) // { name: '22', age: 18, avatar: '<imgage url>' }
 2. 生成rpc-definition.ts，提供接口文档、类型校验、参数提示  
 3. client 接口调用会被 agent 转换成 http 请求，发送给 server 端  
 4. 从 server 端获取到请求后，解析返回值，返回给调用方  
+
+
+
+## 接入步骤
+1. 在项目 src 目录下创建 `ts-brpc.json`
+   ```json
+   ```
+2. 创建 server 代码， （midway.js 给已有 server 代码添加 RPCService）(依赖 koa-parse-body 说明)
+3. 在 package.json script 添加 ``
+4. .gitignore 中添加 _rpc_gen_meta_.json ，建议忽略扫描生成的文件
+5. todo...
+

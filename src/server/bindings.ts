@@ -1,13 +1,14 @@
 import fs from 'fs'
 import path from 'path'
 import { camelCase } from 'lodash'
+import bodyParser from 'koa-bodyparser'
 import { RPCKey, TRPCMetaFile } from '../common'
 import { logger } from './logger'
 
 interface Ctx {
   request: {
     body?: any
-    query: { [key: string]: string }
+    query?: { [key: string]: string }
   }
   body: string
   path: string
@@ -90,7 +91,7 @@ export async function bindKoa ({ app, rpcMetaPath, prefixPath }: IBindingArgs): 
 
     ins.ctx = ctx
     ctx.body = JSON.stringify(wrapRPCReturn(
-      await ins[mPath](...getRPCArgs(ctx))
+      await ins[mPath](...await getRPCArgs(ctx))
     ))
     await next()
   })
@@ -145,18 +146,24 @@ export async function bindMidway (
     }
 
     ctx.body = JSON.stringify(wrapRPCReturn(
-      await ins[mPath](...getRPCArgs(ctx))
+      await ins[mPath](...await getRPCArgs(ctx))
     ))
     await next()
   })
 }
 
-export function getRPCArgs (ctx: Ctx): unknown[] {
+const bp = bodyParser()
+export async function getRPCArgs (ctx: Ctx): Promise<unknown[]> {
   const req = ctx.request
   const method = ctx.method.toLowerCase()
-  let args = method === 'get'
-    ? req?.query?.[RPCKey.Args]
-    : req?.body?.[RPCKey.Args]
+
+  let args = null
+  if (method === 'get') {
+    args = req?.query?.[RPCKey.Args]
+  } else {
+    if (req.body == null) await bp(ctx as any, async () => {})
+    args = req?.body?.[RPCKey.Args]
+  }
 
   try {
     if (typeof args === 'string') args = JSON.parse(args)

@@ -1,5 +1,5 @@
 import path from 'path'
-import { Project } from 'ts-morph'
+import { Project, MethodDeclaration } from 'ts-morph'
 import { scan } from '../rpc-definition-scan'
 import { collectTypeDeps } from '../utils'
 
@@ -58,4 +58,47 @@ test('collectTypeDeps', () => {
 
   const tDeps = collectTypeDeps([sf.getTypeAliasOrThrow('Y')], prj)
   expect(tDeps.map(t => t.getName())).toEqual(['Y', 'A', 'B'])
+})
+
+test('collect union type in returnTypeNode', () => {
+  const prj = new Project({ compilerOptions: { declaration: true } })
+
+  const sf = prj.createSourceFile('test.ts', `
+    interface Inter1 { x: number }
+    interface Inter2 { y: number }
+
+    class Foo {
+      public bar(): Partial<Inter1 | Inter2> {}
+    }
+  `)
+
+  const m = sf.getClass('Foo')?.getMethod('bar') as MethodDeclaration
+  const deps = collectTypeDeps(
+    [m.getReturnTypeNodeOrThrow()],
+    prj
+  ).map(n => n.getText())
+
+  expect(deps.some(d => d.includes('interface Inter1'))).toBe(true)
+  expect(deps.some(d => d.includes('interface Inter2'))).toBe(true)
+})
+
+test('collect extends type', () => {
+  const prj = new Project({ compilerOptions: { declaration: true } })
+
+  const sf = prj.createSourceFile('test.ts', `
+    interface Base { x: number }
+    interface RS extends Base { y: number }
+
+    class Foo {
+      public async bar(): RS {}
+    }
+  `)
+
+  const m = sf.getClass('Foo')?.getMethod('bar') as MethodDeclaration
+  const deps = collectTypeDeps(
+    [...m.getParameters(), m.getReturnTypeNodeOrThrow()],
+    prj
+  ).map(n => n.getText())
+  expect(deps.some(d => d.includes('interface RS'))).toBe(true)
+  expect(deps.some(d => d.includes('interface Base'))).toBe(true)
 })

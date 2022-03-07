@@ -120,7 +120,16 @@ async function getServerDefinitionData (appsCfg: Record<string, string>): Promis
     Object.entries(appsCfg)
       .map(async ([k, v]) => {
         const url = `http://${v}/_rpc_definition_`
-        return await got.get(url)
+        return await got.get(url, {
+          timeout: {
+            lookup: 100,
+            connect: 100,
+            socket: 1000,
+            send: 1000,
+            response: 3000
+
+          }
+        })
           .then(({ body }) => {
             const data = JSON.parse(body)
             console.log('√ ', k, ': ', url, '; 同步成功。')

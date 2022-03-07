@@ -3,7 +3,7 @@
   "client": {
     "apps": {
       "a": "localhost:3000",
-      "b": "",
+      "b": "12.23.0.33:3000",
       "aDev": ""
     },
     "includeServices": [

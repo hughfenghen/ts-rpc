@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { camelCase } from 'lodash'
-import bodyParser from 'koa-bodyparser'
+import bodyParser from 'co-body'
 import { RPCKey, TRPCMetaFile } from '../common'
 import { logger } from './logger'
 
@@ -152,17 +152,17 @@ export async function bindMidway (
   })
 }
 
-const bp = bodyParser()
 export async function getRPCArgs (ctx: Ctx): Promise<unknown[]> {
-  const req = ctx.request
+  const ctxReq = ctx.request
   const method = ctx.method.toLowerCase()
 
   let args = null
   if (method === 'get') {
-    args = req?.query?.[RPCKey.Args]
+    args = ctxReq.query?.[RPCKey.Args]
   } else {
-    if (req.body == null) await bp(ctx as any, async () => {})
-    args = req?.body?.[RPCKey.Args]
+    // bodyParser 依赖 koa, midway ctx.req (http.IncomingMessage)
+    if (ctxReq.body == null) ctxReq.body = await bodyParser.json((ctx as any).req)
+    args = ctxReq.body?.[RPCKey.Args]
   }
 
   try {

@@ -1,15 +1,16 @@
 import Koa from 'koa'
 import path from 'path'
-import bodyParser from 'koa-bodyparser'
 import { bindKoa } from 'ts-brpc/server'
 
 const app = new Koa()
-app.use(bodyParser())
 
 app.use(async (ctx, next) => {
   ctx.set('Access-Control-Allow-Origin', '*')
   await next()
 })
+
+// 不依赖 bodyparser 也能解析出参数
+// app.use(bodyParser())
 
 bindKoa({
   app,

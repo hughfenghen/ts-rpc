@@ -21,9 +21,9 @@
     "ts-brpc": "bin/ts-rpc.js"
   },
   "devDependencies": {
+    "@types/co-body": "^6.1.0",
     "@types/glob": "^7.1.4",
     "@types/jest": "^27.0.1",
-    "@types/koa-bodyparser": "^4.3.5",
     "@types/node": "^16.7.10",
     "jest": "^27.1.0",
     "rimraf": "^3.0.2",
@@ -33,10 +33,10 @@
   },
   "dependencies": {
     "@types/lodash": "^4.14.177",
+    "co-body": "^6.1.0",
     "commander": "^8.2.0",
     "glob": "^7.2.0",
     "got": "^11.8.2",
-    "koa-bodyparser": "^4.3.0",
     "lodash": "^4.17.21",
     "reflect-metadata": "^0.1.13",
     "ts-morph": "^12.0.0"

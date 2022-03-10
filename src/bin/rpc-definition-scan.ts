@@ -50,6 +50,9 @@ export function scan (
     type: `${appId}NS.App`,
     isExported: true
   })
+  // 收集接口返回类型，用于 client 生成 json-schema
+  const retTypes = appNS.addInterface({ name: 'APIReturnTypes' })
+  retTypes.setIsExported(true)
 
   const rpcMetaData: TRPCMetaData = []
   // 已添加到 appNS 中的依赖，避免依赖项重复
@@ -92,6 +95,9 @@ export function scan (
       const addedM = inter.addMethod(ms.getStructure())
       let rtText = addedM.getReturnTypeNode()?.getText()
       if (rtText == null) throw new Error(`Could not find method (${m.getName()}) return type`)
+
+      retTypes.addProperty({ name: `'${className}.${m.getName()}'`, type: rtText })
+
       // 远程调用，返回值都是 Promise
       if (!/^Promise<.+>$/.test(rtText)) {
         rtText = `Promise<${rtText}>`

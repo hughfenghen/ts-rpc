@@ -8,6 +8,15 @@ exports[`scan 1`] = `
         User1: User1;
     }
 
+    export interface APIReturnTypes {
+        'User.getInfoById1': CUserInfo & IDuplicate;
+        'User.getInfoById2': IUserInfo & { gender: Gender1 };
+        'User.getInfoById3': TUserInfo;
+        'User.getUnreadMsg': Promise<string[]>;
+        'Foo.bar': void;
+        'User1.getInfoById1': CUserInfo & IDuplicate;
+    }
+
     /**
      * service doc
      */

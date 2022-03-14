@@ -8,6 +8,10 @@ export namespace fuxiNS {
       SpringFestival2022Service: SpringFestival2022Service;
   }
 
+export interface APIReturnTypes {
+    'AwardService.getRewardConfigData': IServiceData<Partial<IGetRewardConfigDataFormated>> | { error: string }
+  }
+
   export interface ILotteryLogListItem {
       uname: string;
       award_num: number;

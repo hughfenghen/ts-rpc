@@ -24,11 +24,9 @@ test('interface to json schema', () => {
 test('complex definition file to json schema', () => {
   const schema = dts2JSONSchema(fs.readFileSync(
     path.resolve(__dirname, './data/complex-definition-code.data.ts')
-  ).toString(), 'fuxiNS.APIReturnTypes')
+  ).toString(), 'fuxiNS.APIReturnTypes') as unknown as any
 
-  expect(schema).toMatchObject({
-    properties: {
-      'AwardService.getRewardConfigData': {}
-    }
-  })
+  const methodRsTypeSchema = schema.properties['AwardService.getRewardConfigData']
+  expect(methodRsTypeSchema.anyOf[0].properties.data.properties.rewardList.type).toBe('array')
+  expect(methodRsTypeSchema.anyOf[1].properties.error.type).toBe('string')
 })

@@ -19,14 +19,16 @@ interface ServiceCfg {
 
 export function createRemoteService<T> (cfg: ServiceCfg): T {
   const defHttpAgent = createDefAgent(cfg.baseUrl)
-  const methodMetaMapping = Object.fromEntries(
-    (cfg.meta ?? [])
-      .map(({ name: sName, methods }) => methods.map(({ name: mName, decorators }) => [
-        `${sName}.${mName}`,
-        { decorators }
-      ]))
-      .flat()
-  ) as { [key: string]: MethodMeta }
+  const methodMetaMapping = (cfg.meta ?? [])
+    .map(
+      ({ name: sName, methods }) => methods.map(
+        ({ name: mName, decorators }) => ({
+          [`${sName}.${mName}`]: { decorators }
+        })
+      )
+    )
+    .flat()
+    .reduce((acc, cur) => ({ ...acc, ...cur }), {}) as { [key: string]: MethodMeta }
 
   return new Proxy({}, {
     get (t, serviceName: string) {

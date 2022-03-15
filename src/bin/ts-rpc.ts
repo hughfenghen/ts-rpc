@@ -22,8 +22,7 @@ function init (): void {
   program.command('client')
     .description('客户端同步声明文件')
     .requiredOption('-c, --config <path>', '指定远端服务配置，用于获取RPC服务声明文件')
-    .option('--outMeta', '是否向输出文件中添加 Meta 信息')
-    .action(async ({ config, outMeta }) => {
+    .action(async ({ config }) => {
       try {
         const cfgPath = path.resolve(process.cwd(), config)
         const { client: { apps, genRPCDefintionTarget } } = await import(cfgPath)
@@ -42,7 +41,7 @@ function init (): void {
         const dts = await handleClientCmd(
           serverDts,
           localDefStr,
-          { outMeta, includeServices: client.includeServices }
+          { includeServices: client.includeServices }
         )
         if (!fs.existsSync(path.dirname(outPath))) {
           fs.mkdirSync(path.dirname(outPath))
@@ -153,7 +152,7 @@ async function getServerDefinitionData (appsCfg: Record<string, string>): Promis
 export async function handleClientCmd (
   serverDts: Record<string, { dts: string, meta: TRPCMetaData }>,
   localDefStr: string,
-  { outMeta, includeServices = [] }: { outMeta?: boolean, includeServices?: string[] }
+  { includeServices = [] }: { includeServices?: string[] }
 ): Promise<string> {
   if (Object.keys(serverDts).length === 0) return ''
 
@@ -175,8 +174,6 @@ export async function handleClientCmd (
     Object.entries(serverDts).map(([appId, { meta }]) => [appId, meta])
   )
 
-  let metaStr = ''
-
   if (includeServices.length > 0) {
     const { code, meta } = filterService(
       rsCodeStr,
@@ -187,13 +184,11 @@ export async function handleClientCmd (
     appMeta = meta
   }
 
-  if (outMeta === true) {
-    metaStr = Object.entries(appMeta)
-      .map(
-        ([appId, meta]) => `export const ${appId}Meta = ${JSON.stringify(meta, null, 2)};`
-      )
-      .join('\n')
-  }
+  const metaStr = Object.entries(appMeta)
+    .map(
+      ([appId, meta]) => `export const ${appId}Meta = ${JSON.stringify(meta, null, 2)};`
+    )
+    .join('\n')
 
   const startComment = rsCodeStr.includes('/* eslint-disable */')
     ? ''

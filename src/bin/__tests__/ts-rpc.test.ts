@@ -76,7 +76,7 @@ describe('handleClientCmd', () => {
         dts: mockDownLoadDefStr2,
         meta: []
       }
-    }, mockLocalDefStr, { outMeta: true })
+    }, mockLocalDefStr, {})
 
     expect(fileStr2.trim().startsWith('/* eslint-disable */')).toBe(true)
     expect(fileStr2.includes('export type Test1 = Test1NS.App;')).toBe(true)
@@ -95,7 +95,7 @@ describe('handleClientCmd', () => {
         dts: mockDownLoadDefStr2,
         meta: []
       }
-    }, mockLocalDefStr, { outMeta: true, includeServices: ['S1'] })
+    }, mockLocalDefStr, { includeServices: ['S1'] })
 
     expect(fileStr.trim().startsWith('/* eslint-disable */')).toBe(true)
     expect(fileStr.includes('interface S1')).toBe(true)

@@ -1,3 +1,6 @@
+import * as TJS from 'typescript-json-schema'
+
+export type TSchema = TJS.Definition
 
 export type TRPCMetaData = Array<{
   name: string
@@ -5,6 +8,7 @@ export type TRPCMetaData = Array<{
   methods: Array<{
     name: string
     decorators: string[]
+    retSchema?: TJS.DefinitionOrBoolean
   }>
 }>
 

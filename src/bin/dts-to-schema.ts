@@ -1,7 +1,8 @@
 import { Project } from 'ts-morph'
 import * as TJS from 'typescript-json-schema'
+import { TSchema } from '../common'
 
-export function dts2JSONSchema (code: string, typeName: string): object | null {
+export function dts2JSONSchema (code: string, typeName: string): TSchema | null {
   const prj = new Project()
   prj.createSourceFile('rpc-definition.ts', code)
 

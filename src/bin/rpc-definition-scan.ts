@@ -4,6 +4,11 @@ import path from 'path'
 import { existsSync } from 'fs'
 import { IScanResult, TRPCMetaData } from '../common'
 import { addNode, collectTypeDeps } from './utils'
+import { dts2JSONSchema } from './dts-to-schema'
+
+const nsName = (appId: string): string => `${appId}NS`
+const EXP_SERVICES_NAME = 'App'
+const EXP_RETURN_TYPES_NAME = 'APIReturnTypes'
 
 export function scan (
   filePaths: string[],
@@ -40,8 +45,8 @@ export function scan (
   }, { overwrite: true })
 
   // namespace 避免命名冲突
-  const appNS = genSf.addModule({ name: `${appId}NS` })
-  const appInterColl = appNS.addInterface({ name: 'App' })
+  const appNS = genSf.addModule({ name: nsName(appId) })
+  const appInterColl = appNS.addInterface({ name: EXP_SERVICES_NAME })
   appNS.setIsExported(true)
   appInterColl.setIsExported(true)
   // 导出应用下聚合的 Service： export type AppID = AppIdNs.App;
@@ -51,7 +56,7 @@ export function scan (
     isExported: true
   })
   // 收集接口返回类型，用于 client 生成 json-schema
-  const retTypes = appNS.addInterface({ name: 'APIReturnTypes' })
+  const retTypes = appNS.addInterface({ name: EXP_RETURN_TYPES_NAME })
   retTypes.setIsExported(true)
 
   const rpcMetaData: TRPCMetaData = []
@@ -96,15 +101,23 @@ export function scan (
       let rtText = addedM.getReturnTypeNode()?.getText()
       if (rtText == null) throw new Error(`Could not find method (${m.getName()}) return type`)
 
-      retTypes.addProperty({ name: `'${className}.${m.getName()}'`, type: rtText })
-
-      // 远程调用，返回值都是 Promise
-      if (!/^Promise<.+>$/.test(rtText)) {
+      // 返回类型不需要 promise 包围，影响生成的 schema，不便于 Mock 或 fast-stringify
+      let nonPromiseType = rtText
+      const promiseRegx = /^Promise<(.+)>$/
+      if (promiseRegx.test(rtText)) {
+        nonPromiseType = rtText.replace(promiseRegx, '$1')
+      } else {
+        // 远程调用，返回值都是 Promise
         rtText = `Promise<${rtText}>`
       }
+      retTypes.addProperty({
+        name: `'${className}.${m.getName()}'`,
+        type: nonPromiseType
+      })
       addedM.setReturnType(rtText)
     })
 
+    // TODO： 重构优化以下代码
     collectTypeDeps(
       methods.map(m => [...m.getParameters(), m.getReturnTypeNodeOrThrow()]).flat(),
       prj
@@ -139,9 +152,10 @@ export function scan (
     appInterColl.addProperty({ name: className, type: className })
   })
 
+  const code = genSf.getFullText()
   return {
-    dts: genSf.getFullText(),
-    meta: rpcMetaData
+    dts: code,
+    meta: addReturnSchemToMeta(rpcMetaData, code, appId)
   }
 }
 
@@ -158,4 +172,18 @@ function findRPCMethods (service: ClassDeclaration, rpcMethodDef: FunctionDeclar
         }
       }
     ))
+}
+
+function addReturnSchemToMeta (meta: TRPCMetaData, code: string, appId: string): TRPCMetaData {
+  const schema = dts2JSONSchema(code, `${nsName(appId)}.${EXP_RETURN_TYPES_NAME}`)
+  const { properties } = schema ?? {}
+  if (properties == null) return meta
+
+  return meta.map((s) => ({
+    ...s,
+    methods: s.methods.map(m => ({
+      ...m,
+      retSchema: properties[`${s.name}.${m.name}`]
+    }))
+  }))
 }

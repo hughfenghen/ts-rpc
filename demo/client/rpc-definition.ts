@@ -35,13 +35,42 @@ export const RPCDemoMeta = [
         "decorators": [
           "@Post()",
           "@RPCMethod()"
-        ]
+        ],
+        "retSchema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "age": {
+              "type": "number"
+            },
+            "avatar": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "age",
+            "avatar",
+            "id",
+            "name"
+          ]
+        }
       },
       {
         "name": "getUnreadMsg",
         "decorators": [
           "@RPCMethod()"
-        ]
+        ],
+        "retSchema": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
       }
     ]
   }

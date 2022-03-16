@@ -10,4 +10,5 @@ server/*
 client/*
 bin/*
 /common*
+/protocol*
 .DS_Store

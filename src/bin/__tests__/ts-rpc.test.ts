@@ -47,7 +47,7 @@ export type Test1 = Test1NS.App;
 describe('handleClientCmd', () => {
   test('new definition file', async () => {
     // 新建dts文件
-    const fileStr1 = await handleClientCmd({
+    const { code } = await handleClientCmd({
       Test1: {
         dts: mockDownLoadDefStr1,
         meta: []
@@ -58,16 +58,15 @@ describe('handleClientCmd', () => {
       }
     }, '', {})
 
-    expect(/^\/\* eslint-disable \*\//.test(fileStr1.trim())).toBe(true)
-    expect(fileStr1.includes('export type Test1 = Test1NS.App;')).toBe(true)
-    expect(fileStr1.includes('export type Test2 = Test2NS.App;')).toBe(true)
-    expect(fileStr1.includes('export const Test2Meta = [];')).toBe(false)
-    expect(fileStr1).toMatchSnapshot()
+    expect(/^\/\* eslint-disable \*\//.test(code.trim())).toBe(true)
+    expect(code.includes('export type Test1 = Test1NS.App;')).toBe(true)
+    expect(code.includes('export type Test2 = Test2NS.App;')).toBe(true)
+    expect(code).toMatchSnapshot()
   })
 
   test('concat definition file', async () => {
     // 合并原dts文件
-    const fileStr2 = await handleClientCmd({
+    const { code } = await handleClientCmd({
       Test1: {
         dts: mockDownLoadDefStr1,
         meta: []
@@ -78,15 +77,15 @@ describe('handleClientCmd', () => {
       }
     }, mockLocalDefStr, {})
 
-    expect(fileStr2.trim().startsWith('/* eslint-disable */')).toBe(true)
-    expect(fileStr2.includes('export type Test1 = Test1NS.App;')).toBe(true)
-    expect(fileStr2.includes('export type Test2 = Test2NS.App;')).toBe(true)
-    expect(fileStr2.includes('export const Test2Meta = [];')).toBe(true)
-    expect(fileStr2).toMatchSnapshot()
+    expect(code.trim().startsWith('/* eslint-disable */')).toBe(true)
+    expect(code.includes('export type Test1 = Test1NS.App;')).toBe(true)
+    expect(code.includes('export type Test2 = Test2NS.App;')).toBe(true)
+    expect(code.includes('export const Test2Meta = [];')).toBe(true)
+    expect(code).toMatchSnapshot()
   })
 
   test('includeServices config', async () => {
-    const fileStr = await handleClientCmd({
+    const { code } = await handleClientCmd({
       Test1: {
         dts: mockDownLoadDefStr1,
         meta: [{ name: 'S1', path: '', methods: [] }]
@@ -97,11 +96,11 @@ describe('handleClientCmd', () => {
       }
     }, mockLocalDefStr, { includeServices: ['S1'] })
 
-    expect(fileStr.trim().startsWith('/* eslint-disable */')).toBe(true)
-    expect(fileStr.includes('interface S1')).toBe(true)
-    expect(fileStr.includes('export type Test1 = Test1NS.App;')).toBe(true)
-    expect(fileStr.includes('export const Test1Meta = [')).toBe(true)
-    expect(fileStr.includes('export type Test2 = Test2NS.App;')).toBe(false)
+    expect(code.trim().startsWith('/* eslint-disable */')).toBe(true)
+    expect(code.includes('interface S1')).toBe(true)
+    expect(code.includes('export type Test1 = Test1NS.App;')).toBe(true)
+    expect(code.includes('export const Test1Meta = [')).toBe(true)
+    expect(code.includes('export type Test2 = Test2NS.App;')).toBe(false)
   })
 })
 

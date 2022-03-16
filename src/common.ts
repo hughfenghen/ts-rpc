@@ -26,3 +26,32 @@ export enum RPCKey {
   Args = '_ts_rpc_args_',
   Return = '_ts_rpc_return_'
 }
+
+export interface Ctx {
+  request: {
+    body?: any
+    query?: { [key: string]: string }
+  }
+  body: string
+  path: string
+  set: (k: string, v: string) => void
+  method: string
+  status: number
+}
+
+export interface IRPCConfig {
+  appId: string
+  server?: {
+    scanDir: string[]
+    metaOutDir: string
+  }
+  client?: {
+    apps: Record<string, string>
+    baseUrl: string
+    genRPCDefintionTarget: string
+    includeServices?: string[]
+    mock?: {
+      port: number
+    }
+  }
+}

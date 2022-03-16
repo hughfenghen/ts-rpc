@@ -6,9 +6,10 @@ import path from 'path'
 import fs from 'fs'
 import got from 'got'
 import { scan } from './rpc-definition-scan'
-import { TRPCMetaData, TRPCMetaFile } from '../common'
+import { IRPCConfig, TRPCMetaData, TRPCMetaFile } from '../common'
 import { InterfaceDeclaration, Project } from 'ts-morph'
 import { addNode, collectTypeDeps, ITCDeclaration } from './utils'
+import { initMockServer } from './mock-server'
 
 const program = new Command()
 
@@ -22,14 +23,19 @@ function init (): void {
   program.command('client')
     .description('客户端同步声明文件')
     .requiredOption('-c, --config <path>', '指定远端服务配置，用于获取RPC服务声明文件')
-    .action(async ({ config }) => {
+    .option('-ms, --mock-server', '是否启动 Mock Server')
+    .action(async ({ config, mockServer }) => {
       try {
         const cfgPath = path.resolve(process.cwd(), config)
-        const { client: { apps, genRPCDefintionTarget } } = await import(cfgPath)
-        const { client } = await import(cfgPath)
+        const { client } = await import(cfgPath) as IRPCConfig
+        if (client == null) {
+          console.log(`${config as string} 未定义 client`)
+          return
+        }
+
         const outPath = path.resolve(
           path.dirname(cfgPath),
-          genRPCDefintionTarget,
+          client.genRPCDefintionTarget,
           'rpc-definition.ts'
         )
         let localDefStr = ''
@@ -37,8 +43,8 @@ function init (): void {
           localDefStr = await fsP.readFile(outPath, { encoding: 'utf-8' })
         }
 
-        const serverDts = await getServerDefinitionData(apps)
-        const dts = await handleClientCmd(
+        const serverDts = await getServerDefinitionData(client.apps)
+        const { code, appMeta } = await handleClientCmd(
           serverDts,
           localDefStr,
           { includeServices: client.includeServices }
@@ -47,10 +53,11 @@ function init (): void {
           fs.mkdirSync(path.dirname(outPath))
         }
 
-        fs.writeFile(outPath, `${dts}`, { flag: 'w' }, (err) => {
-          if (err != null) throw err
-          console.log('ts-brpc > 声明文件同步成功：', outPath)
-        })
+        fs.writeFileSync(outPath, `${code}`, { flag: 'w' })
+        console.log('ts-brpc > 声明文件同步成功：', outPath)
+        if (mockServer === true) {
+          initMockServer(client, appMeta)
+        }
       } catch (err) {
         console.error((err as Error).message)
       }
@@ -153,8 +160,8 @@ export async function handleClientCmd (
   serverDts: Record<string, { dts: string, meta: TRPCMetaData }>,
   localDefStr: string,
   { includeServices = [] }: { includeServices?: string[] }
-): Promise<string> {
-  if (Object.keys(serverDts).length === 0) return ''
+): Promise<{ code: string, appMeta: Record<string, TRPCMetaData> }> {
+  if (Object.keys(serverDts).length === 0) return { code: '', appMeta: {} }
 
   const prj = new Project()
   const localSf = prj.createSourceFile('localDefstr', localDefStr.trim())
@@ -195,7 +202,10 @@ export async function handleClientCmd (
     : '/* eslint-disable */'
 
   // 合并 (注释 + 本地代码 + 同步的新代码)
-  return `${startComment}\n${rsCodeStr}\n${metaStr}`
+  return {
+    code: `${startComment}\n${rsCodeStr}\n${metaStr}`,
+    appMeta
+  }
 }
 
 export function filterService (
@@ -280,4 +290,9 @@ export function findTSCfgPath (p: string): string | null {
   if (fs.existsSync(pkgPath)) return null
 
   return findTSCfgPath(path.resolve(p, '..'))
+}
+
+// TODO: 实现
+export function cfgChecker (): boolean {
+  return false
 }

@@ -1,7 +1,16 @@
 {
   "appId": "RPCTest",
   "client": {
-    "baseUrl": "localhost:3000"
+    "apps": {
+      "a": "localhost:3000",
+      "b": "10.23.0.33:3000",
+      "aDev": ""
+    },
+    "baseUrl": "localhost:3000",
+    "genRPCDefintionTarget": "./",
+    "mock": {
+      "port": 3030
+    }
   },
   "server": {
     "scanDir": [

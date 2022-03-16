@@ -2,11 +2,16 @@ import { createRemoteService, RPCKey } from 'ts-brpc/client'
 import rpcCfg from '../ts-rpc.json'
 import { RPCDemo, RPCDemoMeta } from './rpc-definition'
 
+const enableRPCMock = new URL(location.href).searchParams.get('rpcMock') === '1'
+
 const rs = createRemoteService<RPCDemo>({
   baseUrl: rpcCfg.client.apps.a,
   meta: RPCDemoMeta,
   agent: async ({ serviceName, methodName, args, meta }) => {
-    const url = new URL(`//${rpcCfg.client.apps.a}/${serviceName}/${methodName}`, window.location.href)
+    const urlPrefix = enableRPCMock
+      ? `127.0.0.1:${rpcCfg.client.mock.port as number}`
+      : rpcCfg.client.apps.a
+    const url = new URL(`//${urlPrefix}/${serviceName}/${methodName}`, window.location.href)
     let body
     let method = 'Post'
     if (meta.decorators.includes('@Post()')) {

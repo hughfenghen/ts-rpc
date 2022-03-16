@@ -13,8 +13,11 @@ import { TRPCMetaData } from '../common'
 
 // }
 
-export function buildMockGenerator (meta: TRPCMetaData) {
-  return (sName: string, mName: string): any => {
+export function buildMockGenerator (meta: TRPCMetaData): (sName: string, mName: string) => any {
+  // 不需要生成多余的属性
+  jsf.option({ fillProperties: false })
+
+  return (sName, mName) => {
     const schema = meta.find(({ name }) => name === sName)
       ?.methods
       .find(({ name }) => name === mName)

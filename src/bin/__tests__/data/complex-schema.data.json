@@ -1,0 +1,118 @@
+{
+  "anyOf": [
+    {
+      "properties": {
+        "code": {
+          "type": "number"
+        },
+        "data": {
+          "properties": {
+            "rewardList": {
+              "items": {
+                "properties": {
+                  "packageList": {
+                    "items": {
+                      "properties": {
+                        "anchorAwardList": {
+                          "items": {
+                            "properties": {
+                              "frontAwardDesc": {
+                                "type": "string"
+                              },
+                              "frontAwardImg": {
+                                "type": "string"
+                              },
+                              "frontAwardName": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "frontAwardDesc",
+                              "frontAwardImg",
+                              "frontAwardName"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "anchorAwardTitle": {
+                          "type": "string"
+                        },
+                        "rewardTitle": {
+                          "type": "string"
+                        },
+                        "userAwardList": {
+                          "items": {
+                            "properties": {
+                              "frontAwardDesc": {
+                                "type": "string"
+                              },
+                              "frontAwardImg": {
+                                "type": "string"
+                              },
+                              "frontAwardName": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "frontAwardDesc",
+                              "frontAwardImg",
+                              "frontAwardName"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "userAwardTitle": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "anchorAwardList",
+                        "anchorAwardTitle",
+                        "rewardTitle",
+                        "userAwardList",
+                        "userAwardTitle"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "rewardTitle": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "packageList",
+                  "rewardTitle"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "type": "object"
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "data"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "error": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "error"
+      ],
+      "type": "object"
+    }
+  ]
+}

@@ -9,7 +9,10 @@
     "includeServices": [
       "User"
     ],
-    "genRPCDefintionTarget": "./client"
+    "genRPCDefintionTarget": "./client",
+    "mock": {
+      "port": 3030
+    }
   },
   "server": {
     "scanDir": [

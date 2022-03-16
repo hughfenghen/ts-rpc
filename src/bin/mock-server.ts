@@ -1,7 +1,7 @@
 import jsf, { Schema } from 'json-schema-faker'
 import Koa from 'koa'
 
-import { IRPCConfig, TRPCMetaData } from '../common'
+import { Ctx, IRPCConfig, TRPCMetaData } from '../common'
 import { wrapRPCReturn } from '../protocol'
 
 export function initMockServer (clientCfg: IRPCConfig['client'], appMeta: Record<string, TRPCMetaData>): void {
@@ -9,6 +9,7 @@ export function initMockServer (clientCfg: IRPCConfig['client'], appMeta: Record
 
   const app = new Koa()
   const generator = buildMockGenerator(Object.values(appMeta).flat())
+  app.use(crossMiddleware)
   app.use(async (ctx, next) => {
     const [sPath, mPath] = ctx.path
       .replace(/^\/*/, '')
@@ -44,4 +45,15 @@ export function buildMockGenerator (meta: TRPCMetaData): (sName: string, mName: 
     }
     return jsf.generate(schema as Schema)
   }
+}
+
+async function crossMiddleware (ctx: Ctx, next: () => Promise<void>): Promise<void> {
+  ctx.set('Access-Control-Allow-Origin', '*')
+  ctx.set('Access-Control-Allow-Headers', 'Content-Type')
+  ctx.set('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS')
+
+  if (ctx.method === 'OPTIONS') {
+    ctx.status = 204
+  }
+  await next()
 }

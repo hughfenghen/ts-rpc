@@ -1,6 +1,6 @@
 import path from 'path'
 import { RPCKey } from '..'
-import { bindKoa, bindMidway, getRPCArgs } from '../bindings'
+import { bindKoa, bindMidway } from '../bindings'
 
 jest.mock('lodash', () => ({
   __esModule: true,
@@ -96,34 +96,4 @@ test('bindMidway', async () => {
   // args from RPCKey.Args
   expect(spyGetInfoById).lastCalledWith('111')
   expect(JSON.parse(ctx.body)).toEqual({ [RPCKey.Return]: 'test' })
-})
-
-test('getRPCArgs for http Get request', async () => {
-  const argsData = [1, '2', true]
-  const args = await getRPCArgs({
-    ...CTX_TPL,
-    method: 'get',
-    request: {
-      query: {
-        [RPCKey.Args]: JSON.stringify(argsData)
-      }
-    }
-  })
-
-  expect(args).toEqual(argsData)
-})
-
-test('getRPCArgs for http Post request', async () => {
-  const argsData = [1, '2', true]
-  const args = await getRPCArgs({
-    ...CTX_TPL,
-    method: 'post',
-    request: {
-      body: {
-        [RPCKey.Args]: JSON.stringify(argsData)
-      }
-    }
-  })
-
-  expect(args).toEqual(argsData)
 })

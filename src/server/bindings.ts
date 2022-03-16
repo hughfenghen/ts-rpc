@@ -1,21 +1,10 @@
 import fs from 'fs'
 import path from 'path'
 import { camelCase } from 'lodash'
-import bodyParser from 'co-body'
-import { RPCKey, TRPCMetaFile } from '../common'
+import { Ctx, RPCKey, TRPCMetaFile } from '../common'
+import { getRPCArgs, wrapRPCReturn } from '../protocol'
 import { logger } from './logger'
 
-interface Ctx {
-  request: {
-    body?: any
-    query?: { [key: string]: string }
-  }
-  body: string
-  path: string
-  set: (k: string, v: string) => void
-  method: string
-  status: number
-}
 type TMiddleware = (ctx: Ctx, next: (() => Promise<void>)) => Promise<void>
 
 interface IApp {
@@ -90,9 +79,17 @@ export async function bindKoa ({ app, rpcMetaPath, prefixPath }: IBindingArgs): 
     }
 
     ins.ctx = ctx
+
+    let args: unknown[] = []
+    try {
+      args = await getRPCArgs(ctx)
+    } catch (err) {
+      logger.info(`Cannot find '${RPCKey.Args}' in request body or query, path: ${ctx.path}`)
+    }
     ctx.body = JSON.stringify(wrapRPCReturn(
-      await ins[mPath](...await getRPCArgs(ctx))
+      await ins[mPath](...args)
     ))
+
     await next()
   })
 }
@@ -145,38 +142,16 @@ export async function bindMidway (
       pathInstanceMap.set(ctx.path, ins)
     }
 
+    let args: unknown[] = []
+    try {
+      args = await getRPCArgs(ctx)
+    } catch (err) {
+      logger.info(`Cannot find '${RPCKey.Args}' in request body or query, path: ${ctx.path}`)
+    }
     ctx.body = JSON.stringify(wrapRPCReturn(
-      await ins[mPath](...await getRPCArgs(ctx))
+      await ins[mPath](...args)
     ))
+
     await next()
   })
-}
-
-export async function getRPCArgs (ctx: Ctx): Promise<unknown[]> {
-  const ctxReq = ctx.request
-  const method = ctx.method.toLowerCase()
-
-  let args = null
-  if (method === 'get') {
-    args = ctxReq.query?.[RPCKey.Args]
-  } else {
-    // bodyParser 依赖 koa, midway ctx.req (http.IncomingMessage)
-    if (ctxReq.body == null) ctxReq.body = await bodyParser.json((ctx as any).req)
-    args = ctxReq.body?.[RPCKey.Args]
-  }
-
-  try {
-    if (typeof args === 'string') args = JSON.parse(args)
-    if (!Array.isArray(args)) throw Error('Parse args failed')
-  } catch (err) {
-    logger.info(`Cannot find '${RPCKey.Args}' in request body or query, path: ${ctx.path}`)
-    args = []
-  }
-  return args
-}
-
-function wrapRPCReturn<T extends unknown> (data: T): { [RPCKey.Return]: T } {
-  return {
-    [RPCKey.Return]: data
-  }
 }

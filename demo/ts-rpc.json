@@ -11,7 +11,10 @@
     ],
     "genRPCDefintionTarget": "./client",
     "mock": {
-      "port": 3030
+      "port": 3030,
+      "fileMatch": [
+        "client/__rpc-mocks__/*.js"
+      ]
     }
   },
   "server": {

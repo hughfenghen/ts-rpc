@@ -56,7 +56,7 @@ function init (): void {
         fs.writeFileSync(outPath, `${code}`, { flag: 'w' })
         console.log('ts-brpc > 声明文件同步成功：', outPath)
         if (mockServer === true) {
-          initMockServer(client, appMeta)
+          initMockServer({ cfgPath, clientCfg: client }, appMeta)
         }
       } catch (err) {
         console.error((err as Error).message)

@@ -1,30 +1,30 @@
+import glob from 'glob'
 import jsf, { Schema } from 'json-schema-faker'
 import Koa from 'koa'
+import { merge } from 'lodash'
+import path from 'path'
 
 import { Ctx, IRPCConfig, TRPCMetaData } from '../common'
-import { wrapRPCReturn } from '../protocol'
+import { getRPCArgs, wrapRPCReturn } from '../protocol'
 
-export function initMockServer (clientCfg: IRPCConfig['client'], appMeta: Record<string, TRPCMetaData>): void {
-  const safeMockCfg = Object.assign({ port: 3030 }, clientCfg?.mock)
+type TServiceInsMap = Record<string, Record<string, (...args: any[]) => any>>
+
+export function initMockServer (
+  opts: { cfgPath: string, clientCfg: IRPCConfig['client'] },
+  appMeta: Record<string, TRPCMetaData>
+): void {
+  const safeMockCfg = Object.assign({
+    port: 3030,
+    fileMatch: []
+  }, opts.clientCfg?.mock)
 
   const app = new Koa()
-  const generator = buildMockGenerator(Object.values(appMeta).flat())
+
   app.use(crossMiddleware)
-  app.use(async (ctx, next) => {
-    const [sPath, mPath] = ctx.path
-      .replace(/^\/*/, '')
-      .split('/')
-
-    console.log(`access path: ${ctx.path}`)
-    if (sPath == null || mPath == null) {
-      await next()
-      return
-    }
-    // const args = await getRPCArgs(ctx as Ctx)
-    ctx.body = JSON.stringify(wrapRPCReturn(generator(sPath, mPath)))
-
-    await next()
-  })
+  app.use(buildMockMiddleware(
+    collectMockService(safeMockCfg.fileMatch, opts.cfgPath),
+    buildMockGenerator(Object.values(appMeta).flat())
+  ))
 
   app.listen(safeMockCfg.port, () => {
     console.log(`mock server 已启动：${safeMockCfg.port}`)
@@ -54,6 +54,50 @@ async function crossMiddleware (ctx: Ctx, next: () => Promise<void>): Promise<vo
 
   if (ctx.method === 'OPTIONS') {
     ctx.status = 204
+    return
   }
   await next()
+}
+
+export function buildMockMiddleware (
+  servicesIns: TServiceInsMap,
+  autoGenerator: (sName: string, mName: string) => unknown
+): (ctx: Ctx, next: () => Promise<void>) => Promise<void> {
+  return async (ctx, next) => {
+    const [sPath, mPath] = ctx.path
+      .replace(/^\/*/, '')
+      .split('/')
+
+    console.log(`access path: ${ctx.path}`)
+    if (sPath == null || mPath == null) {
+      await next()
+      return
+    }
+
+    const manualMock = servicesIns[sPath]?.[mPath]?.(
+      ...await getRPCArgs(ctx)
+    )
+    ctx.body = JSON.stringify(
+      wrapRPCReturn(
+        // 手动 mock 数据优先级高于自动生成的数据
+        merge(autoGenerator(sPath, mPath), manualMock)
+      )
+    )
+
+    await next()
+  }
+}
+
+export function collectMockService (fileMatch: string[], cfgPath: string): TServiceInsMap {
+  const cfgDir = path.dirname(cfgPath)
+  const mockModules = fileMatch.map(fm => glob.sync(path.resolve(cfgDir, fm)))
+    .flat()
+    .map((filePath) => require(filePath))
+    .reduce((acc, cur) => Object.assign(acc, cur), {})
+
+  const servicesInstance: TServiceInsMap = {}
+  for (const name in mockModules) {
+    servicesInstance[name] = new mockModules[name]()
+  }
+  return servicesInstance
 }

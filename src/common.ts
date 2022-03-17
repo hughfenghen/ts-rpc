@@ -52,6 +52,7 @@ export interface IRPCConfig {
     includeServices?: string[]
     mock?: {
       port: number
+      fileMatch: string[]
     }
   }
 }

@@ -1,5 +1,6 @@
-import { TRPCMetaData, TSchema } from '../../common'
-import { buildMockGenerator } from '../mock-server'
+import path from 'path'
+import { RPCKey, TRPCMetaData, TSchema } from '../../common'
+import { buildMockGenerator, buildMockMiddleware, collectMockService } from '../mock-server'
 import complexSchema from './data/complex-schema.data.json'
 
 function createMeta (schema: TSchema): TRPCMetaData {
@@ -38,4 +39,34 @@ test('generate complex mock data', () => {
     typeof data.data === 'object' ||
     typeof data.error === 'string'
   ).toBe(true)
+})
+
+test('collectMockService', async () => {
+  const mockModules = await collectMockService(
+    ['./data/mock*.js'],
+    path.resolve(__dirname, './ts-rpc-example.json')
+  )
+  expect(mockModules.User).not.toBeUndefined()
+})
+
+test('buildMockMiddleware', async () => {
+  const spyMethod = jest.fn().mockReturnValue({ code: 222 })
+  const middleware = buildMockMiddleware(
+    {
+      User: {
+        getInfoById: spyMethod
+      }
+    },
+    () => ({ code: 111 })
+  )
+  const ctx = {
+    method: 'GET',
+    path: 'User/getInfoById',
+    request: { query: { [RPCKey.Args]: '["id"]' } }
+  } as any
+  await middleware(ctx, async () => {})
+  expect(JSON.parse(ctx.body)).toEqual({
+    [RPCKey.Return]: { code: 222 }
+  })
+  expect(spyMethod).lastCalledWith('id')
 })

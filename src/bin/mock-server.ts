@@ -7,7 +7,8 @@ import path from 'path'
 import { Ctx, IRPCConfig, TRPCMetaData } from '../common'
 import { getRPCArgs, wrapRPCReturn } from '../protocol'
 
-type TServiceInsMap = Record<string, Record<string, (...args: any[]) => any>>
+type TServiceInsMap = Record<string, Record<string, (...args: unknown[]) => unknown>>
+type TGeneragor = (sName: string, mName: string, args: unknown[]) => Promise<unknown>
 
 export function initMockServer (
   opts: { cfgPath: string, clientCfg: IRPCConfig['client'] },
@@ -22,29 +23,13 @@ export function initMockServer (
 
   app.use(crossMiddleware)
   app.use(buildMockMiddleware(
-    collectMockService(safeMockCfg.fileMatch, opts.cfgPath),
-    buildMockGenerator(Object.values(appMeta).flat())
+    buildManualMockGenerator(safeMockCfg.fileMatch, opts.cfgPath).generator,
+    buildAutoMockGenerator(Object.values(appMeta).flat())
   ))
 
   app.listen(safeMockCfg.port, () => {
     console.log(`mock server 已启动：${safeMockCfg.port}`)
   })
-}
-
-export function buildMockGenerator (meta: TRPCMetaData): (sName: string, mName: string) => any {
-  // 不需要生成多余的属性
-  jsf.option({ fillProperties: false })
-
-  return (sName, mName) => {
-    const schema = meta.find(({ name }) => name === sName)
-      ?.methods
-      .find(({ name }) => name === mName)
-      ?.retSchema
-    if (schema == null) {
-      throw new Error(`Schema not found for Service: ${sName}, Method: ${mName}`)
-    }
-    return jsf.generate(schema as Schema)
-  }
 }
 
 async function crossMiddleware (ctx: Ctx, next: () => Promise<void>): Promise<void> {
@@ -60,7 +45,7 @@ async function crossMiddleware (ctx: Ctx, next: () => Promise<void>): Promise<vo
 }
 
 export function buildMockMiddleware (
-  servicesIns: TServiceInsMap,
+  manualMockGenerator: TGeneragor,
   autoGenerator: (sName: string, mName: string) => unknown
 ): (ctx: Ctx, next: () => Promise<void>) => Promise<void> {
   return async (ctx, next) => {
@@ -74,9 +59,7 @@ export function buildMockMiddleware (
       return
     }
 
-    const manualMock = servicesIns[sPath]?.[mPath]?.(
-      ...await getRPCArgs(ctx)
-    )
+    const manualMock = manualMockGenerator(sPath, mPath, await getRPCArgs(ctx))
     ctx.body = JSON.stringify(
       wrapRPCReturn(
         // 手动 mock 数据优先级高于自动生成的数据
@@ -88,7 +71,9 @@ export function buildMockMiddleware (
   }
 }
 
-export function collectMockService (fileMatch: string[], cfgPath: string): TServiceInsMap {
+export function buildManualMockGenerator (fileMatch: string[], cfgPath: string): {
+  generator: TGeneragor
+} {
   const cfgDir = path.dirname(cfgPath)
   const mockModules = fileMatch.map(fm => glob.sync(path.resolve(cfgDir, fm)))
     .flat()
@@ -99,5 +84,25 @@ export function collectMockService (fileMatch: string[], cfgPath: string): TServ
   for (const name in mockModules) {
     servicesInstance[name] = new mockModules[name]()
   }
-  return servicesInstance
+  return {
+    async generator (sName, mName, args) {
+      return servicesInstance[sName]?.[mName]?.(...args)
+    }
+  }
+}
+
+export function buildAutoMockGenerator (meta: TRPCMetaData): (sName: string, mName: string) => any {
+  // 不需要生成多余的属性
+  jsf.option({ fillProperties: false })
+
+  return (sName, mName) => {
+    const schema = meta.find(({ name }) => name === sName)
+      ?.methods
+      .find(({ name }) => name === mName)
+      ?.retSchema
+    if (schema == null) {
+      throw new Error(`Schema not found for Service: ${sName}, Method: ${mName}`)
+    }
+    return jsf.generate(schema as Schema)
+  }
 }

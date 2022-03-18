@@ -1,8 +1,8 @@
-import glob from 'glob'
 import jsf, { Schema } from 'json-schema-faker'
 import Koa from 'koa'
 import { merge } from 'lodash'
 import path from 'path'
+import chokidar from 'chokidar'
 
 import { Ctx, IRPCConfig, TRPCMetaData } from '../common'
 import { getRPCArgs, wrapRPCReturn } from '../protocol'
@@ -59,7 +59,7 @@ export function buildMockMiddleware (
       return
     }
 
-    const manualMock = manualMockGenerator(sPath, mPath, await getRPCArgs(ctx))
+    const manualMock = await manualMockGenerator(sPath, mPath, await getRPCArgs(ctx))
     ctx.body = JSON.stringify(
       wrapRPCReturn(
         // 手动 mock 数据优先级高于自动生成的数据
@@ -74,20 +74,41 @@ export function buildMockMiddleware (
 export function buildManualMockGenerator (fileMatch: string[], cfgPath: string): {
   generator: TGeneragor
 } {
-  const cfgDir = path.dirname(cfgPath)
-  const mockModules = fileMatch.map(fm => glob.sync(path.resolve(cfgDir, fm)))
-    .flat()
-    .map((filePath) => require(filePath))
-    .reduce((acc, cur) => Object.assign(acc, cur), {})
+  // 初始时获取 mock 文件中的实例
+  const globPatterns = fileMatch.map(fm => path.resolve(
+    path.dirname(cfgPath),
+    fm
+  ))
 
   const servicesInstance: TServiceInsMap = {}
-  for (const name in mockModules) {
-    servicesInstance[name] = new mockModules[name]()
+  // 监听手写 mock 文件变化，覆盖合并当前mock实例
+  const onFileChange = (filePath: string): void => {
+    console.log(`mock server reload: ${filePath}`)
+    Object.assign(servicesInstance, file2Instances(filePath))
   }
+  chokidar.watch(globPatterns)
+    .on('add', onFileChange)
+    .on('change', onFileChange)
+
   return {
     async generator (sName, mName, args) {
       return servicesInstance[sName]?.[mName]?.(...args)
     }
+  }
+
+  function file2Instances (filePath: string): TServiceInsMap {
+    // eslint-disable-next-line
+    delete require.cache[require.resolve(filePath)]
+    // eslint-disable-next-line
+    const module = require(filePath)
+    const servicesInstance: TServiceInsMap = {}
+    for (const name in module) {
+      const Class = module[name]
+      if (Class instanceof Function) {
+        servicesInstance[name] = new Class()
+      }
+    }
+    return servicesInstance
   }
 }
 

@@ -84,7 +84,7 @@ export function buildManualMockGenerator (fileMatch: string[], cfgPath: string):
   // 监听手写 mock 文件变化，覆盖合并当前mock实例
   const onFileChange = (filePath: string): void => {
     console.log(`mock server reload: ${filePath}`)
-    Object.assign(servicesInstance, file2Instances(filePath))
+    Object.assign(servicesInstance, file2MockIns(filePath))
   }
   chokidar.watch(globPatterns)
     .on('add', onFileChange)
@@ -95,21 +95,21 @@ export function buildManualMockGenerator (fileMatch: string[], cfgPath: string):
       return servicesInstance[sName]?.[mName]?.(...args)
     }
   }
+}
 
-  function file2Instances (filePath: string): TServiceInsMap {
-    // eslint-disable-next-line
+export function file2MockIns (filePath: string): TServiceInsMap {
+  // eslint-disable-next-line
     delete require.cache[require.resolve(filePath)]
-    // eslint-disable-next-line
+  // eslint-disable-next-line
     const module = require(filePath)
-    const servicesInstance: TServiceInsMap = {}
-    for (const name in module) {
-      const Class = module[name]
-      if (Class instanceof Function) {
-        servicesInstance[name] = new Class()
-      }
+  const servicesInstance: TServiceInsMap = {}
+  for (const name in module) {
+    const Class = module[name]
+    if (Class instanceof Function) {
+      servicesInstance[name] = new Class()
     }
-    return servicesInstance
   }
+  return servicesInstance
 }
 
 export function buildAutoMockGenerator (meta: TRPCMetaData): (sName: string, mName: string) => any {

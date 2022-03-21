@@ -1,6 +1,6 @@
 import path from 'path'
 import { RPCKey, TRPCMetaData, TSchema } from '../../common'
-import { buildAutoMockGenerator, buildMockMiddleware, buildManualMockGenerator } from '../mock-server'
+import { buildAutoMockGenerator, buildMockMiddleware, buildManualMockGenerator, file2MockIns } from '../mock-server'
 import complexSchema from './data/complex-schema.data.json'
 
 jest.mock('chokidar', () => ({
@@ -57,7 +57,13 @@ test('buildManualMockGenerator', async () => {
     ['./data/mock*.js'],
     path.resolve(__dirname, './ts-rpc-example.json')
   )
-  expect(await generator('User', 'getInfoById', [111])).toEqual({ id: 111 })
+
+  expect(generator).toBeInstanceOf(Function)
+})
+
+test('file2MockIns', () => {
+  const { User } = file2MockIns(path.resolve(__dirname, './data/mock-file-example.js'))
+  expect(User.getInfoById(111)).toEqual({ id: 111 })
 })
 
 test('buildMockMiddleware', async () => {

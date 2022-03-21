@@ -1,6 +1,6 @@
 {
   "name": "ts-brpc",
-  "version": "1.2.0-beta",
+  "version": "1.2.1-beta",
   "description": "基于TS的RPC库",
   "repository": "",
   "author": "hughfenghen@gmail.com",
@@ -8,7 +8,8 @@
     "server/",
     "client/",
     "bin/",
-    "common*"
+    "common*",
+    "protocol*"
   ],
   "scripts": {
     "prebuild": "rimraf server client && yarn test",

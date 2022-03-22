@@ -4,7 +4,7 @@ import { RPCDemo, RPCDemoMeta } from './rpc-definition'
 
 const enableRPCMock = new URL(location.href).searchParams.get('rpcMock') === '1'
 
-const rs = createRemoteService<RPCDemo>({
+const rpc = createRemoteService<RPCDemo>({
   baseUrl: rpcCfg.client.apps.a,
   meta: RPCDemoMeta,
   agent: async ({ serviceName, methodName, args, meta }) => {
@@ -34,7 +34,8 @@ const rs = createRemoteService<RPCDemo>({
 
 document.getElementById('send')?.addEventListener('click', () => {
   ; (async () => {
-    const userInfo = await rs.User.getInfoById('111')
+    const userInfo = await rpc.User.getInfoById('111')
+
     ;(document.getElementById('result') as HTMLDivElement).textContent = JSON.stringify(userInfo, null, 2)
   })().catch((err) => console.error(err))
 })

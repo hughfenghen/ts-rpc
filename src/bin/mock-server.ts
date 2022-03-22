@@ -3,6 +3,7 @@ import Koa from 'koa'
 import { merge } from 'lodash'
 import path from 'path'
 import chokidar from 'chokidar'
+import cors from '@koa/cors'
 
 import { Ctx, IRPCConfig, TRPCMetaData } from '../common'
 import { getRPCArgs, wrapRPCReturn } from '../protocol'
@@ -21,7 +22,10 @@ export function initMockServer (
 
   const app = new Koa()
 
-  app.use(crossMiddleware)
+  app.use(cors({
+    origin: ctx => ctx.header.origin as string,
+    credentials: true
+  }))
   app.use(buildMockMiddleware(
     buildManualMockGenerator(safeMockCfg.fileMatch, opts.cfgPath).generator,
     buildAutoMockGenerator(Object.values(appMeta).flat())
@@ -30,18 +34,6 @@ export function initMockServer (
   app.listen(safeMockCfg.port, () => {
     console.log(`mock server 已启动：${safeMockCfg.port}`)
   })
-}
-
-async function crossMiddleware (ctx: Ctx, next: () => Promise<void>): Promise<void> {
-  ctx.set('Access-Control-Allow-Origin', '*')
-  ctx.set('Access-Control-Allow-Headers', 'Content-Type')
-  ctx.set('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS')
-
-  if (ctx.method === 'OPTIONS') {
-    ctx.status = 204
-    return
-  }
-  await next()
 }
 
 export function buildMockMiddleware (

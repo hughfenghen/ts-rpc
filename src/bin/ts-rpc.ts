@@ -54,7 +54,7 @@ function init (): void {
         }
 
         fs.writeFileSync(outPath, `${code}`, { flag: 'w' })
-        console.log('ts-brpc > 声明文件同步成功：', outPath)
+        console.log('ts-brpc > 声明文件同步完成：', outPath)
         if (mockServer === true) {
           initMockServer({ cfgPath, clientCfg: client }, appMeta)
         }
@@ -161,7 +161,10 @@ export async function handleClientCmd (
   localDefStr: string,
   { includeServices = [] }: { includeServices?: string[] }
 ): Promise<{ code: string, appMeta: Record<string, TRPCMetaData> }> {
-  if (Object.keys(serverDts).length === 0) return { code: '', appMeta: {} }
+  if (Object.keys(serverDts).length === 0) {
+    // fixme: 如果没有远程服务，将无法获取 meta， mockserver 不能正常工作
+    return { code: localDefStr.trim(), appMeta: {} }
+  }
 
   const prj = new Project()
   const localSf = prj.createSourceFile('localDefstr', localDefStr.trim())

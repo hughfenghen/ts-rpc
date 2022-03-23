@@ -39,9 +39,24 @@ namespace Test1NS {
   export interface App {
     S: S
   }
-  interface S {}
+  interface S {
+    m (): Promise<string>
+  }
 }
 export type Test1 = Test1NS.App;
+
+// 不会被删除的 meta
+export const Test0Meta = [{
+  "name": "S0",
+  "path": "server/user-controller.ts",
+  "methods": [{
+    "name": "m0",
+    "decorators": [],
+    "retSchema": [{
+      "type": "string"
+    }]
+  }]
+}]
 `
 
 describe('handleClientCmd', () => {
@@ -66,7 +81,7 @@ describe('handleClientCmd', () => {
 
   test('concat definition file', async () => {
     // 合并原dts文件
-    const { code } = await handleClientCmd({
+    const { code, appMeta } = await handleClientCmd({
       Test1: {
         dts: mockDownLoadDefStr1,
         meta: []
@@ -82,6 +97,7 @@ describe('handleClientCmd', () => {
     expect(code.includes('export type Test2 = Test2NS.App;')).toBe(true)
     expect(code.includes('export const Test2Meta = [];')).toBe(true)
     expect(code).toMatchSnapshot()
+    expect(JSON.stringify(appMeta, null, 2)).toMatchSnapshot()
   })
 
   test('includeServices config', async () => {

@@ -1,3 +1,5 @@
+// 元组结构 [类型，字段名，mock模板]； “类型、字段名”支持字符串和正则，“mock模板”支持 mockjs 语法和自定义函数
+// 规则参考（第三个参数） http://mockjs.com/examples.html
 const rpcMockRules = [
   // 固定返回值
   ['string', 'name', '张三'],

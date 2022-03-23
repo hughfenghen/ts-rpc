@@ -3,6 +3,18 @@
 exports[`handleClientCmd concat definition file 1`] = `
 "
 /* eslint-disable */
+// 不会被删除的 meta
+export const Test0Meta = [{
+  \\"name\\": \\"S0\\",
+  \\"path\\": \\"server/user-controller.ts\\",
+  \\"methods\\": [{
+    \\"name\\": \\"m0\\",
+    \\"decorators\\": [],
+    \\"retSchema\\": [{
+      \\"type\\": \\"string\\"
+    }]
+  }]
+}]
 
 namespace Test1NS {
   export interface App {
@@ -21,8 +33,49 @@ namespace Test2NS {
 }
 export type Test2 = Test2NS.App;
 
+export const Test0Meta = [
+  {
+    \\"name\\": \\"S0\\",
+    \\"path\\": \\"server/user-controller.ts\\",
+    \\"methods\\": [
+      {
+        \\"name\\": \\"m0\\",
+        \\"decorators\\": [],
+        \\"retSchema\\": [
+          {
+            \\"type\\": \\"string\\"
+          }
+        ]
+      }
+    ]
+  }
+];
 export const Test1Meta = [];
 export const Test2Meta = [];"
+`;
+
+exports[`handleClientCmd concat definition file 2`] = `
+"{
+  \\"Test0\\": [
+    {
+      \\"name\\": \\"S0\\",
+      \\"path\\": \\"server/user-controller.ts\\",
+      \\"methods\\": [
+        {
+          \\"name\\": \\"m0\\",
+          \\"decorators\\": [],
+          \\"retSchema\\": [
+            {
+              \\"type\\": \\"string\\"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  \\"Test1\\": [],
+  \\"Test2\\": []
+}"
 `;
 
 exports[`handleClientCmd new definition file 1`] = `

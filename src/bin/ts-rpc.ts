@@ -7,7 +7,7 @@ import fs from 'fs'
 import got from 'got'
 import { scan } from './rpc-definition-scan'
 import { IRPCConfig, TRPCMetaData, TRPCMetaFile } from '../common'
-import { InterfaceDeclaration, Project } from 'ts-morph'
+import { InterfaceDeclaration, Project, SyntaxKind } from 'ts-morph'
 import { addNode, collectTypeDeps, ITCDeclaration } from './utils'
 import { initMockServer } from './mock-server'
 
@@ -161,11 +161,6 @@ export async function handleClientCmd (
   localDefStr: string,
   { includeServices = [] }: { includeServices?: string[] }
 ): Promise<{ code: string, appMeta: Record<string, TRPCMetaData> }> {
-  if (Object.keys(serverDts).length === 0) {
-    // fixme: 如果没有远程服务，将无法获取 meta， mockserver 不能正常工作
-    return { code: localDefStr.trim(), appMeta: {} }
-  }
-
   const prj = new Project()
   const localSf = prj.createSourceFile('localDefstr', localDefStr.trim())
   // 将本地文件内容 替换为 远端获取的内容（根据 appId 替换）
@@ -174,15 +169,25 @@ export async function handleClientCmd (
     localSf.getModule(`${appId}NS`)?.remove()
     localSf.getVariableDeclaration(`${appId}Meta`)?.remove()
   })
+  const localMeta = localSf.getVariableDeclarations()
+    .map(vd => ({
+      appId: vd.getName().replace(/Meta$/, ''),
+      meta: JSON.parse(
+        vd.getChildrenOfKind(SyntaxKind.ArrayLiteralExpression)[0].getText()
+      )
+    }))
+    .reduce((acc, cur) => ({ ...acc, [cur.appId]: cur.meta }), {})
 
   const newCodeStr = Object.values(serverDts)
     .map(({ dts }) => dts)
     .join('\n')
 
   let rsCodeStr = `${localSf.getFullText().trim()}\n${newCodeStr}`
+  // 移除 dts 属性
   let appMeta = Object.fromEntries(
     Object.entries(serverDts).map(([appId, { meta }]) => [appId, meta])
   )
+  appMeta = Object.assign({}, localMeta, appMeta)
 
   if (includeServices.length > 0) {
     const { code, meta } = filterService(

@@ -141,8 +141,8 @@ const rpc = createRemoteService<App>({
   baseUrl: '<host>/<prefix>',
   // 可选，自定义实现 http 请求的发送逻辑
   // 参考： https://github.com/hughfenghen/ts-rpc/blob/main/demo/client/index.ts, 根据 meta 决定 http 是 get 还是 post 
-  agent: (params: AgentParams) => { /**/ },
-  // 可选，
+  agent: (params) => { /**/ },
+  // 可选，meta信息会传递给 agent
   meta: AppMeta
 })
 ```

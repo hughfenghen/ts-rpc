@@ -1,148 +1,62 @@
 # ts-brpc
 
-`ts-brpc`尝试将 ts+node 场景下 web 服务的 restful 替换为 RPC 风格，专注逻辑隐藏 http 请求细节。  
-`ts-brpc`可以扫描 ts 代码中的类型信息，免去 API 文档维护成本，代码即 API 文档；并且可在编码时提供类型校验。  
+`ts-brpc`支持以 RPC 风格调用 TypeScript 编写的服务端接口，让开发者专注业务实现。  
 
-## 使用方法
+## 特性
+- `ts-brpc`让客户端以 RPC 风格调用接口，函数调用是程序最自然的通信方式，免去手动构造 HTTP 请求。  
+- `ts-brpc`可以扫描服务端 TS 代码中的类型信息，可在编码时为客户端提供类型校验、代码补全、接口注释；代码即 API 文档。  
+- `ts-brpc`借由扫描获得的类型信息，零成本支持自动生成接口 Mock 数据的能力。  
+- `ts-brpc`由 CLI + SDK 组成，运行时（SDK）非常轻量，可与 Koa、Midway.js 快速集成。  
 
-### 配置文件 ts-brpc.json
-```json5
-{
-  // 建议大驼峰命名，不能出现非变量命名符号
-  "appId": "RPCDemo",
-  // 客户端需要的配置
-  "client": {
-    "apps": {
-      // key用来表示 app + 对应环境；value 为远端服务baseURL
-      "demoLocal": "127.0.0.1:7002"
-    },
-    // 声明文件对应path，生成的声明文件需要提交到 git
-    "genRPCDefintionTarget": "./",
-    // 只保留指定 Service，避免声明文件过多冗余内容
-    "includeServices": ["<保留的 Service 名称>"]
-  },
-  // 服务端需要的配置
-  "server": {
-    // RPCService 所在文件
-    "scanDir": ["server/*.ts"],
-    // meta 文件对应 path，存储扫描生成的信息
-    "metaOutDir": "./"
-  }
-}
-```
+## 示例展示
 
-### 服务端
+### Server
 ```ts
-// 运行 server 服务之前执行`ts-brpc`命令
-// scripts: yarn ts-brpc server -c ts-brpc.json && yarn dev
+import { RPCMethod, RPCService } from 'ts-brpc/server'
 
-import Koa from 'koa'
-import path from 'path'
-import bodyParser from 'koa-bodyparser'
-import { bindKoa, RPCService, RPCMethod, logger } from 'ts-brpc/server'
-
-const app = new Koa()
-app.use(bodyParser())
-
-bindKoa({  // 或者 bindMidway
-  app,  // koa app
-  rpcMetaPath: path.resolve(__dirname, '../_rpc_gen_meta_.json'),
-  prefixPath: '/'
-}).catch((err) => {
-  console.error(err)
-})
+interface UserInfo {
+  id: string
+  name: string
+  age: number
+}
 
 @RPCService()
-class User {
-
-  // bindKoa 自动注入 ctx
-  ctx
-
-  // midway 通过框架注解手动注入
-  // @Inject()
-  // resp: IRespHandle
+export class User {
 
   @RPCMethod()
-  getInfoById(id: string): { name: string, age: number, avatar: string } {
-    // 从上游获取数据
-    return {
-      name: '22',
-      age: 18,
-      avatar: '<image url>'
-    }
+  getInfoById (id: string): UserInfo {
+    return { id, name: '22', age: 18 }
+  }
+
+  @RPCMethod()
+  getUnreadMsg (id: string): Promise<string[]> {
+    return Promise.resolve(['msg1', 'msg2'])
   }
 }
-
-// logger.watch 可以监听日志消息
-logger.watch((logItem: {log: string, lv: LogLevel}) => {
-  // 处理日志
-})
 ```
 
-### 客户端
+### Client
 ```ts
-// 运行 client 服务之前执行`ts-brpc`命令
-// scripts: yarn ts-brpc client -c ts-brpc.json && yarn dev
+import { createRemoteService } from 'ts-brpc/client'
+// ts-brpc 扫描服务端代码生成的 rpc-definition.ts
+import { App } from './rpc-definition'
 
-import { createRemoteService, RPCKey } from 'ts-brpc/client'
-import { client as rpcCientCfg } from '../ts-rpc.json'
-import { RPCDemo, RPCDemoMeta } from './rpc-definition'
-
-const rpc = createRemoteService<RPCDemo>({
-  baseUrl: cfg.apps.demoLocal,
-  // meta可选，给 agent 添加 server 端的 meta 信息
-  meta: RPCDemoMeta,
-  // 可选，用于拦截处理请求
-  // agent: ({ serviceName, methodName, args, meta }) => {
-  //   // meta.decorators 可以获取信息，判断是否使用 post 请求
-  //   return axios.get(`//${cfg.apps.demoLocal}/${serviceName}/${methodName}`, {
-  //     data: {
-  //       [RPCKey.Args]: args
-  //     }
-  //   }).then((res) => {
-  //     return res[RPCKey.Return]      
-  //   })
-  // }
+const rpc = createRemoteService<App>({
+  baseUrl: '<web app base url>'
 })
 
-const userInfo = await rpc.User.getInfoById('<user id>')
-console.log(userInfo) // { name: '22', age: 18, avatar: '<imgage url>' }
+await rpc.User.getInfoById('22') // => { id: '22', name: '22', age: 18 }
 ```
 
-## 运行 demo
+
+### 运行 demo
 1. `git clone git@github.com:hughfenghen/ts-rpc.git`  
-2. `yarn build`
+2. `yarn && yarn build`
 3. `cd demo && yarn`  
 4. `yarn server` 然后新开 shell 窗口 `yarn client`  
 
-## 工作原理说明
-
-![工作原理](https://raw.githubusercontent.com/hughfenghen/ts-rpc/master/rpc-desc.png)  
-
-### Server
-
-1. ts-brpc命令根据 json 配置，扫描对应目录的源文件  
-2. 找到（RPCService、RPCMethod）标识的 class、method，写入_rpc_gen_meta_.json  
-3. http 服务启动时，注入中间件（bindKoa、bindMidway）  
-4. 中间件加载 **_rpc_gen_meta_.json**, 同时处理符合条件的 client 请求  
-5. 根据请求 的url path 匹配，若匹配成功则执行 server 中对应class 的 method  
-6. 获取返回值后，写入 http body
-
-### client
-
-1. ts-brpc命令根据 json 配置，从 server 端同步_rpc_gen_meta_.json中的 dts  
-2. 生成rpc-definition.ts，提供接口文档、类型校验、参数提示  
-3. client 接口调用会被 agent 转换成 http 请求，发送给 server 端  
-4. 从 server 端获取到请求后，解析返回值，返回给调用方  
-
-
-
-## 接入步骤
-1. 在项目 src 目录下创建 `ts-brpc.json`
-   ```json
-   ```
-2. 创建 server 代码， （midway.js 给已有 server 代码添加 RPCService）(依赖 koa-parse-body 说明)
-3. 在 package.json script 添加 ``
-4. .gitignore 中添加 _rpc_gen_meta_.json ，建议忽略扫描生成的文件
-5. todo...
-
+## 文档
+- [接入指南]()
+- [配置说明]()
+- [服务端]()
+- [客户端]()

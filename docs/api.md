@@ -1,11 +1,17 @@
 # API 
 
+## 目录
+- [ts-brpc.json](#ts-brpc.json)  
+- [cli](#cli)  
+- [ts-brpc/server](#ts-brpc/server)  
+- [ts-brpc/client](#ts-brpc/client)  
+
 ## ts-brpc.json
 配置文件提供给 cli，用于服务端扫描、客户端同步、客户端自动生成Mock数据等。  
 建议放在 src 目录下。  
 
 **名词**  
-- 声明文件：名字为`rpc-definition.ts`的文件，由 cli 生成，内容为服务端扫描得到的类型信息、meta 数据。 
+- 声明文件：名字为`rpc-definition.ts`的文件，由 cli 生成，内容为服务端扫描得到的类型信息、meta 数据。  
 
 ```json5
 {
@@ -60,8 +66,8 @@ ts-brpc client -c <ts-brpc.json path> -ms
 import { RPCService, RPCMethod, bindKoa, bindMidway, logger } from 'ts-brpc/server'
 ```
 
-- RPCService
-Decorator，标注 class，用于扫描时识别
+- RPCService  
+Decorator，标注 class，用于扫描时识别  
 ```ts
 @RPCService()
 class User {
@@ -70,8 +76,8 @@ class User {
 }
 ```
 
-- RPCMethod
-Decorator，标注 method，用于扫描时识别
+- RPCMethod  
+Decorator，标注 method，用于扫描时识别  
 ```ts
 @RPCService()
 class User {
@@ -79,9 +85,9 @@ class User {
   getInfoById() {}
 }
 ```
-
-- bindKoa
-关联到 Koa app，使 http 请求能转发到 RPCService、RPCMehtod 标注的接口处理
+  
+- bindKoa  
+关联到 Koa app，使 http 请求能转发到 RPCService、RPCMehtod 标注的接口处理  
 ```ts
 bindKoa({
   // app = new Koa()
@@ -93,7 +99,7 @@ bindKoa({
 })
 ```
 
-- bindMidway
+- bindMidway  
 ```ts
 import { Framework } from '@midwayjs/koa'
 // 暂未对结过其他类型的 Framework
@@ -111,8 +117,8 @@ export class WebFramework extends Framework {
   }
 }
 ```
-
-- logger
+  
+- logger  
 ```ts
 // logger.watch 可以监听日志消息
 logger.watch((logItem) => {
@@ -125,7 +131,7 @@ logger.watch((logItem) => {
 import { createRemoteService } from 'ts-brpc/client'
 ```
 
-- createRemoteService
+- createRemoteService  
 ```ts
 // ts-brpc 扫描服务端代码生成的 rpc-definition.ts， 不用关心 APP、APPMeta 的结构，由 rpc-cli 维护
 import { App, AppMeta } from './rpc-definition'

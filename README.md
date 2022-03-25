@@ -30,6 +30,7 @@ export class User {
 
   @RPCMethod()
   getUnreadMsg (id: string): Promise<string[]> {
+    // 模拟异步调用
     return Promise.resolve(['msg1', 'msg2'])
   }
 }
@@ -56,7 +57,6 @@ await rpc.User.getInfoById('22') // => { id: '22', name: '22', age: 18 }
 4. `yarn server` 然后新开 shell 窗口 `yarn client`  
 
 ## 文档
-- [接入指南]()
-- [配置说明]()
-- [服务端]()
-- [客户端]()
+- [接入指南](./docs/guide.md)
+- [API](./docs/api.md)
+- [工作原理](./docs/design.md)

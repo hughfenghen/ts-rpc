@@ -74,7 +74,7 @@ function init (): void {
         const { metaOutDir: cfgMetaDir, metaFile } = await handleServerCmd(cfgPath)
 
         const metaOutDir = cliMetaDir == null
-          ? path.resolve(path.dirname(cfgPath), cfgMetaDir)
+          ? path.resolve(path.dirname(cfgPath), cfgMetaDir ?? './')
           : path.resolve(process.cwd(), cliMetaDir)
 
         fs.writeFile(

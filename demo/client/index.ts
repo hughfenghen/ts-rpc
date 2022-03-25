@@ -9,7 +9,7 @@ const rpc = createRemoteService<RPCDemo>({
   meta: RPCDemoMeta,
   agent: async ({ serviceName, methodName, args, meta }) => {
     const urlPrefix = enableRPCMock
-      ? `127.0.0.1:${rpcCfg.client.mock.port as number}`
+      ? `127.0.0.1:${rpcCfg.client.mock.port}`
       : rpcCfg.client.apps.a
     const url = new URL(`//${urlPrefix}/${serviceName}/${methodName}`, window.location.href)
     let body

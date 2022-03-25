@@ -1,10 +1,10 @@
 # API 
 
 ## 目录
-- [ts-brpc.json](#ts-brpc.json)  
+- [ts-brpc.json](#ts-brpcjson)  
 - [cli](#cli)  
-- [ts-brpc/server](#ts-brpc/server)  
-- [ts-brpc/client](#ts-brpc/client)  
+- [ts-brpc/server](#ts-brpcserver)  
+- [ts-brpc/client](#ts-brpcclient)  
 
 ## ts-brpc.json
 配置文件提供给 cli，用于服务端扫描、客户端同步、客户端自动生成Mock数据等。  

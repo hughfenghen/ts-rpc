@@ -102,21 +102,13 @@ export function scan (
 
       const ms = m.getSignature().getDeclaration() as MethodSignature
       const addedM = inter.addMethod(ms.getStructure())
-      let rtText = addedM.getReturnTypeNode()?.getText()
+      const rtText = addedM.getReturnTypeNode()?.getText()
       if (rtText == null) throw new Error(`Could not find method (${m.getName()}) return type`)
 
-      // 返回类型不需要 promise 包围，影响生成的 schema，不便于 Mock 或 fast-stringify
-      let nonPromiseType = rtText
-      const promiseRegx = /^Promise<(.+)>$/
-      if (promiseRegx.test(rtText)) {
-        nonPromiseType = rtText.replace(promiseRegx, '$1')
-      } else {
-        // 远程调用，返回值都是 Promise
-        rtText = `Promise<${rtText}>`
-      }
       retTypes.addProperty({
         name: `'${className}.${m.getName()}'`,
-        type: `UnwrapPromise<${nonPromiseType}>`
+        // 返回类型不需要 promise 包围，影响生成的 schema，不便于 Mock 或 fast-stringify
+        type: `UnwrapPromise<${rtText}>`
       })
       addedM.setReturnType(rtText)
     })

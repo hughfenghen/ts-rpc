@@ -14,7 +14,7 @@ export namespace ScanTestNS {
         'User.getInfoById1': UnwrapPromise<CUserInfo & IDuplicate>;
         'User.getInfoById2': UnwrapPromise<IUserInfo & { gender: Gender1 }>;
         'User.getInfoById3': UnwrapPromise<TUserInfo>;
-        'User.getUnreadMsg': UnwrapPromise<string[]>;
+        'User.getUnreadMsg': UnwrapPromise<Promise<string[]>>;
         'Foo.bar': UnwrapPromise<void>;
         'User1.getInfoById1': UnwrapPromise<CUserInfo & IDuplicate>;
     }
@@ -26,9 +26,9 @@ export namespace ScanTestNS {
         /**
          * method doc
          */
-        getInfoById1(id: string): Promise<CUserInfo & IDuplicate>;
-        getInfoById2(id: string): Promise<IUserInfo & { gender: Gender1 }>;
-        getInfoById3(id: string): Promise<TUserInfo>;
+        getInfoById1(id: string): CUserInfo & IDuplicate;
+        getInfoById2(id: string): IUserInfo & { gender: Gender1 };
+        getInfoById3(id: string): TUserInfo;
         getUnreadMsg(id: string): Promise<string[]>;
     }
 
@@ -70,7 +70,7 @@ export namespace ScanTestNS {
     export type TUserInfo = CUserInfo & IUserInfo;
 
     interface Foo {
-        bar(): Promise<void>;
+        bar(): void;
     }
 
     /**
@@ -81,7 +81,7 @@ export namespace ScanTestNS {
         /**
          * method doc
          */
-        getInfoById1(id: string): Promise<CUserInfo & IDuplicate>;
+        getInfoById1(id: string): CUserInfo & IDuplicate;
     }
 }
 

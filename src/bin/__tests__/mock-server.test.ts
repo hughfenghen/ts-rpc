@@ -123,7 +123,8 @@ test('buildManualMockGenerator', async () => {
   expect(/\d{4}(-\d{2}){2}/.test(formatter('string', 'showTime') as string))
     .toBe(true)
 
-  expect(formatter('number', 'time')).toBeGreaterThanOrEqual(Date.now())
+  // 有效时间戳
+  expect(formatter('number', 'time')).toBeGreaterThanOrEqual(Date.now() - 1000)
 })
 
 test('file2MockIns', () => {

@@ -68,8 +68,9 @@ function createDefAgent (baseUrl: string) {
       return (await res.json())[RPCKey.Return]
     } else if (typeof global === 'object') {
       // node env
+      const httpStr = 'http'
       // eslint-disable-next-line
-      const http = require('http') as typeof import('http')
+      const http = await import(httpStr) as typeof import('http')
       return await new Promise((resolve, reject) => {
         const url = new URL(`http://${baseUrl.replace(/^\/*|\/*$/g, '')}/${serviceName}/${methodName}`)
         const options = {

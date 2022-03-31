@@ -1,4 +1,6 @@
 /* eslint-disable */
+type UnwrapPromise<T> = T extends Promise<infer U> ? U : T
+
 export namespace fuxiNS {
   export interface App {
       AwardService: AwardService;
@@ -9,7 +11,7 @@ export namespace fuxiNS {
   }
 
 export interface APIReturnTypes {
-    'AwardService.getRewardConfigData': IServiceData<Partial<IGetRewardConfigDataFormated>> | { error: string }
+    'AwardService.getRewardConfigData': UnwrapPromise<WrapPromise<IServiceData<Partial<IGetRewardConfigDataFormated>>>> | { error: string }
   }
 
   export interface ILotteryLogListItem {
@@ -286,6 +288,8 @@ export interface APIReturnTypes {
       data: T;
   }
 
+  type WrapPromise<T> = Promise<T>
+
   interface AwardService {
       /**
        * 获取奖励组件奖励信息数据
@@ -293,7 +297,7 @@ export interface APIReturnTypes {
        * @param {number} rewardId
        * @memberof AwesomeAward
        */
-      getRewardConfigData(rewardId: number): Promise<IServiceData<Partial<IGetRewardConfigDataFormated>>>;
+      getRewardConfigData(rewardId: number): WrapPromise<IServiceData<Partial<IGetRewardConfigDataFormated>>>;
   }
 
   interface BlsSpring2022Controller {

@@ -1,7 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`scan 1`] = `
-"export namespace ScanTestNS {
+"type UnwrapPromise<T> = T extends Promise<infer U> ? U : T
+
+export namespace ScanTestNS {
     export interface App {
         User: User;
         Foo: Foo;
@@ -9,12 +11,12 @@ exports[`scan 1`] = `
     }
 
     export interface APIReturnTypes {
-        'User.getInfoById1': CUserInfo & IDuplicate;
-        'User.getInfoById2': IUserInfo & { gender: Gender1 };
-        'User.getInfoById3': TUserInfo;
-        'User.getUnreadMsg': string[];
-        'Foo.bar': void;
-        'User1.getInfoById1': CUserInfo & IDuplicate;
+        'User.getInfoById1': UnwrapPromise<CUserInfo & IDuplicate>;
+        'User.getInfoById2': UnwrapPromise<IUserInfo & { gender: Gender1 }>;
+        'User.getInfoById3': UnwrapPromise<TUserInfo>;
+        'User.getUnreadMsg': UnwrapPromise<string[]>;
+        'Foo.bar': UnwrapPromise<void>;
+        'User1.getInfoById1': UnwrapPromise<CUserInfo & IDuplicate>;
     }
 
     /**

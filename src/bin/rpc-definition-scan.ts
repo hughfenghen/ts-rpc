@@ -41,8 +41,12 @@ export function scan (
     .map(ref => ref.getParent()?.getParent()?.getParent())
     .filter(n => Node.isClassDeclaration(n)) as ClassDeclaration[]
 
-  const genSf = prj.createSourceFile(path.resolve(__dirname, '_protocol-file-memory_.ts'), {
-  }, { overwrite: true })
+  const genSf = prj.createSourceFile(
+    path.resolve(__dirname, '_protocol-file-memory_.ts'),
+    // unwarp promise 工具类型，后面 retTYpes 会用到
+    'type UnwrapPromise<T> = T extends Promise<infer U> ? U : T',
+    { overwrite: true }
+  )
 
   // namespace 避免命名冲突
   const appNS = genSf.addModule({ name: nsName(appId) })
@@ -112,7 +116,7 @@ export function scan (
       }
       retTypes.addProperty({
         name: `'${className}.${m.getName()}'`,
-        type: nonPromiseType
+        type: `UnwrapPromise<${nonPromiseType}>`
       })
       addedM.setReturnType(rtText)
     })

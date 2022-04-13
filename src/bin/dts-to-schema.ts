@@ -3,7 +3,12 @@ import * as TJS from 'typescript-json-schema'
 import { TSchema } from '../common'
 
 export function dts2JSONSchema (code: string, typeName: string): TSchema | null {
-  const prj = new Project()
+  const prj = new Project({
+    useInMemoryFileSystem: true,
+    compilerOptions: {
+      types: []
+    }
+  })
   prj.createSourceFile('rpc-definition.ts', code)
 
   const generator = TJS.buildGenerator(

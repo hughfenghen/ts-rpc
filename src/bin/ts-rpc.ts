@@ -161,8 +161,13 @@ export async function handleClientCmd (
   localDefStr: string,
   { includeServices = [] }: { includeServices?: string[] }
 ): Promise<{ code: string, appMeta: Record<string, TRPCMetaData> }> {
-  const prj = new Project()
-  const localSf = prj.createSourceFile('localDefstr', localDefStr.trim())
+  const prj = new Project({
+    useInMemoryFileSystem: true,
+    compilerOptions: {
+      types: []
+    }
+  })
+  const localSf = prj.createSourceFile('localDefstr.ts', localDefStr.trim())
   // 将本地文件内容 替换为 远端获取的内容（根据 appId 替换）
   Object.keys(serverDts).forEach((appId) => {
     localSf.getTypeAlias(appId)?.remove()
@@ -221,7 +226,12 @@ export function filterService (
   appMeta: Record<string, TRPCMetaData>,
   includeServices: string[]
 ): { code: string, meta: Record<string, TRPCMetaData> } {
-  const prj = new Project()
+  const prj = new Project({
+    useInMemoryFileSystem: true,
+    compilerOptions: {
+      types: []
+    }
+  })
   const inSf = prj.createSourceFile('input.ts', code)
   const outSf = prj.createSourceFile('output.ts', '')
   inSf.getModules()

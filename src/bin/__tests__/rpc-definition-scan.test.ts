@@ -15,7 +15,10 @@ test('scan', () => {
 })
 
 test('collectTypeDeps', () => {
-  const prj = new Project({ compilerOptions: { declaration: true } })
+  const prj = new Project({
+    useInMemoryFileSystem: true,
+    compilerOptions: { types: [] }
+  })
   const sf = prj.createSourceFile('test.ts', `
     interface A {
       b: B
@@ -42,7 +45,10 @@ test('collectTypeDeps', () => {
 })
 
 test('collect union type in returnTypeNode', () => {
-  const prj = new Project({ compilerOptions: { declaration: true } })
+  const prj = new Project({
+    useInMemoryFileSystem: true,
+    compilerOptions: { types: [] }
+  })
 
   const sf = prj.createSourceFile('test.ts', `
     interface Inter1 { x: number }
@@ -64,7 +70,10 @@ test('collect union type in returnTypeNode', () => {
 })
 
 test('collect extends type', () => {
-  const prj = new Project({ compilerOptions: { declaration: true } })
+  const prj = new Project({
+    useInMemoryFileSystem: true,
+    compilerOptions: { types: [] }
+  })
 
   const sf = prj.createSourceFile('test.ts', `
     interface Base { x: number }

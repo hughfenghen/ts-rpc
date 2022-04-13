@@ -19,7 +19,11 @@ export function scan (
 ): IScanResult {
   const files = filePaths.map(f => glob.sync(f)).flat()
   const prj = new Project({
-    tsConfigFilePath: opts?.tsConfigFilePath
+    tsConfigFilePath: opts?.tsConfigFilePath,
+    compilerOptions: {
+      types: []
+    },
+    skipAddingFilesFromTsConfig: true
   })
   files.forEach(file => {
     return prj.addSourceFileAtPath(file)

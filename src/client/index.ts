@@ -27,7 +27,7 @@ export function createRemoteService<T> (cfg: ServiceCfg): T {
         })
       )
     )
-    .flat()
+    .reduce((acc, cur) => acc.concat(cur), [])
     .reduce((acc, cur) => ({ ...acc, ...cur }), {}) as { [key: string]: MethodMeta }
 
   return new Proxy({}, {

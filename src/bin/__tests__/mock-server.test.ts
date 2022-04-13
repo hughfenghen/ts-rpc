@@ -82,6 +82,23 @@ test('beautify mock data', () => {
   expect(data[0].name).toBe('张三')
 })
 
+test('cant find schema', () => {
+  const _warn = console.warn
+  console.warn = () => {}
+
+  const meta = createMeta({})
+  delete meta[0].methods[0].retSchema
+
+  const generator = buildAutoMockGenerator(
+    meta,
+    () => {}
+  )
+  const data = generator('S', 'M')
+  expect(data).toBe(null)
+
+  console.warn = _warn
+})
+
 test('generate complex mock data', () => {
   const generator = buildAutoMockGenerator(createMeta(
     complexSchema as unknown as TSchema

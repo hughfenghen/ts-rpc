@@ -189,7 +189,8 @@ export function buildAutoMockGenerator (
       .find(({ name }) => name === mName)
       ?.retSchema
     if (schema == null) {
-      throw new Error(`Schema not found for Service: ${sName}, Method: ${mName}`)
+      console.warn(`Schema not found for Service: ${sName}, Method: ${mName}`)
+      return null
     }
     return jsf.generate(schema as Schema)
   }

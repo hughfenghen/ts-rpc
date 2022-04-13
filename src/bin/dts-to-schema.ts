@@ -14,7 +14,6 @@ export function dts2JSONSchema (code: string, typeName: string): TSchema | null 
   const generator = TJS.buildGenerator(
     prj.getProgram().compilerObject as any,
     {
-      include: ['rpc-definition.ts'],
       ignoreErrors: true,
       required: true,
       ref: false

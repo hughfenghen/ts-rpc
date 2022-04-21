@@ -1,9 +1,9 @@
 import glob from 'glob'
-import { Project, Node, ClassDeclaration, FunctionDeclaration, MethodDeclaration, MethodSignature } from 'ts-morph'
+import { Project, Node, ClassDeclaration, FunctionDeclaration, MethodDeclaration, MethodSignature, TypeAliasDeclarationStructure } from 'ts-morph'
 import path from 'path'
 import { existsSync } from 'fs'
 import { IScanResult, TRPCMetaData } from '../common'
-import { addNode, collectTypeDeps } from './utils'
+import { addNode, collectTypeDeps, code2Structure } from './utils'
 import { dts2JSONSchema } from './dts-to-schema'
 
 const nsName = (appId: string): string => `${appId}NS`
@@ -48,12 +48,20 @@ export function scan (
   const genSf = prj.createSourceFile(
     path.resolve(__dirname, '_protocol-file-memory_.ts'),
     // unwarp promise 工具类型，后面 retTYpes 会用到
-    'type UnwrapPromise<T> = T extends Promise<infer U> ? U : T',
+    '',
     { overwrite: true }
   )
 
   // namespace 避免命名冲突
   const appNS = genSf.addModule({ name: nsName(appId) })
+  // 添加 unwrappromise 工具 type，用于解决返回类型被 Promise 包裹的问题
+  const unwrapPrmStruct = code2Structure<TypeAliasDeclarationStructure>(
+    'type UnwrapPromise<T> = T extends Promise<infer U> ? U : T',
+    prj,
+    { name: 'UnwrapPromise', kind: 'typeAlias' }
+  )
+  if (unwrapPrmStruct != null) appNS.addTypeAlias(unwrapPrmStruct)
+
   const appInterColl = appNS.addInterface({ name: EXP_SERVICES_NAME })
   appNS.setIsExported(true)
   appInterColl.setIsExported(true)

@@ -1,9 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`filterService complex 1`] = `
-"type UnwrapPromise<T> = T extends Promise<infer U> ? U : T;
-
-export namespace fuxiNS {
+"export namespace fuxiNS {
     export interface APIReturnTypes {
         'AwardService.getRewardConfigData': UnwrapPromise<WrapPromise<IServiceData<Partial<IGetRewardConfigDataFormated>>>> | { error: string };
     }
@@ -116,9 +114,7 @@ export type fuxi = fuxiNS.App;
 `;
 
 exports[`filterService simple 1`] = `
-"type UnwrapPromise<T> = T extends Promise<infer U> ? U : T;
-
-export namespace RPCDemo1NS {
+"export namespace RPCDemo1NS {
     export interface APIReturnTypes {
         'User1.getInfoById': UnwrapPromise<UserInfo>;
         'User1.getUnreadMsg': UnwrapPromise<string[]>;
@@ -175,6 +171,7 @@ export const Test0Meta = [{
 }]
 
 namespace Test1NS {
+  type UnwrapPromise<T> = T extends Promise<infer U> ? U : T
   export interface App {
     S1: S1
   }
@@ -184,6 +181,7 @@ export type Test1 = Test1NS.App;
 
 
 namespace Test2NS {
+  type UnwrapPromise<T> = T extends Promise<infer U> ? U : T
   export interface App {
     S2: S2
   }
@@ -241,6 +239,7 @@ exports[`handleClientCmd new definition file 1`] = `
 
 
 namespace Test1NS {
+  type UnwrapPromise<T> = T extends Promise<infer U> ? U : T
   export interface App {
     S1: S1
   }
@@ -250,6 +249,7 @@ export type Test1 = Test1NS.App;
 
 
 namespace Test2NS {
+  type UnwrapPromise<T> = T extends Promise<infer U> ? U : T
   export interface App {
     S2: S2
   }

@@ -174,6 +174,7 @@ export async function handleClientCmd (
     localSf.getModule(`${appId}NS`)?.remove()
     localSf.getVariableDeclaration(`${appId}Meta`)?.remove()
   })
+
   const localMeta = localSf.getVariableDeclarations()
     .map(vd => ({
       appId: vd.getName().replace(/Meta$/, ''),
@@ -235,10 +236,6 @@ export function filterService (
   const inSf = prj.createSourceFile('input.ts', code)
   const outSf = prj.createSourceFile('output.ts', '')
 
-  // 保留 UnwrapPromise，这是工具 type
-  const unWrapPrmType = inSf.getTypeAlias('UnwrapPromise')?.getStructure()
-  if (unWrapPrmType != null) outSf.addTypeAlias(unWrapPrmType)
-
   inSf.getModules()
     .map((mdl) => [
       mdl,
@@ -280,6 +277,10 @@ export function filterService (
         type: `${nsNameStr}.App`,
         isExported: true
       })
+
+      // 保留 UnwrapPromise，这是工具 type
+      const unWrapPrmType = mdl.getTypeAlias('UnwrapPromise')?.getStructure()
+      if (unWrapPrmType != null) ns.addTypeAlias(unWrapPrmType)
 
       const retTypes = ns.addInterface({ name: EXP_RETURN_TYPES_NAME })
       retTypes.setIsExported(true)

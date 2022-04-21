@@ -1,9 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`scan 1`] = `
-"type UnwrapPromise<T> = T extends Promise<infer U> ? U : T
+"export namespace ScanTestNS {
+    type UnwrapPromise<T> = T extends Promise<infer U> ? U : T;
 
-export namespace ScanTestNS {
     export interface App {
         User: User;
         Foo: Foo;

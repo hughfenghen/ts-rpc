@@ -1,7 +1,7 @@
 /* eslint-disable */
-type UnwrapPromise<T> = T extends Promise<infer U> ? U : T;
-
 export namespace RPCDemoNS {
+    type UnwrapPromise<T> = T extends Promise<infer U> ? U : T;
+
     export interface APIReturnTypes {
         'User.getInfoById': UnwrapPromise<UserInfo>;
         'User.getUnreadMsg': UnwrapPromise<string[]>;

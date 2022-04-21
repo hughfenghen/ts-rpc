@@ -14,6 +14,7 @@ test('handleServerCmd', async () => {
 
 const mockDownLoadDefStr1 = `
 namespace Test1NS {
+  type UnwrapPromise<T> = T extends Promise<infer U> ? U : T
   export interface App {
     S1: S1
   }
@@ -24,6 +25,7 @@ export type Test1 = Test1NS.App;
 
 const mockDownLoadDefStr2 = `
 namespace Test2NS {
+  type UnwrapPromise<T> = T extends Promise<infer U> ? U : T
   export interface App {
     S2: S2
   }
@@ -36,6 +38,7 @@ const mockLocalDefStr = `
 /* eslint-disable */
 
 namespace Test1NS {
+  type UnwrapPromise<T> = T extends Promise<infer U> ? U : T
   export interface App {
     S: S
   }

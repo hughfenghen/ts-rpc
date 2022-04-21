@@ -132,3 +132,21 @@ export function addNode (container: ModuleDeclaration, n: Node): ITCDeclaration 
   }
   return null
 }
+
+export function code2Structure <T> (
+  code: string,
+  prj: Project,
+  { name, kind }: {
+    name: string
+    kind: string
+  }): T | null {
+  const sf = prj.createSourceFile('_code2Structure_.ts', code, { overwrite: true })
+
+  if (kind === 'typeAlias') {
+    const t = sf.getTypeAlias(name)
+    if (t == null) return null
+    return t.getStructure() as unknown as T
+  }
+
+  return null
+}

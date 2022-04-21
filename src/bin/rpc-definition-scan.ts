@@ -8,7 +8,7 @@ import { dts2JSONSchema } from './dts-to-schema'
 
 const nsName = (appId: string): string => `${appId}NS`
 const EXP_SERVICES_NAME = 'App'
-const EXP_RETURN_TYPES_NAME = 'APIReturnTypes'
+export const EXP_RETURN_TYPES_NAME = 'APIReturnTypes'
 
 export function scan (
   filePaths: string[],

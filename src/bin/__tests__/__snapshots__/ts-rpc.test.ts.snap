@@ -1,5 +1,163 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`filterService complex 1`] = `
+"type UnwrapPromise<T> = T extends Promise<infer U> ? U : T;
+
+export namespace fuxiNS {
+    export interface APIReturnTypes {
+        'AwardService.getRewardConfigData': UnwrapPromise<WrapPromise<IServiceData<Partial<IGetRewardConfigDataFormated>>>> | { error: string };
+    }
+
+    export interface App {
+        AwardService: AwardService;
+    }
+
+    interface AwardService {
+        /**
+         * 获取奖励组件奖励信息数据
+         *
+         * @param {number} rewardId
+         * @memberof AwesomeAward
+         */
+        getRewardConfigData(rewardId: number): WrapPromise<IServiceData<Partial<IGetRewardConfigDataFormated>>>;
+    }
+
+    export type WrapPromise<T> = Promise<T>;
+
+    export interface IServiceData<T> {
+        code: number;
+        message?: string;
+        data: T;
+    }
+
+    export type IGetRewardConfigDataFormated = TKeysToCamelCase<{
+                reward_list: IRewardListItemFormated[]
+              }>;
+    export type TKeysToCamelCase<T> = CheckAny<T> extends true
+                ? any
+                : CheckUnknown<T> extends true
+                ? unknown
+                : T extends Function
+                ? T
+                : T extends Array<infer R>
+                ? Array<TKeysToCamelCase<R>>
+                : {
+                    [K in keyof T as TCamelCase<string & K>]: TKeysToCamelCase<T[K]>
+                  };
+    export type CheckAny<T> = boolean extends CheckNever<T> ? true : false;
+    export type CheckNever<T> = T extends never ? true : false;
+    export type CheckUnknown<T> = unknown extends T ? true : false;
+    /** key to camelCase global typing */
+    export type TCamelCase<S extends string> = S extends \`\${infer P1}_\${infer P2}\${infer P3}\`
+                  ? \`\${Lowercase<P1>}\${Uppercase<P2>}\${TCamelCase<P3>}\`
+                  : TIsAnUpperCaseCharInString<S> extends true
+                  ? TtransFirstCharToLowercase<S>
+                  : S;
+    /**
+     * 判断一个字符串中是否包含大写字母
+     */
+    export type TIsAnUpperCaseCharInString<T extends string> = boolean extends TIsUpperCase<TStringToUnionType<T>> ? true : false;
+    /**
+     * 判断一个字符是否是大写字母
+     */
+    export type TIsUpperCase<T extends string> = T extends Lowercase<T> ? false : true;
+    /**
+     * 将一个字符串类型的每一个字符转成联合类型
+     * e.g TStringToUnionType<'abc'> => 'a' | 'b' | 'c'
+     */
+    export type TStringToUnionType<T extends string> = TTupleToUnionType<TSplit<T, ''>>;
+    /**
+     * 将一个元祖类型转成联合类型
+     * e.g TTupleToUnionType<['a','b','c']> => 'a' | 'b' | 'c'
+     */
+    export type TTupleToUnionType<T> = T extends Array<infer P> ? P : never;
+    /**
+     * 将一个字符串类型转为元组类型
+     * e.g TSplit<'abc',''> => ['a', 'b', 'c']
+     * https://github.com/microsoft/TypeScript/pull/40336?from=groupmessage
+     */
+    export type TSplit<S extends string, D extends string> = string extends S
+                ? string[]
+                : S extends ''
+                ? []
+                : S extends \`\${infer T}\${D}\${infer U}\`
+                ? [T, ...TSplit<U, D>]
+                : [S];
+    /**
+     * 将一个字符串类型中的第一个字符转为小写
+     */
+    export type TtransFirstCharToLowercase<T extends string> = T extends \`\${infer A}\${infer B}\` ? \`\${Lowercase<A>}\${B}\` : T;
+
+    export interface IRewardListItemFormated {
+        reward_title: string;
+        package_list: TPackageListItemFormated[];
+    }
+
+    export type TPackageListItemFormated = Omit<IPackageListItem, 'tab_name'>;
+
+    export interface IPackageListItem {
+        tab_name: string;
+        rewardTitle: string;
+        anchor_award_title: string;
+        anchor_award_list: IBaseAwardData[];
+        user_award_title: string;
+        user_award_list: IBaseAwardData[];
+    }
+
+    export interface IBaseAwardData {
+        front_award_img: string;
+        front_award_name: string;
+        front_award_desc: string;
+    }
+}
+
+export type fuxi = fuxiNS.App;
+"
+`;
+
+exports[`filterService simple 1`] = `
+"type UnwrapPromise<T> = T extends Promise<infer U> ? U : T;
+
+export namespace RPCDemo1NS {
+    export interface APIReturnTypes {
+        'User1.getInfoById': UnwrapPromise<UserInfo>;
+        'User1.getUnreadMsg': UnwrapPromise<string[]>;
+        'User2.getInfoById': UnwrapPromise<UserInfo>;
+        'User2.getUnreadMsg': UnwrapPromise<string[]>;
+    }
+
+    export interface App {
+        User1: User1;
+        User2: User2;
+    }
+
+    interface User1 {
+        /**
+         * method doc
+         */
+        getInfoById(id: string): Promise<UserInfo>;
+        getUnreadMsg(id: string): Promise<string[]>;
+    }
+
+    interface User2 {
+        /**
+         * method doc
+         */
+        getInfoById(id: string): Promise<UserInfo>;
+        getUnreadMsg(id: string): Promise<string[]>;
+    }
+
+    export interface UserInfo {
+        name: string;
+        age: number;
+        avatar: string;
+    }
+}
+
+export type RPCDemo1 = RPCDemo1NS.App;
+"
+`;
+
 exports[`handleClientCmd concat definition file 1`] = `
 "
 /* eslint-disable */

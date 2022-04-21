@@ -139,6 +139,7 @@ describe('filterService', () => {
     expect(code.includes('User3')).toBe(false)
     expect(meta.RPCDemoMeta1.length).toBe(2)
     expect(meta.RPCDemoMeta2).toBeUndefined()
+    expect(code).toMatchSnapshot()
   })
 
   test('complex', () => {
@@ -153,5 +154,6 @@ describe('filterService', () => {
     expect(code.includes('type IGetRewardConfigDataFormated')).toBe(true)
     expect(code.includes('interface BlsSpring2022Controller')).toBe(false)
     expect(meta).toEqual({})
+    expect(code).toMatchSnapshot()
   })
 })

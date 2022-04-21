@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "cmd": "ts-rpc",
-    "server": "yarn ts-brpc server -c ts-rpc.json & nodemon --watch server --watch client --exec 'ts-node server/index.ts' -e ts",
+    "server": "yarn ts-brpc server -c ts-rpc.json && nodemon --watch server --watch client --exec 'ts-node server/index.ts' -e ts",
     "rpc-client": "yarn ts-brpc client -c ts-rpc.json -ms",
     "static": "parcel client/index.html",
     "client": "npm-run-all -p rpc-client static"

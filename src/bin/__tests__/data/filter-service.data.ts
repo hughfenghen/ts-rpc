@@ -1,9 +1,18 @@
 export const filterServiceMockCode = `
 /* eslint-disable */
+type UnwrapPromise<T> = T extends Promise<infer U> ? U : T
+
 export namespace RPCDemo1NS {
     export interface App {
         User1: User1;
         User2: User2;
+    }
+
+    export interface APIReturnTypes {
+      'User1.getInfoById': UnwrapPromise<UserInfo>;
+      'User1.getUnreadMsg': UnwrapPromise<string[]>;
+      'User2.getInfoById': UnwrapPromise<UserInfo>;
+      'User2.getUnreadMsg': UnwrapPromise<string[]>;
     }
 
     export interface UserInfo {

@@ -5,9 +5,9 @@ import path from 'path'
 
 import fs from 'fs'
 import got from 'got'
-import { scan } from './rpc-definition-scan'
+import { EXP_RETURN_TYPES_NAME, scan } from './rpc-definition-scan'
 import { IRPCConfig, TRPCMetaData, TRPCMetaFile } from '../common'
-import { InterfaceDeclaration, Project, SyntaxKind } from 'ts-morph'
+import { InterfaceDeclaration, ModuleDeclaration, Project, SyntaxKind } from 'ts-morph'
 import { addNode, collectTypeDeps, ITCDeclaration } from './utils'
 import { initMockServer } from './mock-server'
 
@@ -234,20 +234,28 @@ export function filterService (
   })
   const inSf = prj.createSourceFile('input.ts', code)
   const outSf = prj.createSourceFile('output.ts', '')
+
+  // 保留 UnwrapPromise，这是工具 type
+  const unWrapPrmType = inSf.getTypeAlias('UnwrapPromise')?.getStructure()
+  if (unWrapPrmType != null) outSf.addTypeAlias(unWrapPrmType)
+
   inSf.getModules()
-    .map((m) => [
-      m.getName(),
+    .map((mdl) => [
+      mdl,
       // App中存在 service 名字，说明该命名空间包含需要保留的 service
-      m.getInterface('App')
+      mdl.getInterface('App')
         ?.getProperties()
         .filter(p => includeServices.includes(p.getName()))
-        .map(p => m.getInterface(p.getName()))
+        .map(p => mdl.getInterface(p.getName()))
     ])
     // 排除没有 serverice 的 namespace
-    .filter(([nsName, services]) => services != null && services.length > 0)
+    .filter(
+      ([mdl, services]) => services != null &&
+        (services as InterfaceDeclaration[]).length > 0
+    )
     // 收集 serverice 依赖 [ns, service, serviceDeps]
-    .map(([nsName, services]) => [
-      nsName,
+    .map(([mdl, services]) => [
+      mdl,
       services,
       collectTypeDeps(
         (services as InterfaceDeclaration[]).map(
@@ -257,9 +265,13 @@ export function filterService (
         prj
       )
     ])
-    .forEach(([nsName, services, deps]) => {
+    .forEach(([a, b, c]) => {
+      const mdl = a as ModuleDeclaration
+      const services = b as InterfaceDeclaration[]
+      const deps = c as ITCDeclaration[]
+
       // 将保留的 [ns, service, serviceDeps]写入 output，生成代码
-      const nsNameStr = nsName as string
+      const nsNameStr = mdl.getName()
       const ns = outSf.addModule({ name: nsNameStr })
       ns.setIsExported(true)
       outSf.addTypeAlias({
@@ -269,15 +281,28 @@ export function filterService (
         isExported: true
       })
 
+      const retTypes = ns.addInterface({ name: EXP_RETURN_TYPES_NAME })
+      retTypes.setIsExported(true)
+      mdl.getInterface(EXP_RETURN_TYPES_NAME)
+        ?.getProperties()
+        // APIReturnTypes 只需要 includeServices 配置的 service
+        // 结构： interface APIReturnTypes { 'Class.method': UnwrapPromise<T> }
+        .filter(prop => includeServices.some(
+          s => prop.getName().startsWith(`'${s}.`)
+        ))
+        .forEach((prop) => {
+          retTypes.addProperty(prop.getStructure())
+        })
+
       const app = ns.addInterface({ name: 'App' })
       app.setIsExported(true)
 
-      ;(services as InterfaceDeclaration[])
+      services
         .forEach(s => {
           app.addProperty({ name: s.getName(), type: s.getName() })
           ns.addInterface(s.getStructure())
         })
-      ;(deps as ITCDeclaration[]).forEach((dep: ITCDeclaration) => {
+      deps.forEach((dep: ITCDeclaration) => {
         addNode(ns, dep)?.setIsExported(true)
       })
     })

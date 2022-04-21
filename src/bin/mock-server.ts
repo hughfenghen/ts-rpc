@@ -1,7 +1,7 @@
 import jsf, { Schema } from 'json-schema-faker'
 import Mock from 'mockjs'
 import Koa from 'koa'
-import { merge } from 'lodash'
+import { mergeWith } from 'lodash'
 import path from 'path'
 import chokidar from 'chokidar'
 import cors from '@koa/cors'
@@ -10,7 +10,12 @@ import { Ctx, IRPCConfig, TRPCMetaData } from '../common'
 import { getRPCArgs, wrapRPCReturn } from '../protocol'
 
 type TServiceInsMap = Record<string, Record<string, (...args: unknown[]) => unknown>>
-type TGeneragor = (sName: string, mName: string, args: unknown[]) => Promise<unknown>
+type TGeneragor = (
+  sName: string,
+  mName: string,
+  args: unknown[],
+  autoMockData: unknown
+) => Promise<unknown>
 
 /**
  * 方便配置Mock的类型结构： [matchType, matchName, mockjsTpl | generator]
@@ -68,11 +73,22 @@ export function buildMockMiddleware (
       return
     }
 
-    const manualMock = await manualMockGenerator(sPath, mPath, await getRPCArgs(ctx))
+    const autoMockData = autoGenerator(sPath, mPath)
+    const manualMock = await manualMockGenerator(
+      sPath,
+      mPath,
+      await getRPCArgs(ctx),
+      autoMockData
+    )
+
     ctx.body = JSON.stringify(
       wrapRPCReturn(
         // 手动 mock 数据优先级高于自动生成的数据
-        merge(autoGenerator(sPath, mPath), manualMock)
+        mergeWith(
+          autoMockData,
+          manualMock,
+          (objValue, srcValue) => Array.isArray(srcValue) ? srcValue : undefined
+        )
       )
     )
 
@@ -82,6 +98,7 @@ export function buildMockMiddleware (
 
 export function buildManualMockGenerator (fileMatch: string[], cfgPath: string): {
   generator: TGeneragor
+  // 用于根据rule配置，生成精确数据
   formatter: TFiledFormatter
 } {
   // 初始时获取 mock 文件中的实例
@@ -115,9 +132,13 @@ export function buildManualMockGenerator (fileMatch: string[], cfgPath: string):
   }
 
   return {
-    async generator (sName, mName, args) {
+    async generator (sName, mName, args, autoMockData) {
+      const serviceIns = servicesInstance[sName]
+      if (serviceIns == null) return null
+      ;(serviceIns as any)._autoMockData_ = autoMockData ?? null
       return servicesInstance[sName]?.[mName]?.(...args)
     },
+    // jsf自动生成数据时，如果命中mock文件中的规则，调用该函数生成精确数据
     formatter (type, keyName) {
       for (
         const [typeMath, nameMath, mockTpl] of Object.values(pathFmt).flat()

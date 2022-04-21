@@ -4,7 +4,7 @@ export namespace RPCDemoNS {
 
     export interface APIReturnTypes {
         'User.getInfoById': UnwrapPromise<UserInfo>;
-        'User.getUnreadMsg': UnwrapPromise<string[]>;
+        'User.getUnreadMsg': UnwrapPromise<{ code: number, data: string[] }>;
     }
 
     export interface App {
@@ -19,7 +19,7 @@ export namespace RPCDemoNS {
          * method doc
          */
         getInfoById(id: string): UserInfo;
-        getUnreadMsg(id: string): string[];
+        getUnreadMsg(id: string): { code: number, data: string[] };
     }
 
     export interface UserInfo {
@@ -73,10 +73,22 @@ export const RPCDemoMeta = [
           "@RPCMethod()"
         ],
         "retSchema": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "number"
+            },
+            "data": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "code",
+            "data"
+          ]
         }
       }
     ]

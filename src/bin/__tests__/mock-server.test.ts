@@ -153,11 +153,16 @@ test('file2MockIns', () => {
   expect(fieldFormatterCfg).toBeInstanceOf(Array)
 })
 
-test('buildMockMiddleware', async () => {
-  const spyGen = jest.fn().mockResolvedValue({ code: 222 })
+test('buildMockMiddleware, return manual data', async () => {
+  const manualGenSpy = jest.fn().mockResolvedValue(({
+    code: 222,
+    list: [1, 2, 3]
+  }))
   const middleware = buildMockMiddleware(
-    spyGen,
-    () => ({ code: 111 })
+    manualGenSpy,
+    () => ({
+      code: 111, list: [3, 2, 1]
+    })
   )
   const ctx = {
     method: 'GET',
@@ -166,7 +171,29 @@ test('buildMockMiddleware', async () => {
   } as any
   await middleware(ctx, async () => {})
   expect(JSON.parse(ctx.body)).toEqual({
-    [RPCKey.Return]: { code: 222 }
+    [RPCKey.Return]: { code: 222, list: [1, 2, 3] }
   })
-  expect(spyGen).lastCalledWith('User', 'getInfoById', ['id'])
+  expect(manualGenSpy).toHaveBeenCalledTimes(1)
+})
+
+test('buildMockMiddleware, called with autoMockData', async () => {
+  const manualGenSpy = jest.fn()
+  const middleware = buildMockMiddleware(
+    manualGenSpy,
+    () => ({ code: 111, list: [1] })
+  )
+  const ctx = {
+    method: 'GET',
+    path: 'User/getInfoById',
+    request: { query: { [RPCKey.Args]: '["id"]' } }
+  } as any
+  await middleware(ctx, async () => {})
+  expect(manualGenSpy).toHaveBeenCalledTimes(1)
+  expect(manualGenSpy).lastCalledWith(
+    'User',
+    'getInfoById',
+    ['id'],
+    // 自动生成的 mock 数据
+    { code: 111, list: [1] }
+  )
 })

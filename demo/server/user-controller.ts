@@ -35,8 +35,11 @@ export class User {
   }
 
   @RPCMethod()
-  getUnreadMsg (id: string): string[] {
-    return []
+  getUnreadMsg (id: string): { code: number, data: string[] } {
+    return {
+      code: 0,
+      data: ['']
+    }
   }
 
   other (): Other {

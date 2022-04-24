@@ -31,6 +31,7 @@ export interface Ctx {
   request: {
     body?: any
     query?: { [key: string]: string }
+    headers: Record<string, string>
   }
   body: string
   path: string

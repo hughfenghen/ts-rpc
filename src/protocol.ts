@@ -9,8 +9,14 @@ export async function getRPCArgs (ctx: Ctx): Promise<unknown[]> {
   if (method === 'get') {
     args = ctxReq.query?.[RPCKey.Args]
   } else {
-    // bodyParser 依赖 koa, midway ctx.req (http.IncomingMessage)
-    if (ctxReq.body == null) ctxReq.body = await bodyParser.json((ctx as any).req)
+    if (ctxReq.body == null) {
+      const ct = ctxReq.headers['content-type'] ?? 'application/json'
+      if (ct.includes('application/json')) {
+        ctxReq.body = await bodyParser.json(ctx as any)
+      } else if (ct.includes('application/x-www-form-urlencoded')) {
+        ctxReq.body = await bodyParser.form(ctx as any)
+      }
+    }
     args = ctxReq.body?.[RPCKey.Args]
   }
 

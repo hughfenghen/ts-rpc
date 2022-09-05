@@ -60,7 +60,9 @@ export async function bindKoa ({ app, rpcMetaPath, prefixPath }: IBindingArgs): 
       .replace(prefixPath, '')
       .replace(/^\/*/, '')
       .split('/')
-    if (sNameExportMap[sPath] == null) {
+
+    const Classes = sNameExportMap[sPath]
+    if (Classes == null) {
       await next()
       return
     }
@@ -74,7 +76,12 @@ export async function bindKoa ({ app, rpcMetaPath, prefixPath }: IBindingArgs): 
     }
 
     if (ins == null) {
-      ins = new sNameExportMap[sPath]()
+      ins = new Classes()
+      if (typeof ins[mPath] !== 'function') {
+        const errMsg = `Undeclare method: ${sPath}/${mPath}`
+        logger.error(errMsg)
+        throw new Error(errMsg)
+      }
       pathInstanceMap.set(ctx.path, ins)
     }
 
@@ -84,7 +91,7 @@ export async function bindKoa ({ app, rpcMetaPath, prefixPath }: IBindingArgs): 
     try {
       args = await getRPCArgs(ctx)
     } catch (err) {
-      logger.info(`Cannot find '${RPCKey.Args}' in request body or query, path: ${ctx.path}`)
+      logger.info(`Cannot find '${RPCKey.Args}' in request body or querystring, path: ${ctx.path}`)
     }
     ctx.body = JSON.stringify(wrapRPCReturn(
       await ins[mPath](...args)

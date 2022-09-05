@@ -62,6 +62,28 @@ test('bindKoa can not find file', async () => {
   throw new Error('not catch error')
 })
 
+test('bindKoa undeclare method', async () => {
+  const middlewares: Function[] = []
+  const spyUse = jest.fn((middleware) => {
+    middlewares.push(middleware)
+  })
+  await bindKoa({
+    app: { use: spyUse },
+    rpcMetaPath: path.resolve(__dirname, './_rpc_gen_meta_.json'),
+    prefixPath: '/test'
+  })
+
+  try {
+    await middlewares[0]({
+      ...CTX_TPL,
+      path: '/test/User/invalidmethod',
+      request: { body: { [RPCKey.Args]: ['111'] } }
+    }, jest.fn())
+  } catch (err) {
+    expect(String(err)).toBe('Error: Undeclare method: User/invalidmethod')
+  }
+})
+
 test('bindMidway', async () => {
   const middlewares: Function[] = []
   const spyUse = jest.fn((middleware) => {

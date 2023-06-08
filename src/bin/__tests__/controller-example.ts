@@ -51,8 +51,9 @@ export class User {
   }
 }
 
-@RPCService()
-export class Foo {
-  @RPCMethod()
-  bar (): void {}
-}
+// 新版 typescript-json-schema 遇到 return void 会报错
+// @RPCService()
+// export class Foo {
+//   @RPCMethod()
+//   async bar (): Promise<void> {}
+// }

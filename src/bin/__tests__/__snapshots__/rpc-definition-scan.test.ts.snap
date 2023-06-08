@@ -6,7 +6,6 @@ exports[`scan 1`] = `
 
     export interface App {
         User: User;
-        Foo: Foo;
         User1: User1;
     }
 
@@ -15,7 +14,6 @@ exports[`scan 1`] = `
         'User.getInfoById2': UnwrapPromise<IUserInfo & { gender: Gender1 }>;
         'User.getInfoById3': UnwrapPromise<TUserInfo>;
         'User.getUnreadMsg': UnwrapPromise<Promise<string[]>>;
-        'Foo.bar': UnwrapPromise<void>;
         'User1.getInfoById1': UnwrapPromise<CUserInfo & IDuplicate>;
     }
 
@@ -68,10 +66,6 @@ exports[`scan 1`] = `
     }
 
     export type TUserInfo = CUserInfo & IUserInfo;
-
-    interface Foo {
-        bar(): void;
-    }
 
     /**
      * service doc
@@ -260,21 +254,6 @@ exports[`scan 2`] = `
           \\"items\\": {
             \\"type\\": \\"string\\"
           }
-        }
-      }
-    ]
-  },
-  {
-    \\"name\\": \\"Foo\\",
-    \\"path\\": \\"/Users/fenghen/bili-space/ts-rpc/src/bin/__tests__/controller-example.ts\\",
-    \\"methods\\": [
-      {
-        \\"name\\": \\"bar\\",
-        \\"decorators\\": [
-          \\"@RPCMethod()\\"
-        ],
-        \\"retSchema\\": {
-          \\"type\\": \\"undefined\\"
         }
       }
     ]

@@ -284,25 +284,27 @@ export function filterService (
 
       const retTypes = ns.addInterface({ name: EXP_RETURN_TYPES_NAME })
       retTypes.setIsExported(true)
-      mdl.getInterface(EXP_RETURN_TYPES_NAME)
-        ?.getProperties()
+
+      retTypes.addProperties(
+        mdl.getInterface(EXP_RETURN_TYPES_NAME)
+          ?.getProperties()
         // APIReturnTypes 只需要 includeServices 配置的 service
         // 结构： interface APIReturnTypes { 'Class.method': UnwrapPromise<T> }
-        .filter(prop => includeServices.some(
-          s => prop.getName().startsWith(`'${s}.`)
-        ))
-        .forEach((prop) => {
-          retTypes.addProperty(prop.getStructure())
-        })
+          .filter(prop => includeServices.some(
+            s => prop.getName().startsWith(`'${s}.`)
+          ))
+          .map((prop) => prop.getStructure()) ?? []
+      )
 
       const app = ns.addInterface({ name: 'App' })
       app.setIsExported(true)
 
-      services
-        .forEach(s => {
-          app.addProperty({ name: s.getName(), type: s.getName() })
-          ns.addInterface(s.getStructure())
-        })
+      app.addProperties(services.map((s) => ({
+        name: s.getName(),
+        type: s.getName()
+      })))
+      ns.addInterfaces(services.map(s => s.getStructure()))
+
       deps.forEach((dep: ITCDeclaration) => {
         addNode(ns, dep)?.setIsExported(true)
       })

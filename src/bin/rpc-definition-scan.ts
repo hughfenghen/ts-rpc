@@ -1,9 +1,9 @@
 import glob from 'glob'
-import { Project, Node, ClassDeclaration, FunctionDeclaration, MethodDeclaration, MethodSignature, TypeAliasDeclarationStructure } from 'ts-morph'
+import { Project, Node, ClassDeclaration, FunctionDeclaration, MethodDeclaration, MethodSignature, TypeAliasDeclarationStructure, InterfaceDeclaration, TypeAliasDeclaration, EnumDeclaration, Structure, InterfaceDeclarationStructure, EnumDeclarationStructure, MethodSignatureStructure, JSDocStructure } from 'ts-morph'
 import path from 'path'
 import { existsSync } from 'fs'
 import { IScanResult, TRPCMetaData } from '../common'
-import { addNode, collectTypeDeps, code2Structure } from './utils'
+import { collectTypeDeps, code2Structure } from './utils'
 import { dts2JSONSchema } from './dts-to-schema'
 
 const nsName = (appId: string): string => `${appId}NS`
@@ -20,10 +20,10 @@ export function scan (
   const files = filePaths.map(f => glob.sync(f)).flat()
   const prj = new Project({
     tsConfigFilePath: opts?.tsConfigFilePath,
-    compilerOptions: {
-      types: []
-    },
-    skipAddingFilesFromTsConfig: true
+    skipAddingFilesFromTsConfig: true,
+    skipFileDependencyResolution: true,
+    skipLoadingLibFiles: true,
+    compilerOptions: { types: [] }
   })
   files.forEach(file => {
     return prj.addSourceFileAtPath(file)
@@ -72,18 +72,36 @@ export function scan (
     isExported: true
   })
   // 收集接口返回类型，用于 client 生成 json-schema
-  const retTypes = appNS.addInterface({ name: EXP_RETURN_TYPES_NAME })
-  retTypes.setIsExported(true)
+  const appNSRetTypes = appNS.addInterface({ name: EXP_RETURN_TYPES_NAME })
+  appNSRetTypes.setIsExported(true)
 
   const rpcMetaData: TRPCMetaData = []
   // 已添加到 appNS 中的依赖，避免依赖项重复
   const addedDepIds: string[] = []
   // 遍历 class，将 class 转换为 interface，并将其依赖添加到 appNS
+  const classesName: string[] = []
+  // 收集所有 class.method return type 信息
+  const retTypeProps: Array<{ name: string, type: string }> = []
+  const methodDepsStruct: Record<string, Structure[]> = {
+    class: [],
+    enum: [],
+    inter: [],
+    type: []
+  }
+  // 将 class 转换为 interface，模拟 rpc 的 protocol 声明
+  const class2InterProps: Array<{
+    name: string
+    methodsStruct: MethodSignatureStructure[]
+    jsDocs: JSDocStructure[]
+  }> = []
+
   refedClasses.forEach((c) => {
     const className = c.getName()
 
     if (className == null) throw Error('RPCService must be applied to a named class')
     if (appNS.getInterface(className) != null) throw Error(`RPCService marks duplicate class names: ${className}`)
+
+    classesName.push(className)
 
     const methods = findRPCMethods(c, rpcMethodDef)
     if (methods.length === 0) {
@@ -98,67 +116,76 @@ export function scan (
       }))
     })
 
-    // 将 class 转换为 interface，模拟 rpc 的 protocol 声明
-    const inter = appNS.addInterface({ name: className })
-    inter.addJsDocs(c.getJsDocs().map(doc => doc.getStructure()))
-
-    methods.forEach((m) => {
-      // 移除原有decorator, 避免 bug：https://github.com/dsherret/ts-morph/issues/1214
-      m.getDecorators().forEach(d => d.remove())
-      // 移除 paramster 的 decorator，简化接口信息
-      m.getParameters().forEach(p => {
-        p.getDecorators().forEach(d => d.remove())
-        // 移除参数初始值，class 将被转换为 interface， 而interface不支持初始值
-        p.removeInitializer()
+    // 提取 method 的结构、返回值，然后批量添加
+    const methodsStructRetType = methods.map(getMethodStructAndRetType)
+      .reduce<{ structs: MethodSignatureStructure[], retTypeProps: Array<{ name: string, type: string}>}>((acc, cur) => {
+      acc.structs.push(cur.struct)
+      acc.retTypeProps.push({
+        name: `'${className}.${cur.struct.name}'`,
+        type: cur.retType
       })
+      return acc
+    }, { structs: [], retTypeProps: [] })
 
-      const ms = m.getSignature().getDeclaration() as MethodSignature
-      const addedM = inter.addMethod(ms.getStructure())
-      const rtText = addedM.getReturnTypeNode()?.getText()
-      if (rtText == null) throw new Error(`Could not find method (${m.getName()}) return type`)
+    retTypeProps.push(...methodsStructRetType.retTypeProps)
 
-      retTypes.addProperty({
-        name: `'${className}.${m.getName()}'`,
-        // 返回类型不需要 promise 包围，影响生成的 schema，不便于 Mock 或 fast-stringify
-        type: `UnwrapPromise<${rtText}>`
-      })
-      addedM.setReturnType(rtText)
+    class2InterProps.push({
+      name: className,
+      methodsStruct: methodsStructRetType.structs,
+      jsDocs: c.getJsDocs().map(doc => doc.getStructure())
     })
 
-    // TODO： 重构优化以下代码
     collectTypeDeps(
       methods.map(m => [...m.getParameters(), m.getReturnTypeNodeOrThrow()]).flat(),
       prj
-    ).forEach(it => {
+    ).filter((it) => {
       const nodeName = it.getNameNode()?.getText()
       if (nodeName == null) throw new Error('dependency must be named')
 
       const sid = it.getSourceFile().getFilePath() + '/' + nodeName
-      // 避免重复
-      if (addedDepIds.includes(sid)) return
+      // 重复
+      if (addedDepIds.includes(sid)) return false
 
       if (addedDepIds.some(sid => sid.endsWith(`/${nodeName}`))) {
         console.warn(`Named duplicate: ${nodeName}`)
-        return
+        return false
       }
       addedDepIds.push(sid)
-
+      return true
+    }).forEach((it) => {
       // 添加 method 依赖的类型
-      const added = addNode(appNS, it)
-      if (added instanceof ClassDeclaration) {
+      if (it instanceof InterfaceDeclaration) {
+        methodDepsStruct.inter.push(it.getStructure())
+      } else if (it instanceof TypeAliasDeclaration) {
+        methodDepsStruct.type.push(it.getStructure())
+      } else if (it instanceof EnumDeclaration) {
+        methodDepsStruct.enum.push(it.getStructure())
+      } else if (it instanceof ClassDeclaration) {
         // 只保留 class 的方法, 移除属性、class 的decorator 信息
-        added.getDecorators().forEach(d => d.remove())
-        added.getProperties()
+        it.getDecorators().forEach(d => d.remove())
+        it.getProperties()
           .forEach(p => p.getDecorators().forEach(d => d.remove()))
+        methodDepsStruct.class.push(it.getStructure())
       }
-      if (added == null) {
-        console.warn(`unknown deps type: ${it.getText()}`)
-      }
-      added?.setIsExported(true)
     })
-
-    appInterColl.addProperty({ name: className, type: className })
   })
+  const inters = appNS.addInterfaces(class2InterProps.map(i => ({ name: i.name })))
+  inters.forEach((inter, idx) => {
+    inter.addMethods(class2InterProps[idx].methodsStruct)
+    inter.addJsDocs(class2InterProps[idx].jsDocs)
+  })
+
+  appNSRetTypes.addProperties(retTypeProps)
+
+  // @ts-expect-error
+  // eslint-disable-next-line
+  Object.values(methodDepsStruct).flat().forEach(it => it.isExported = true)
+  appNS.addClasses(methodDepsStruct.class)
+  appNS.addTypeAliases(methodDepsStruct.type as TypeAliasDeclarationStructure[])
+  appNS.addInterfaces(methodDepsStruct.inter as InterfaceDeclarationStructure[])
+  appNS.addEnums(methodDepsStruct.enum as EnumDeclarationStructure[])
+
+  appInterColl.addProperties(classesName.map(nm => ({ name: nm, type: nm })))
 
   const code = genSf.getFullText()
   return {
@@ -194,4 +221,27 @@ function addReturnSchemToMeta (meta: TRPCMetaData, code: string, appId: string):
       retSchema: properties[`${s.name}.${m.name}`]
     }))
   }))
+}
+
+function getMethodStructAndRetType (m: MethodDeclaration): { struct: MethodSignatureStructure, retType: string } {
+  // 移除原有decorator, 避免 bug：https://github.com/dsherret/ts-morph/issues/1214
+  m.getDecorators().forEach(d => d.remove())
+  // 移除 paramster 的 decorator，简化接口信息
+  m.getParameters().forEach(p => {
+    p.getDecorators().forEach(d => d.remove())
+    // 移除参数初始值，class 将被转换为 interface， 而interface不支持初始值
+    p.removeInitializer()
+  })
+
+  const ms = m.getSignature().getDeclaration() as MethodSignature
+  const struct = ms.getStructure()
+
+  const rtText = struct.returnType as string
+  if (rtText == null) throw new Error(`Could not find method (${m.getName()}) return type`)
+
+  return {
+    struct,
+    // 返回类型不需要 promise 包围，影响生成的 schema，不便于 Mock 或 fast-stringify
+    retType: `UnwrapPromise<${rtText}>`
+  }
 }

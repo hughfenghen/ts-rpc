@@ -5,6 +5,8 @@ import { TSchema } from '../common'
 export function dts2JSONSchema (code: string, typeName: string): TSchema | null {
   const prj = new Project({
     useInMemoryFileSystem: true,
+    skipAddingFilesFromTsConfig: true,
+    skipFileDependencyResolution: true,
     compilerOptions: {
       types: []
     }
@@ -16,10 +18,10 @@ export function dts2JSONSchema (code: string, typeName: string): TSchema | null 
     {
       ignoreErrors: true,
       required: true,
+      skipLibCheck: true,
       ref: false
     },
     ['rpc-definition.ts']
   )
-
   return generator?.getSchemaForSymbol(typeName) ?? null
 }

@@ -1,9 +1,9 @@
 import glob from 'glob'
-import { Project, Node, ClassDeclaration, FunctionDeclaration, MethodDeclaration, MethodSignature, TypeAliasDeclarationStructure } from 'ts-morph'
+import { Project, Node, ClassDeclaration, FunctionDeclaration, MethodDeclaration, MethodSignature, TypeAliasDeclarationStructure, InterfaceDeclaration, TypeAliasDeclaration, EnumDeclaration, Structure, InterfaceDeclarationStructure, EnumDeclarationStructure } from 'ts-morph'
 import path from 'path'
 import { existsSync } from 'fs'
 import { IScanResult, TRPCMetaData } from '../common'
-import { addNode, collectTypeDeps, code2Structure } from './utils'
+import { collectTypeDeps, code2Structure } from './utils'
 import { dts2JSONSchema } from './dts-to-schema'
 
 const nsName = (appId: string): string => `${appId}NS`
@@ -20,10 +20,10 @@ export function scan (
   const files = filePaths.map(f => glob.sync(f)).flat()
   const prj = new Project({
     tsConfigFilePath: opts?.tsConfigFilePath,
-    compilerOptions: {
-      types: []
-    },
-    skipAddingFilesFromTsConfig: true
+    skipAddingFilesFromTsConfig: true,
+    skipFileDependencyResolution: true,
+    skipLoadingLibFiles: true,
+    compilerOptions: { types: [] }
   })
   files.forEach(file => {
     return prj.addSourceFileAtPath(file)
@@ -79,6 +79,7 @@ export function scan (
   // 已添加到 appNS 中的依赖，避免依赖项重复
   const addedDepIds: string[] = []
   // 遍历 class，将 class 转换为 interface，并将其依赖添加到 appNS
+  // console.log(6666, refedClasses.length)
   refedClasses.forEach((c) => {
     const className = c.getName()
 
@@ -125,37 +126,52 @@ export function scan (
       addedM.setReturnType(rtText)
     })
 
-    // TODO： 重构优化以下代码
+    const depsStruct: Record<string, Structure[]> = {
+      class: [],
+      enum: [],
+      inter: [],
+      type: []
+    }
     collectTypeDeps(
       methods.map(m => [...m.getParameters(), m.getReturnTypeNodeOrThrow()]).flat(),
       prj
-    ).forEach(it => {
+    ).filter((it) => {
       const nodeName = it.getNameNode()?.getText()
       if (nodeName == null) throw new Error('dependency must be named')
 
       const sid = it.getSourceFile().getFilePath() + '/' + nodeName
-      // 避免重复
-      if (addedDepIds.includes(sid)) return
+      // 重复
+      if (addedDepIds.includes(sid)) return false
 
       if (addedDepIds.some(sid => sid.endsWith(`/${nodeName}`))) {
         console.warn(`Named duplicate: ${nodeName}`)
-        return
+        return false
       }
       addedDepIds.push(sid)
-
+      return true
+    }).forEach((it) => {
       // 添加 method 依赖的类型
-      const added = addNode(appNS, it)
-      if (added instanceof ClassDeclaration) {
+      if (it instanceof InterfaceDeclaration) {
+        depsStruct.inter.push(it.getStructure())
+      } else if (it instanceof TypeAliasDeclaration) {
+        depsStruct.type.push(it.getStructure())
+      } else if (it instanceof EnumDeclaration) {
+        depsStruct.enum.push(it.getStructure())
+      } else if (it instanceof ClassDeclaration) {
         // 只保留 class 的方法, 移除属性、class 的decorator 信息
-        added.getDecorators().forEach(d => d.remove())
-        added.getProperties()
+        it.getDecorators().forEach(d => d.remove())
+        it.getProperties()
           .forEach(p => p.getDecorators().forEach(d => d.remove()))
+        depsStruct.class.push(it.getStructure())
       }
-      if (added == null) {
-        console.warn(`unknown deps type: ${it.getText()}`)
-      }
-      added?.setIsExported(true)
     })
+    // @ts-expect-error
+    // eslint-disable-next-line
+      Object.values(depsStruct).flat().forEach(it => it.isExported = true)
+    appNS.addClasses(depsStruct.class)
+    appNS.addTypeAliases(depsStruct.type as TypeAliasDeclarationStructure[])
+    appNS.addInterfaces(depsStruct.inter as InterfaceDeclarationStructure[])
+    appNS.addEnums(depsStruct.enum as EnumDeclarationStructure[])
 
     appInterColl.addProperty({ name: className, type: className })
   })

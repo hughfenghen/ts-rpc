@@ -1,5 +1,5 @@
 import glob from 'glob'
-import { Project, Node, ClassDeclaration, FunctionDeclaration, MethodDeclaration, MethodSignature, TypeAliasDeclarationStructure, InterfaceDeclaration, TypeAliasDeclaration, EnumDeclaration, Structure, InterfaceDeclarationStructure, EnumDeclarationStructure } from 'ts-morph'
+import { Project, Node, ClassDeclaration, FunctionDeclaration, MethodDeclaration, MethodSignature, TypeAliasDeclarationStructure, InterfaceDeclaration, TypeAliasDeclaration, EnumDeclaration, Structure, InterfaceDeclarationStructure, EnumDeclarationStructure, MethodSignatureStructure } from 'ts-morph'
 import path from 'path'
 import { existsSync } from 'fs'
 import { IScanResult, TRPCMetaData } from '../common'
@@ -72,15 +72,17 @@ export function scan (
     isExported: true
   })
   // 收集接口返回类型，用于 client 生成 json-schema
-  const retTypes = appNS.addInterface({ name: EXP_RETURN_TYPES_NAME })
-  retTypes.setIsExported(true)
+  const appNSRetTypes = appNS.addInterface({ name: EXP_RETURN_TYPES_NAME })
+  appNSRetTypes.setIsExported(true)
 
   const rpcMetaData: TRPCMetaData = []
   // 已添加到 appNS 中的依赖，避免依赖项重复
   const addedDepIds: string[] = []
   // 遍历 class，将 class 转换为 interface，并将其依赖添加到 appNS
-  // console.log(6666, refedClasses.length)
+  console.log(6666, refedClasses.length)
+  let i = 0
   refedClasses.forEach((c) => {
+    console.log(i++)
     const className = c.getName()
 
     if (className == null) throw Error('RPCService must be applied to a named class')
@@ -103,28 +105,19 @@ export function scan (
     const inter = appNS.addInterface({ name: className })
     inter.addJsDocs(c.getJsDocs().map(doc => doc.getStructure()))
 
-    methods.forEach((m) => {
-      // 移除原有decorator, 避免 bug：https://github.com/dsherret/ts-morph/issues/1214
-      m.getDecorators().forEach(d => d.remove())
-      // 移除 paramster 的 decorator，简化接口信息
-      m.getParameters().forEach(p => {
-        p.getDecorators().forEach(d => d.remove())
-        // 移除参数初始值，class 将被转换为 interface， 而interface不支持初始值
-        p.removeInitializer()
+    // 提取 method 的结构、返回值，然后批量添加
+    const methodsStructRetType = methods.map(getMethodStructAndRetType)
+      .reduce<{ structs: MethodSignatureStructure[], retTypeProps: Array<{ name: string, type: string}>}>((acc, cur) => {
+      acc.structs.push(cur.struct)
+      acc.retTypeProps.push({
+        name: `'${className}.${cur.struct.name}'`,
+        type: cur.retType
       })
+      return acc
+    }, { structs: [], retTypeProps: [] })
 
-      const ms = m.getSignature().getDeclaration() as MethodSignature
-      const addedM = inter.addMethod(ms.getStructure())
-      const rtText = addedM.getReturnTypeNode()?.getText()
-      if (rtText == null) throw new Error(`Could not find method (${m.getName()}) return type`)
-
-      retTypes.addProperty({
-        name: `'${className}.${m.getName()}'`,
-        // 返回类型不需要 promise 包围，影响生成的 schema，不便于 Mock 或 fast-stringify
-        type: `UnwrapPromise<${rtText}>`
-      })
-      addedM.setReturnType(rtText)
-    })
+    appNSRetTypes.addProperties(methodsStructRetType.retTypeProps)
+    inter.addMethods(methodsStructRetType.structs)
 
     const depsStruct: Record<string, Structure[]> = {
       class: [],
@@ -210,4 +203,27 @@ function addReturnSchemToMeta (meta: TRPCMetaData, code: string, appId: string):
       retSchema: properties[`${s.name}.${m.name}`]
     }))
   }))
+}
+
+function getMethodStructAndRetType (m: MethodDeclaration): { struct: MethodSignatureStructure, retType: string } {
+  // 移除原有decorator, 避免 bug：https://github.com/dsherret/ts-morph/issues/1214
+  m.getDecorators().forEach(d => d.remove())
+  // 移除 paramster 的 decorator，简化接口信息
+  m.getParameters().forEach(p => {
+    p.getDecorators().forEach(d => d.remove())
+    // 移除参数初始值，class 将被转换为 interface， 而interface不支持初始值
+    p.removeInitializer()
+  })
+
+  const ms = m.getSignature().getDeclaration() as MethodSignature
+  const struct = ms.getStructure()
+
+  const rtText = struct.returnType as string
+  if (rtText == null) throw new Error(`Could not find method (${m.getName()}) return type`)
+
+  return {
+    struct,
+    // 返回类型不需要 promise 包围，影响生成的 schema，不便于 Mock 或 fast-stringify
+    retType: `UnwrapPromise<${rtText}>`
+  }
 }

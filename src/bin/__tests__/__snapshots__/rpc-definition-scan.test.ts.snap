@@ -30,6 +30,17 @@ exports[`scan 1`] = `
         getUnreadMsg(id: string): Promise<string[]>;
     }
 
+    /**
+     * service doc
+     * 验证公共依赖 CUserInfo
+     */
+    interface User1 {
+        /**
+         * method doc
+         */
+        getInfoById1(id: string): CUserInfo & IDuplicate;
+    }
+
     export class CUserInfo {
         name: string;
         age: Date;
@@ -62,17 +73,6 @@ exports[`scan 1`] = `
          */
         Male = 'male',
         Female = 'female'
-    }
-
-    /**
-     * service doc
-     * 验证公共依赖 CUserInfo
-     */
-    interface User1 {
-        /**
-         * method doc
-         */
-        getInfoById1(id: string): CUserInfo & IDuplicate;
     }
 }
 

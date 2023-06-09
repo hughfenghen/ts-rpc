@@ -1,5 +1,5 @@
 import glob from 'glob'
-import { Project, Node, ClassDeclaration, FunctionDeclaration, MethodDeclaration, MethodSignature, TypeAliasDeclarationStructure, InterfaceDeclaration, TypeAliasDeclaration, EnumDeclaration, Structure, InterfaceDeclarationStructure, EnumDeclarationStructure, MethodSignatureStructure } from 'ts-morph'
+import { Project, Node, ClassDeclaration, FunctionDeclaration, MethodDeclaration, MethodSignature, TypeAliasDeclarationStructure, InterfaceDeclaration, TypeAliasDeclaration, EnumDeclaration, Structure, InterfaceDeclarationStructure, EnumDeclarationStructure, MethodSignatureStructure, JSDocStructure } from 'ts-morph'
 import path from 'path'
 import { existsSync } from 'fs'
 import { IScanResult, TRPCMetaData } from '../common'
@@ -79,14 +79,29 @@ export function scan (
   // 已添加到 appNS 中的依赖，避免依赖项重复
   const addedDepIds: string[] = []
   // 遍历 class，将 class 转换为 interface，并将其依赖添加到 appNS
-  console.log(6666, refedClasses.length)
-  let i = 0
+  const classesName: string[] = []
+  // 收集所有 class.method return type 信息
+  const retTypeProps: Array<{ name: string, type: string }> = []
+  const methodDepsStruct: Record<string, Structure[]> = {
+    class: [],
+    enum: [],
+    inter: [],
+    type: []
+  }
+  // 将 class 转换为 interface，模拟 rpc 的 protocol 声明
+  const class2InterProps: Array<{
+    name: string
+    methodsStruct: MethodSignatureStructure[]
+    jsDocs: JSDocStructure[]
+  }> = []
+
   refedClasses.forEach((c) => {
-    console.log(i++)
     const className = c.getName()
 
     if (className == null) throw Error('RPCService must be applied to a named class')
     if (appNS.getInterface(className) != null) throw Error(`RPCService marks duplicate class names: ${className}`)
+
+    classesName.push(className)
 
     const methods = findRPCMethods(c, rpcMethodDef)
     if (methods.length === 0) {
@@ -101,10 +116,6 @@ export function scan (
       }))
     })
 
-    // 将 class 转换为 interface，模拟 rpc 的 protocol 声明
-    const inter = appNS.addInterface({ name: className })
-    inter.addJsDocs(c.getJsDocs().map(doc => doc.getStructure()))
-
     // 提取 method 的结构、返回值，然后批量添加
     const methodsStructRetType = methods.map(getMethodStructAndRetType)
       .reduce<{ structs: MethodSignatureStructure[], retTypeProps: Array<{ name: string, type: string}>}>((acc, cur) => {
@@ -116,15 +127,14 @@ export function scan (
       return acc
     }, { structs: [], retTypeProps: [] })
 
-    appNSRetTypes.addProperties(methodsStructRetType.retTypeProps)
-    inter.addMethods(methodsStructRetType.structs)
+    retTypeProps.push(...methodsStructRetType.retTypeProps)
 
-    const depsStruct: Record<string, Structure[]> = {
-      class: [],
-      enum: [],
-      inter: [],
-      type: []
-    }
+    class2InterProps.push({
+      name: className,
+      methodsStruct: methodsStructRetType.structs,
+      jsDocs: c.getJsDocs().map(doc => doc.getStructure())
+    })
+
     collectTypeDeps(
       methods.map(m => [...m.getParameters(), m.getReturnTypeNodeOrThrow()]).flat(),
       prj
@@ -145,29 +155,37 @@ export function scan (
     }).forEach((it) => {
       // 添加 method 依赖的类型
       if (it instanceof InterfaceDeclaration) {
-        depsStruct.inter.push(it.getStructure())
+        methodDepsStruct.inter.push(it.getStructure())
       } else if (it instanceof TypeAliasDeclaration) {
-        depsStruct.type.push(it.getStructure())
+        methodDepsStruct.type.push(it.getStructure())
       } else if (it instanceof EnumDeclaration) {
-        depsStruct.enum.push(it.getStructure())
+        methodDepsStruct.enum.push(it.getStructure())
       } else if (it instanceof ClassDeclaration) {
         // 只保留 class 的方法, 移除属性、class 的decorator 信息
         it.getDecorators().forEach(d => d.remove())
         it.getProperties()
           .forEach(p => p.getDecorators().forEach(d => d.remove()))
-        depsStruct.class.push(it.getStructure())
+        methodDepsStruct.class.push(it.getStructure())
       }
     })
-    // @ts-expect-error
-    // eslint-disable-next-line
-      Object.values(depsStruct).flat().forEach(it => it.isExported = true)
-    appNS.addClasses(depsStruct.class)
-    appNS.addTypeAliases(depsStruct.type as TypeAliasDeclarationStructure[])
-    appNS.addInterfaces(depsStruct.inter as InterfaceDeclarationStructure[])
-    appNS.addEnums(depsStruct.enum as EnumDeclarationStructure[])
-
-    appInterColl.addProperty({ name: className, type: className })
   })
+  const inters = appNS.addInterfaces(class2InterProps.map(i => ({ name: i.name })))
+  inters.forEach((inter, idx) => {
+    inter.addMethods(class2InterProps[idx].methodsStruct)
+    inter.addJsDocs(class2InterProps[idx].jsDocs)
+  })
+
+  appNSRetTypes.addProperties(retTypeProps)
+
+  // @ts-expect-error
+  // eslint-disable-next-line
+  Object.values(methodDepsStruct).flat().forEach(it => it.isExported = true)
+  appNS.addClasses(methodDepsStruct.class)
+  appNS.addTypeAliases(methodDepsStruct.type as TypeAliasDeclarationStructure[])
+  appNS.addInterfaces(methodDepsStruct.inter as InterfaceDeclarationStructure[])
+  appNS.addEnums(methodDepsStruct.enum as EnumDeclarationStructure[])
+
+  appInterColl.addProperties(classesName.map(nm => ({ name: nm, type: nm })))
 
   const code = genSf.getFullText()
   return {

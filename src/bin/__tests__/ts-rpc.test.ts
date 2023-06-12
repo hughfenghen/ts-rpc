@@ -76,7 +76,7 @@ describe('handleClientCmd', () => {
       }
     }, '', {})
 
-    expect(/^\/\* eslint-disable \*\//.test(code.trim())).toBe(true)
+    expect(code.includes('/* eslint-disable */')).toBe(true)
     expect(code.includes('export type Test1 = Test1NS.App;')).toBe(true)
     expect(code.includes('export type Test2 = Test2NS.App;')).toBe(true)
     expect(code).toMatchSnapshot()
@@ -95,10 +95,10 @@ describe('handleClientCmd', () => {
       }
     }, mockLocalDefStr, {})
 
-    expect(code.trim().startsWith('/* eslint-disable */')).toBe(true)
+    expect(code.includes('/* eslint-disable */')).toBe(true)
     expect(code.includes('export type Test1 = Test1NS.App;')).toBe(true)
     expect(code.includes('export type Test2 = Test2NS.App;')).toBe(true)
-    expect(code.includes('export const Test2Meta = [];')).toBe(true)
+    expect(code.includes('export const Test2Meta: TRPCMetaData = [];')).toBe(true)
     expect(code).toMatchSnapshot()
     expect(JSON.stringify(appMeta, null, 2)).toMatchSnapshot()
   })
@@ -115,10 +115,10 @@ describe('handleClientCmd', () => {
       }
     }, mockLocalDefStr, { includeServices: ['S1'] })
 
-    expect(code.trim().startsWith('/* eslint-disable */')).toBe(true)
+    expect(code.includes('/* eslint-disable */')).toBe(true)
     expect(code.includes('interface S1')).toBe(true)
     expect(code.includes('export type Test1 = Test1NS.App;')).toBe(true)
-    expect(code.includes('export const Test1Meta = [')).toBe(true)
+    expect(code.includes('export const Test1Meta: TRPCMetaData = [')).toBe(true)
     expect(code.includes('export type Test2 = Test2NS.App;')).toBe(false)
   })
 })

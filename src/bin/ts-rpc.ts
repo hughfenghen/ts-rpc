@@ -205,9 +205,10 @@ export async function handleClientCmd (
     appMeta = meta
   }
 
+  const impTypeCodeStr = "import { TRPCMetaData } from 'ts-brpc/common'"
   const metaStr = Object.entries(appMeta)
     .map(
-      ([appId, meta]) => `export const ${appId}Meta = ${JSON.stringify(meta, null, 2)};`
+      ([appId, meta]) => `export const ${appId}Meta: TRPCMetaData = ${JSON.stringify(meta, null, 2)};`
     )
     .join('\n')
 
@@ -217,7 +218,7 @@ export async function handleClientCmd (
 
   // 合并 (注释 + 本地代码 + 同步的新代码)
   return {
-    code: `${startComment}\n${rsCodeStr}\n${metaStr}`,
+    code: `${impTypeCodeStr}\n${startComment}\n${rsCodeStr}\n${metaStr}`,
     appMeta
   }
 }

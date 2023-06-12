@@ -155,7 +155,8 @@ export type RPCDemo1 = RPCDemo1NS.App;
 `;
 
 exports[`handleClientCmd concat definition file 1`] = `
-"
+"import { TRPCMetaData } from 'ts-brpc/common'
+
 /* eslint-disable */
 // 不会被删除的 meta
 export const Test0Meta = [{
@@ -189,7 +190,7 @@ namespace Test2NS {
 }
 export type Test2 = Test2NS.App;
 
-export const Test0Meta = [
+export const Test0Meta: TRPCMetaData = [
   {
     \\"name\\": \\"S0\\",
     \\"path\\": \\"server/user-controller.ts\\",
@@ -206,8 +207,8 @@ export const Test0Meta = [
     ]
   }
 ];
-export const Test1Meta = [];
-export const Test2Meta = [];"
+export const Test1Meta: TRPCMetaData = [];
+export const Test2Meta: TRPCMetaData = [];"
 `;
 
 exports[`handleClientCmd concat definition file 2`] = `
@@ -235,7 +236,8 @@ exports[`handleClientCmd concat definition file 2`] = `
 `;
 
 exports[`handleClientCmd new definition file 1`] = `
-"/* eslint-disable */
+"import { TRPCMetaData } from 'ts-brpc/common'
+/* eslint-disable */
 
 
 namespace Test1NS {
@@ -257,6 +259,6 @@ namespace Test2NS {
 }
 export type Test2 = Test2NS.App;
 
-export const Test1Meta = [];
-export const Test2Meta = [];"
+export const Test1Meta: TRPCMetaData = [];
+export const Test2Meta: TRPCMetaData = [];"
 `;

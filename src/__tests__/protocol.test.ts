@@ -79,3 +79,19 @@ test('getRPCArgs for http Post request(form)', async () => {
   })
   expect(args).toEqual(argsData)
 })
+
+
+test('auto decodeURI args', async () => {
+  const argsData = [1, '2', true]
+  const args = await getRPCArgs({
+    ...CTX_TPL,
+    method: 'get',
+    request: {
+      query: {
+        [RPCKey.Args]: encodeURIComponent(JSON.stringify(argsData))
+      },
+      headers: {}
+    }
+  })
+  expect(args).toEqual(argsData)
+})

@@ -20,8 +20,12 @@ export async function getRPCArgs (ctx: Ctx): Promise<unknown[]> {
     args = ctxReq.body?.[RPCKey.Args]
   }
 
-  if (typeof args === 'string') args = JSON.parse(args)
-  if (!Array.isArray(args)) throw Error('Parse args failed')
+  if (typeof args === 'string') {
+    // 只有字符串形式的数组才考虑 parse，检测是否需要 URL 解码
+    if (args.startsWith('%5B')) args = decodeURIComponent(args)
+    if (args.startsWith('[')) args = JSON.parse(args)
+  }
+  if (!Array.isArray(args)) throw Error('Args parsing failed')
 
   return args
 }
